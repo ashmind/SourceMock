@@ -7,8 +7,8 @@ using SourceMock.Handlers;
 namespace SourceMock.Generators.SingleFile {
     internal class IndividualMockGenerator {
         private static class SourceMockTypeNames {
-            public static readonly string MockMethodSetup = "global::" + typeof(MockMethodSetup).FullName;
-            public static readonly string MockHandler = "global::" + typeof(MockFuncHandler).FullName;
+            public static readonly string MockMethodSetup = $"global::{typeof(MockMethodSetup<>).Namespace}.{nameof(MockMethodSetup)}";
+            public static readonly string MockFuncHandler = $"global::{typeof(MockFuncHandler<>).Namespace}.{nameof(MockFuncHandler)}";
         }
 
         private static class Indents {
@@ -27,7 +27,8 @@ namespace SourceMock.Generators.SingleFile {
                 .Append(Indents.Member)
                 .Append("public ")
                 .Append(setupInterfaceName)
-                .AppendLine(" Setup => this;");
+                .AppendLine(" Setup => this;")
+                .AppendLine();
 
             var setupInterfaceBuilder = new StringBuilder("public interface ")
                 .Append(setupInterfaceName)
@@ -38,9 +39,10 @@ namespace SourceMock.Generators.SingleFile {
                 switch (member) {
                     case IMethodSymbol method:
                         var handlerFieldName = "_" + char.ToLowerInvariant(method.Name[0]) + method.Name.Substring(1) + "Handler";
-                        AppendHandlerField(mockBuilder, handlerFieldName);
-                        AppendSetupMethodInterface(setupInterfaceBuilder, method);
-                        AppendSetupMethod(mockBuilder, method, setupInterfaceName, handlerFieldName);
+                        var methodReturnTypeName = method.ReturnType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+                        AppendHandlerField(mockBuilder, handlerFieldName, methodReturnTypeName);
+                        AppendSetupMethodInterface(setupInterfaceBuilder, method, methodReturnTypeName);
+                        AppendSetupMethod(mockBuilder, method, methodReturnTypeName, setupInterfaceName, handlerFieldName);
                         AppendImplementation(mockBuilder, method, handlerFieldName);
                         break;
 
@@ -60,30 +62,39 @@ namespace SourceMock.Generators.SingleFile {
                 .ToString();
         }
 
-        private void AppendHandlerField(StringBuilder builder, string handlerFieldName) {
+        private void AppendHandlerField(StringBuilder builder, string handlerFieldName, string methodReturnTypeName) {
             builder
                 .Append(Indents.Member)
                 .Append("private readonly ")
-                .Append(SourceMockTypeNames.MockHandler)
+                .Append(SourceMockTypeNames.MockFuncHandler)
+                .Append("<")
+                .Append(methodReturnTypeName)
+                .Append(">")
                 .Append(" ")
                 .Append(handlerFieldName)
                 .AppendLine(" = new();");
         }
 
-        private void AppendSetupMethodInterface(StringBuilder builder, IMethodSymbol method) {
+        private void AppendSetupMethodInterface(StringBuilder builder, IMethodSymbol method, string methodReturnTypeName) {
             builder
                 .Append(Indents.Member)
                 .Append(SourceMockTypeNames.MockMethodSetup)
+                .Append("<")
+                .Append(methodReturnTypeName)
+                .Append(">")
                 .Append(" ")
                 .Append(method.Name)
                 .Append("();")
                 .AppendLine();
         }
 
-        private void AppendSetupMethod(StringBuilder builder, IMethodSymbol method, string setupInterfaceName, string handlerFieldName) {
+        private void AppendSetupMethod(StringBuilder builder, IMethodSymbol method, string methodReturnTypeName, string setupInterfaceName, string handlerFieldName) {
             builder
                 .Append(Indents.Member)
                 .Append(SourceMockTypeNames.MockMethodSetup)
+                .Append("<")
+                .Append(methodReturnTypeName)
+                .Append(">")
                 .Append(" ")
                 .Append(setupInterfaceName)
                 .Append(".")
