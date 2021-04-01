@@ -38,17 +38,21 @@ namespace SourceMock.Generators.SingleFile {
             {
                 switch (member) {
                     case IMethodSymbol method:
-                        var handlerFieldName = "_" + char.ToLowerInvariant(method.Name[0]) + method.Name.Substring(1) + "Handler";
+                        var handlerFieldName = "_" + char.ToLowerInvariant(method.Name[0]) + method.Name.Substring(1) + "Handler";                        
                         var methodReturnTypeName = method.ReturnType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+                        if (method.ReturnNullableAnnotation == NullableAnnotation.Annotated && !method.ReturnType.IsValueType)
+                            methodReturnTypeName += "?";
                         AppendHandlerField(mockBuilder, handlerFieldName, methodReturnTypeName);
                         AppendSetupMethodInterface(setupInterfaceBuilder, method, methodReturnTypeName);
                         AppendSetupMethod(mockBuilder, method, methodReturnTypeName, setupInterfaceName, handlerFieldName);
-                        AppendImplementation(mockBuilder, method, handlerFieldName);
+                        AppendImplementation(mockBuilder, method, methodReturnTypeName, handlerFieldName);
                         break;
 
                     default:
                         throw new NotSupportedException($"Member {mock.TargetTypeQualifiedName}.{member.Name} is {member.GetType()} which is not yet supported.");
                 }
+
+                mockBuilder.AppendLine();
             }
 
             mockBuilder.Append("}");
@@ -105,11 +109,11 @@ namespace SourceMock.Generators.SingleFile {
                 .AppendLine();
         }
 
-        private void AppendImplementation(StringBuilder builder, IMethodSymbol method, string handlerFieldName) {
+        private void AppendImplementation(StringBuilder builder, IMethodSymbol method, string methodReturnTypeName, string handlerFieldName) {
             builder
                 .Append(Indents.Member)
                 .Append("public ")
-                .Append(method.ReturnType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat))
+                .Append(methodReturnTypeName)
                 .Append(" ")
                 .Append(method.Name)
                 .Append("() => ")

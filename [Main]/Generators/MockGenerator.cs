@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -22,6 +22,8 @@ namespace SourceMock.Generators {
             var mocks = context.Compilation.GetMethodBodyDiagnostics()
                 .Select(d => GetMockInfoFromDiagnostic(d, context))
                 .OfType<MockInfo>()
+                .GroupBy(m => m.TargetType)
+                .Select(g => g.First())
                 .OrderBy(m => m.TargetTypeQualifiedName);
 
             var mocksClassGenerator = new MocksClassGenerator();
