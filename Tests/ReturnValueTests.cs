@@ -17,7 +17,7 @@ namespace SourceMock.Tests {
 
             mock.Setup.NullableInt32Return().Returns(null);
 
-            Assert.Equal(3, mock.NullableInt32Return());
+            Assert.Null(mock.NullableInt32Return());
         }
 
         [Fact]
