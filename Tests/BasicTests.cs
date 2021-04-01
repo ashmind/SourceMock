@@ -8,9 +8,9 @@ namespace SourceMock.Tests
         public void Returns_SetsUpReturnValue()
         {
             var mock = Mocks.Get(default(IMockable));
-            mock.SetupSimpleReturn().Returns(3);
+            mock.Setup.SimpleReturn().Returns(3);
 
-            Assert.Equal(3, ((IMockable)mock).SimpleReturn());
+            Assert.Equal(3, mock.SimpleReturn());
         }
     }
 }

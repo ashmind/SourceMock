@@ -1,6 +1,6 @@
 namespace SourceMock
 {
-    public class MockSetup
+    public class MockMethodSetup
     {
         public void Returns(int value)
         {

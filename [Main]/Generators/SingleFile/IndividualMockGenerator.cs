@@ -7,7 +7,7 @@ using SourceMock.Handlers;
 namespace SourceMock.Generators.SingleFile {
     internal class IndividualMockGenerator {
         private static class SourceMockTypeNames {
-            public static readonly string MockSetup = "global::" + typeof(MockSetup).FullName;
+            public static readonly string MockMethodSetup = "global::" + typeof(MockMethodSetup).FullName;
             public static readonly string MockHandler = "global::" + typeof(MockFuncHandler).FullName;
         }
 
@@ -16,20 +16,32 @@ namespace SourceMock.Generators.SingleFile {
         }
 
         public string Generate(in MockInfo mock) {
-            var builder = new StringBuilder("public class ")
+            var setupInterfaceName = "I_" + mock.MockTypeName + "_Setup";
+            var mockBuilder = new StringBuilder("public class ")
                 .Append(mock.MockTypeName)
                 .Append(" : ")
                 .Append(mock.TargetTypeQualifiedName)
+                .Append(", ")
+                .Append(setupInterfaceName)
+                .AppendLine(" {")
+                .Append(Indents.Member)
+                .Append("public ")
+                .Append(setupInterfaceName)
+                .AppendLine(" Setup => this;");
+
+            var setupInterfaceBuilder = new StringBuilder("public interface ")
+                .Append(setupInterfaceName)
                 .AppendLine(" {");
 
             foreach (var member in mock.TargetType.GetMembers())
             {
                 switch (member) {
                     case IMethodSymbol method:
-                        var handlerFieldName = "_" + Char.ToLowerInvariant(method.Name[0]) + method.Name.Substring(1) + "Handler";
-                        AppendHandlerField(builder, handlerFieldName);
-                        AppendSetupMethod(builder, method, handlerFieldName);
-                        AppendExplicitImplementation(builder, method, mock, handlerFieldName);
+                        var handlerFieldName = "_" + char.ToLowerInvariant(method.Name[0]) + method.Name.Substring(1) + "Handler";
+                        AppendHandlerField(mockBuilder, handlerFieldName);
+                        AppendSetupMethodInterface(setupInterfaceBuilder, method);
+                        AppendSetupMethod(mockBuilder, method, setupInterfaceName, handlerFieldName);
+                        AppendImplementation(mockBuilder, method, handlerFieldName);
                         break;
 
                     default:
@@ -37,7 +49,15 @@ namespace SourceMock.Generators.SingleFile {
                 }
             }
 
-            return builder.Append("}").ToString();
+            mockBuilder.Append("}");
+            setupInterfaceBuilder.Append("}");
+
+            return new StringBuilder(mockBuilder.Length + (Environment.NewLine.Length * 2) + setupInterfaceBuilder.Length)
+                .Append(mockBuilder)
+                .AppendLine()
+                .AppendLine()
+                .Append(setupInterfaceBuilder)
+                .ToString();
         }
 
         private void AppendHandlerField(StringBuilder builder, string handlerFieldName) {
@@ -50,12 +70,23 @@ namespace SourceMock.Generators.SingleFile {
                 .AppendLine(" = new();");
         }
 
-        private void AppendSetupMethod(StringBuilder builder, IMethodSymbol method, string handlerFieldName) {
+        private void AppendSetupMethodInterface(StringBuilder builder, IMethodSymbol method) {
             builder
                 .Append(Indents.Member)
-                .Append("public ")
-                .Append(SourceMockTypeNames.MockSetup)
-                .Append(" Setup")
+                .Append(SourceMockTypeNames.MockMethodSetup)
+                .Append(" ")
+                .Append(method.Name)
+                .Append("();")
+                .AppendLine();
+        }
+
+        private void AppendSetupMethod(StringBuilder builder, IMethodSymbol method, string setupInterfaceName, string handlerFieldName) {
+            builder
+                .Append(Indents.Member)
+                .Append(SourceMockTypeNames.MockMethodSetup)
+                .Append(" ")
+                .Append(setupInterfaceName)
+                .Append(".")
                 .Append(method.Name)
                 .Append("() => ")
                 .Append(handlerFieldName)
@@ -63,13 +94,12 @@ namespace SourceMock.Generators.SingleFile {
                 .AppendLine();
         }
 
-        private void AppendExplicitImplementation(StringBuilder builder, IMethodSymbol method, in MockInfo mock, string handlerFieldName) {
+        private void AppendImplementation(StringBuilder builder, IMethodSymbol method, string handlerFieldName) {
             builder
                 .Append(Indents.Member)
+                .Append("public ")
                 .Append(method.ReturnType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat))
                 .Append(" ")
-                .Append(mock.TargetTypeQualifiedName)
-                .Append(".")
                 .Append(method.Name)
                 .Append("() => ")
                 .Append(handlerFieldName)
