@@ -32,6 +32,16 @@ namespace SourceMock.Tests {
         }
 
         [Fact]
+        public void SingleArgument_Interface() {
+            var mock = Mocks.Get(default(IMockable));
+            var argument = new EmptyClass();
+
+            mock.Setup.TestInterface(argument).Returns(true);
+
+            Assert.True(mock.TestInterface(argument));
+        }
+
+        [Fact]
         public void SingleArgument_Optional() {
             var mock = Mocks.Get(default(IMockable));
 
@@ -48,5 +58,7 @@ namespace SourceMock.Tests {
 
             Assert.Equal(3, mock.Sum(1, 2));
         }
+
+        private class EmptyClass : IEmptyInterface {}
     }
 }
