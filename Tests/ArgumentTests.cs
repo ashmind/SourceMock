@@ -1,7 +1,8 @@
 using Xunit;
+using SourceMock.Tests.TestInterfaces;
 
 namespace SourceMock.Tests {
-    public class ArgumentMatchingTests {
+    public class ArgumentTests {
         [Fact]
         public void SingleArgument() {
             var mock = Mocks.Get(default(IMockable));

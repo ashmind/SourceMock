@@ -1,4 +1,5 @@
 using Xunit;
+using SourceMock.Tests.TestInterfaces;
 
 namespace SourceMock.Tests {
     public class ReturnValueTests {

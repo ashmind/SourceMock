@@ -1,7 +1,5 @@
-namespace SourceMock.Tests
-{
-    public interface IMockable
-    {
+namespace SourceMock.Tests.TestInterfaces {
+    public interface IMockable {
         int GetInt32();
         int? GetInt32Nullable();
         string GetString();
