@@ -2,9 +2,11 @@ namespace SourceMock.Tests
 {
     public interface IMockable
     {
-        int Int32Return();
-        int? NullableInt32Return();
-        string StringReturn();
-        string? NullableStringReturn();
+        int GetInt32();
+        int? GetInt32Nullable();
+        string GetString();
+        string? GetStringNullable();
+
+        int ParseToInt32(string value);
     }
 }

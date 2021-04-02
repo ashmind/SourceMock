@@ -2,13 +2,14 @@ using System;
 using System.Text;
 using Microsoft.CodeAnalysis;
 using SourceMock.Generators.Models;
-using SourceMock.Handlers;
+using SourceMock.Internal;
 
 namespace SourceMock.Generators.SingleFile {
     internal class IndividualMockGenerator {
         private static class SourceMockTypeNames {
             public static readonly string MockMethodSetup = $"global::{typeof(MockMethodSetup<>).Namespace}.{nameof(MockMethodSetup)}";
-            public static readonly string MockFuncHandler = $"global::{typeof(MockFuncHandler<>).Namespace}.{nameof(MockFuncHandler)}";
+            public static readonly string MockArgument = $"global::{typeof(MockArgument<>).Namespace}.{nameof(MockArgument)}";
+            public static readonly string MockHandler = $"global::{typeof(MockHandler).FullName}";
         }
 
         private static class Indents {
@@ -77,10 +78,7 @@ namespace SourceMock.Generators.SingleFile {
             builder
                 .Append(Indents.Member)
                 .Append("private readonly ")
-                .Append(SourceMockTypeNames.MockFuncHandler)
-                .Append("<")
-                .Append(context.MethodReturnTypeName)
-                .Append(">")
+                .Append(SourceMockTypeNames.MockHandler)
                 .Append(" ")
                 .Append(context.HandlerFieldName)
                 .AppendLine(" = new();");
@@ -95,7 +93,10 @@ namespace SourceMock.Generators.SingleFile {
                 .Append(">")
                 .Append(" ")
                 .Append(context.Method.Name)
-                .Append("();")
+                .Append("(");
+            AppendSetupMethodParameters(builder, context);
+            builder
+                .Append(");")
                 .AppendLine();
         }
 
@@ -110,10 +111,45 @@ namespace SourceMock.Generators.SingleFile {
                 .Append(setupInterfaceName)
                 .Append(".")
                 .Append(context.Method.Name)
-                .Append("() => ")
+                .Append("(");
+            AppendSetupMethodParameters(builder, context);
+            builder
+                .Append(") => ")
                 .Append(context.HandlerFieldName)
-                .Append(".Setup;")
-                .AppendLine();
+                .Append(".Setup");
+            if (!context.Method.ReturnsVoid) {
+                builder
+                    .Append("<")
+                    .Append(context.MethodReturnTypeName)
+                    .Append(">");
+            }
+            builder.Append("(");
+
+            var first = true;
+            foreach (var parameter in context.Method.Parameters) {
+                if (!first)
+                    builder.Append(", ");
+                builder.Append(parameter.Name);
+                first = false;
+            }
+
+            builder.AppendLine(");");
+        }
+
+        private void AppendSetupMethodParameters(StringBuilder builder, in MethodContext context) {
+            var first = true;
+            foreach (var parameter in context.Method.Parameters) {
+                if (!first)
+                    builder.Append(", ");
+
+                builder
+                    .Append(SourceMockTypeNames.MockArgument)
+                    .Append("<")
+                    .Append(parameter.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat))
+                    .Append("> ")
+                    .Append(parameter.Name);
+                first = false;
+            }
         }
 
         private void AppendImplementation(StringBuilder builder, in MethodContext context) {
@@ -123,9 +159,40 @@ namespace SourceMock.Generators.SingleFile {
                 .Append(context.MethodReturnTypeName)
                 .Append(" ")
                 .Append(context.Method.Name)
-                .Append("() => ")
+                .Append("(");
+
+            var first = true;
+            foreach (var parameter in context.Method.Parameters) {
+                if (!first)
+                    builder.Append(", ");
+
+                builder
+                    .Append(parameter.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat))
+                    .Append(" ")
+                    .Append(parameter.Name);
+                first = false;
+            }
+
+            builder
+                .Append(") => ")
                 .Append(context.HandlerFieldName)
-                .AppendLine(".Call();");
+                .Append(".Call");
+            if (!context.Method.ReturnsVoid) {
+                builder
+                    .Append("<")
+                    .Append(context.MethodReturnTypeName)
+                    .Append(">");
+            }
+            builder.Append("(");
+
+            first = true;
+            foreach (var parameter in context.Method.Parameters) {
+                if (!first)
+                    builder.Append(", ");
+                builder.Append(parameter.Name);
+                first = false;
+            }
+            builder.AppendLine(");");
         }
 
         private readonly struct MethodContext {

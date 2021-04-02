@@ -78,7 +78,7 @@ namespace SourceMock.Generators {
         }
 
         private void Log(string message) {
-            File.AppendAllText(LogPath, $"[{DateTime.Now.ToString("s")}] {message}{Environment.NewLine}");
+            //File.AppendAllText(LogPath, $"[{DateTime.Now.ToString("s")}] {message}{Environment.NewLine}");
         }
     }
 }

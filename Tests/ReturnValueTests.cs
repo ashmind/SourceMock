@@ -3,39 +3,39 @@ using Xunit;
 namespace SourceMock.Tests {
     public class ReturnValueTests {
         [Fact]
-        public void Returns_SetsUpReturnValue_ForValueType() {
+        public void ValueType() {
             var mock = Mocks.Get(default(IMockable));
 
-            mock.Setup.Int32Return().Returns(3);
+            mock.Setup.GetInt32().Returns(3);
 
-            Assert.Equal(3, mock.Int32Return());
+            Assert.Equal(3, mock.GetInt32());
         }
 
         [Fact]
-        public void Returns_SetsUpNullReturnValue_ForNullableValueType() {
+        public void NullableValueType() {
             var mock = Mocks.Get(default(IMockable));
 
-            mock.Setup.NullableInt32Return().Returns(null);
+            mock.Setup.GetInt32Nullable().Returns(null);
 
-            Assert.Null(mock.NullableInt32Return());
+            Assert.Null(mock.GetInt32Nullable());
         }
 
         [Fact]
-        public void Returns_SetsUpReturnValue_ForReferenceType() {
+        public void ReferenceType() {
             var mock = Mocks.Get(default(IMockable));
 
-            mock.Setup.StringReturn().Returns("a");
+            mock.Setup.GetString().Returns("a");
 
-            Assert.Equal("a", mock.StringReturn());
+            Assert.Equal("a", mock.GetString());
         }
 
         [Fact]
-        public void Returns_SetsUpReturnValue_ForNullableReferenceType() {
+        public void NullableReferenceType() {
             var mock = Mocks.Get(default(IMockable));
 
-            mock.Setup.NullableStringReturn().Returns(null);
+            mock.Setup.GetStringNullable().Returns(null);
 
-            Assert.Null(mock.NullableStringReturn());
+            Assert.Null(mock.GetStringNullable());
         }
     }
 }
