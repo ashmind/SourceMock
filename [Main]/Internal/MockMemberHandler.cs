@@ -3,7 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 
 namespace SourceMock.Internal {
-    public class MockHandler {
+    public class MockMemberHandler
+    {
         private readonly IList<IMockMethodSetup> _setups = new List<IMockMethodSetup>();
         private readonly IList<object?[]> _calls = new List<object?[]>();
 

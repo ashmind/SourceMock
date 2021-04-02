@@ -1,4 +1,4 @@
-﻿using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis;
 
 namespace SourceMock.Generators.Models {
     internal readonly struct MockInfo {

@@ -8,9 +8,10 @@ using SourceMock.Internal;
 namespace SourceMock.Generators.SingleFile {
     internal class IndividualMockGenerator {
         private static class KnownTypeNames {
+            public static readonly string Mock = $"global::{typeof(Mock<>).Namespace}.{nameof(Mock)}";
             public static readonly string MockMethodSetup = $"global::{typeof(MockMethodSetup<>).Namespace}.{nameof(MockMethodSetup)}";
             public static readonly string MockArgument = $"global::{typeof(MockArgument<>).Namespace}.{nameof(MockArgument)}";
-            public static readonly string MockHandler = $"global::{typeof(MockHandler).FullName}";
+            public static readonly string MockMemberHandler = $"global::{typeof(MockMemberHandler).FullName}";
             public static readonly string NoArguments = $"global::{typeof(NoArguments).FullName}";
 
             public static readonly string IReadOnlyList = $"global::{typeof(IReadOnlyList<>).Namespace}.{nameof(IReadOnlyList)}";
@@ -23,8 +24,9 @@ namespace SourceMock.Generators.SingleFile {
         public string Generate(in MockInfo mock) {
             var setupInterfaceName = "I_" + mock.MockTypeName + "_Setup";
             var callsInterfaceName = "I_" + mock.MockTypeName + "_Calls";
+            var extensionClassName = mock.MockTypeName + "_Extensions";
 
-            var mockBuilder = new StringBuilder("public class ")
+            var builder = new StringBuilder("public class ")
                 .Append(mock.MockTypeName)
                 .Append(" : ")
                 .Append(mock.TargetTypeQualifiedName)
@@ -55,30 +57,45 @@ namespace SourceMock.Generators.SingleFile {
             {
                 switch (member) {
                     case IMethodSymbol method:
-                        AppendMethodMocks(mockBuilder, (setupInterfaceName, setupInterfaceBuilder), (callsInterfaceName, callsInterfaceBuilder), method);
+                        AppendMethodMocks(builder, (setupInterfaceName, setupInterfaceBuilder), (callsInterfaceName, callsInterfaceBuilder), method);
                         break;
 
                     default:
                         throw new NotSupportedException($"Member {mock.TargetTypeQualifiedName}.{member.Name} is {member.GetType()} which is not yet supported.");
                 }
 
-                mockBuilder.AppendLine();
+                builder.AppendLine();
             }
 
-            mockBuilder.Append("}");
+            builder.Append("}");
             setupInterfaceBuilder.Append("}");
-            callsInterfaceBuilder.Append("}");
+            builder
+                .Append(setupInterfaceBuilder)
+                .AppendLine()
+                .AppendLine();
 
-            return new StringBuilder(
-                mockBuilder.Length + (Environment.NewLine.Length * 2) + setupInterfaceBuilder.Length + (Environment.NewLine.Length * 2) + callsInterfaceBuilder.Length
-            ).Append(mockBuilder)
-             .AppendLine()
-             .AppendLine()
-             .Append(setupInterfaceBuilder)
-             .AppendLine()
-             .AppendLine()
-             .Append(callsInterfaceBuilder)
-             .ToString();
+            callsInterfaceBuilder.Append("}");
+            builder
+                .Append(callsInterfaceBuilder)
+                .AppendLine()
+                .AppendLine();
+
+            builder
+                .Append("public static class ")
+                .Append(extensionClassName)
+                .AppendLine("{")
+                .Append(Indents.Member)
+                .Append("public static ")
+                .Append(mock.MockTypeName)
+                .Append(" Get(this ")
+                .Append(KnownTypeNames.Mock)
+                .Append("<")
+                .Append(mock.TargetTypeQualifiedName)
+                .Append(">")
+                .AppendLine(" _) => new();")
+                .AppendLine("}");
+
+            return builder.ToString();
         }
 
         private void AppendMethodMocks(
@@ -103,7 +120,7 @@ namespace SourceMock.Generators.SingleFile {
             builder
                 .Append(Indents.Member)
                 .Append("private readonly ")
-                .Append(KnownTypeNames.MockHandler)
+                .Append(KnownTypeNames.MockMemberHandler)
                 .Append(" ")
                 .Append(context.HandlerFieldName)
                 .AppendLine(" = new();");

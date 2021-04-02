@@ -1,5 +1,3 @@
-using System;
-
 namespace SourceMock.Tests.TestInterfaces {
     public interface IMockable {
         int GetInt32();

@@ -5,7 +5,7 @@ namespace SourceMock.Tests {
     public class VerificationTests {
         [Fact]
         public void NoArguments() {
-            var mock = Mocks.Get(default(IMockable));
+            var mock = Mock.Of<IMockable>().Get();
 
             mock.GetInt32();
 
@@ -14,7 +14,7 @@ namespace SourceMock.Tests {
 
         [Fact]
         public void OneArgument() {
-            var mock = Mocks.Get(default(IMockable));
+            var mock = Mock.Of<IMockable>().Get();
 
             mock.ParseToInt32("x");
 
@@ -23,7 +23,7 @@ namespace SourceMock.Tests {
 
         [Fact]
         public void MultipleArguments() {
-            var mock = Mocks.Get(default(IMockable));
+            var mock = Mock.Of<IMockable>().Get();
 
             mock.Sum(1, 2);
 

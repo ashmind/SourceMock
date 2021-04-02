@@ -5,7 +5,7 @@ namespace SourceMock.Tests {
     public class ArgumentTests {
         [Fact]
         public void SingleArgument() {
-            var mock = Mocks.Get(default(IMockable));
+            var mock = Mock.Of<IMockable>().Get();
 
             mock.Setup.ParseToInt32("1").Returns(1);
             mock.Setup.ParseToInt32("2").Returns(2);
@@ -15,7 +15,7 @@ namespace SourceMock.Tests {
 
         [Fact]
         public void SingleArgument_NullValue() {
-            var mock = Mocks.Get(default(IMockable));
+            var mock = Mock.Of<IMockable>().Get();
 
             mock.Setup.ParseToInt32(null).Returns(1);
 
@@ -24,7 +24,7 @@ namespace SourceMock.Tests {
 
         [Fact]
         public void SingleArgument_Matcher() {
-            var mock = Mocks.Get(default(IMockable));
+            var mock = Mock.Of<IMockable>().Get();
 
             mock.Setup.ParseToInt32(It.Is<string?>(x => x!.StartsWith("a"))).Returns(1);
 
@@ -33,7 +33,7 @@ namespace SourceMock.Tests {
 
         [Fact]
         public void SingleArgument_Interface() {
-            var mock = Mocks.Get(default(IMockable));
+            var mock = Mock.Of<IMockable>().Get();
             var argument = new EmptyClass();
 
             mock.Setup.TestInterface(argument).Returns(true);
@@ -43,7 +43,7 @@ namespace SourceMock.Tests {
 
         [Fact]
         public void SingleArgument_Optional() {
-            var mock = Mocks.Get(default(IMockable));
+            var mock = Mock.Of<IMockable>().Get();
 
             mock.Setup.ParseToInt32().Returns(1);
 
@@ -52,7 +52,7 @@ namespace SourceMock.Tests {
 
         [Fact]
         public void MultipleArguments() {
-            var mock = Mocks.Get(default(IMockable));
+            var mock = Mock.Of<IMockable>().Get();
 
             mock.Setup.Sum(1, 2).Returns(3);
 
