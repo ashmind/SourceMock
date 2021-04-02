@@ -20,10 +20,14 @@
     <ProjectReference Include="..\[Main]\[Main].csproj" OutputItemType="Analyzer" />
   </ItemGroup>
 
+  <Target Name="RemoveSourceGeneratedFiles" BeforeTargets="CoreCompile">
+    <ItemGroup>
+      <Compile Remove="Generated\**" />
+    </ItemGroup>
+  </Target>
   <Target Name="AddSourceGeneratedFiles" AfterTargets="CoreCompile">
     <ItemGroup>
       <Compile Include="Generated\**" />
     </ItemGroup>
   </Target>
-  <Target Name="RemoveSourceGeneratedFiles" BeforeTargets="CoreCompile" />
 </Project>

@@ -1,4 +1,6 @@
+//using System;
 using System.Collections.Generic;
+//using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
 using Microsoft.CodeAnalysis;
@@ -21,6 +23,7 @@ namespace SourceMock.Generators {
             var targetTypes = ((TypesToMockCollectingReceiver)context.SyntaxContextReceiver!).TypesToMock;
             var individualMockGenerator = new IndividualMockGenerator();
             foreach (var targetType in targetTypes) {
+                Log("Mocking type " + targetType.Name);
                 var targetTypeQualifiedName = targetType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
                 var mockTypeName = Regex.Replace(targetTypeQualifiedName, @"[^\w\d]", "_") + "_Mock";
 

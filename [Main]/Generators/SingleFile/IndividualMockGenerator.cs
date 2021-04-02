@@ -18,46 +18,37 @@ namespace SourceMock.Generators.SingleFile {
         }
 
         private static class Indents {
-            public const string Member = "    ";
+            public const string Member = "        ";
         }
 
         public string Generate(in MockInfo mock) {
-            var setupInterfaceName = "I_" + mock.MockTypeName + "_Setup";
-            var callsInterfaceName = "I_" + mock.MockTypeName + "_Calls";
             var extensionClassName = mock.MockTypeName + "_Extensions";
 
-            var builder = new StringBuilder("public class ")
+            var builder = new StringBuilder("public static class ")
                 .Append(mock.MockTypeName)
-                .Append(" : ")
+                .AppendLine(" {");
+
+            builder
+                .Append("    public class Instance : ")
                 .Append(mock.TargetTypeQualifiedName)
-                .Append(", ")
-                .Append(setupInterfaceName)
-                .Append(", ")
-                .Append(callsInterfaceName)
-                .AppendLine(" {")
+                .AppendLine(", ISetup, ICalls {")
                 .Append(Indents.Member)
-                .Append("public ")
-                .Append(setupInterfaceName)
-                .AppendLine(" Setup => this;")
+                .AppendLine("public ISetup Setup => this;")
                 .Append(Indents.Member)
-                .Append("public ")
-                .Append(callsInterfaceName)
-                .AppendLine(" Calls => this;")
+                .AppendLine("public ICalls Calls => this;")
                 .AppendLine();
 
-            var setupInterfaceBuilder = new StringBuilder("public interface ")
-                .Append(setupInterfaceName)
-                .AppendLine(" {");
+            var setupInterfaceBuilder = new StringBuilder("    public interface ISetup {")
+                .AppendLine();
 
-            var callsInterfaceBuilder = new StringBuilder("public interface ")
-                .Append(callsInterfaceName)
-                .AppendLine(" {");
+            var callsInterfaceBuilder = new StringBuilder("    public interface ICalls {")
+                .AppendLine();
 
             foreach (var member in mock.TargetType.GetMembers())
             {
                 switch (member) {
                     case IMethodSymbol method:
-                        AppendMethodMocks(builder, (setupInterfaceName, setupInterfaceBuilder), (callsInterfaceName, callsInterfaceBuilder), method);
+                        AppendMethodMocks(builder, setupInterfaceBuilder, callsInterfaceBuilder, method);
                         break;
 
                     default:
@@ -67,27 +58,33 @@ namespace SourceMock.Generators.SingleFile {
                 builder.AppendLine();
             }
 
-            builder.Append("}");
-            setupInterfaceBuilder.Append("}");
+            builder
+                .AppendLine("    }")
+                .AppendLine();
+
+            setupInterfaceBuilder.Append("    }");
             builder
                 .Append(setupInterfaceBuilder)
                 .AppendLine()
                 .AppendLine();
 
-            callsInterfaceBuilder.Append("}");
+            callsInterfaceBuilder.Append("    }");
             builder
                 .Append(callsInterfaceBuilder)
                 .AppendLine()
                 .AppendLine();
 
             builder
+                .AppendLine("}")
+                .AppendLine();
+
+            builder
                 .Append("public static class ")
                 .Append(extensionClassName)
                 .AppendLine("{")
-                .Append(Indents.Member)
-                .Append("public static ")
+                .Append("    public static ")
                 .Append(mock.MockTypeName)
-                .Append(" Get(this ")
+                .Append(".Instance Get(this ")
                 .Append(KnownTypeNames.Mock)
                 .Append("<")
                 .Append(mock.TargetTypeQualifiedName)
@@ -100,8 +97,8 @@ namespace SourceMock.Generators.SingleFile {
 
         private void AppendMethodMocks(
             StringBuilder mockBuilder,
-            (string name, StringBuilder builder) setupInterface,
-            (string name, StringBuilder builder) callsInterface,
+            StringBuilder setupInterfaceBuilder,
+            StringBuilder callsInterfaceBuilder,
             IMethodSymbol method
         ) {
             var handlerFieldName = "_" + char.ToLowerInvariant(method.Name[0]) + method.Name.Substring(1) + "Handler";
@@ -109,11 +106,11 @@ namespace SourceMock.Generators.SingleFile {
             var context = new MethodContext(method, methodReturnTypeName, handlerFieldName);
 
             AppendHandlerField(mockBuilder, context);
-            AppendSetupMethodInterface(setupInterface.builder, context);
-            AppendSetupMethod(mockBuilder, context, setupInterface.name);
+            AppendSetupMethodInterface(setupInterfaceBuilder, context);
+            AppendSetupMethod(mockBuilder, context);
             AppendImplementation(mockBuilder, context);
-            AppendCallsPropertyInterface(callsInterface.builder, context);
-            AppendCallsProperty(mockBuilder, context, callsInterface.name);
+            AppendCallsPropertyInterface(callsInterfaceBuilder, context);
+            AppendCallsProperty(mockBuilder, context);
         }
 
         private void AppendHandlerField(StringBuilder builder, in MethodContext context) {
@@ -142,16 +139,13 @@ namespace SourceMock.Generators.SingleFile {
                 .AppendLine();
         }
 
-        private void AppendSetupMethod(StringBuilder builder, in MethodContext context, string setupInterfaceName) {
+        private void AppendSetupMethod(StringBuilder builder, in MethodContext context) {
             builder
                 .Append(Indents.Member)
                 .Append(KnownTypeNames.MockMethodSetup)
                 .Append("<")
                 .Append(context.MethodReturnTypeName)
-                .Append(">")
-                .Append(" ")
-                .Append(setupInterfaceName)
-                .Append(".")
+                .Append("> ISetup.")
                 .Append(context.Method.Name)
                 .Append("(");
             AppendSetupMethodParameters(builder, context, appendDefaultValue: false);
@@ -248,13 +242,11 @@ namespace SourceMock.Generators.SingleFile {
                 .AppendLine(" { get; }");
         }
 
-        private void AppendCallsProperty(StringBuilder builder, in MethodContext context, string callsInterfaceName) {
+        private void AppendCallsProperty(StringBuilder builder, in MethodContext context) {
             builder.Append(Indents.Member);
             AppendCallsReturnValue(builder, context);
             builder
-                .Append(" ")
-                .Append(callsInterfaceName)
-                .Append(".")
+                .Append(" ICalls.")
                 .Append(context.Method.Name)
                 .Append(" => ")
                 .Append(context.HandlerFieldName)
