@@ -22,8 +22,6 @@ namespace SourceMock.Generators.SingleFile {
         }
 
         public string Generate(in MockInfo mock) {
-            var extensionClassName = mock.MockTypeName + "_Extensions";
-
             var builder = new StringBuilder("public static class ")
                 .Append(mock.MockTypeName)
                 .AppendLine(" {");
@@ -72,16 +70,7 @@ namespace SourceMock.Generators.SingleFile {
             builder
                 .Append(callsInterfaceBuilder)
                 .AppendLine()
-                .AppendLine();
-
-            builder
-                .AppendLine("}")
-                .AppendLine();
-
-            builder
-                .Append("public static class ")
-                .Append(extensionClassName)
-                .AppendLine("{")
+                .AppendLine()
                 .Append("    public static ")
                 .Append(mock.MockTypeName)
                 .Append(".Instance Get(this ")
@@ -90,7 +79,7 @@ namespace SourceMock.Generators.SingleFile {
                 .Append(mock.TargetTypeQualifiedName)
                 .Append(">")
                 .AppendLine(" _) => new();")
-                .AppendLine("}");
+                .Append("}");
 
             return builder.ToString();
         }
