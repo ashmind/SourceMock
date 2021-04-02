@@ -62,10 +62,7 @@ namespace SourceMock.Generators.SingleFile {
 
         private void AppendMethodMocks(StringBuilder mockBuilder, StringBuilder setupInterfaceBuilder, IMethodSymbol method, string setupInterfaceName) {
             var handlerFieldName = "_" + char.ToLowerInvariant(method.Name[0]) + method.Name.Substring(1) + "Handler";
-            var methodReturnTypeName = method.ReturnType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
-            if (method.ReturnNullableAnnotation == NullableAnnotation.Annotated && !method.ReturnType.IsValueType)
-                methodReturnTypeName += "?";
-
+            var methodReturnTypeName = GetFullTypeName(method.ReturnType, method.ReturnNullableAnnotation);
             var context = new MethodContext(method, methodReturnTypeName, handlerFieldName);
 
             AppendHandlerField(mockBuilder, context);
@@ -94,7 +91,7 @@ namespace SourceMock.Generators.SingleFile {
                 .Append(" ")
                 .Append(context.Method.Name)
                 .Append("(");
-            AppendSetupMethodParameters(builder, context);
+            AppendSetupMethodParameters(builder, context, appendDefaultValue: true);
             builder
                 .Append(");")
                 .AppendLine();
@@ -112,7 +109,7 @@ namespace SourceMock.Generators.SingleFile {
                 .Append(".")
                 .Append(context.Method.Name)
                 .Append("(");
-            AppendSetupMethodParameters(builder, context);
+            AppendSetupMethodParameters(builder, context, appendDefaultValue: false);
             builder
                 .Append(") => ")
                 .Append(context.HandlerFieldName)
@@ -136,7 +133,7 @@ namespace SourceMock.Generators.SingleFile {
             builder.AppendLine(");");
         }
 
-        private void AppendSetupMethodParameters(StringBuilder builder, in MethodContext context) {
+        private void AppendSetupMethodParameters(StringBuilder builder, in MethodContext context, bool appendDefaultValue) {
             var first = true;
             foreach (var parameter in context.Method.Parameters) {
                 if (!first)
@@ -145,9 +142,11 @@ namespace SourceMock.Generators.SingleFile {
                 builder
                     .Append(SourceMockTypeNames.MockArgument)
                     .Append("<")
-                    .Append(parameter.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat))
+                    .Append(GetFullTypeName(parameter.Type, parameter.NullableAnnotation))
                     .Append("> ")
                     .Append(parameter.Name);
+                if (appendDefaultValue)
+                    builder.Append(" = default");
                 first = false;
             }
         }
@@ -167,7 +166,7 @@ namespace SourceMock.Generators.SingleFile {
                     builder.Append(", ");
 
                 builder
-                    .Append(parameter.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat))
+                    .Append(GetFullTypeName(parameter.Type, parameter.NullableAnnotation))
                     .Append(" ")
                     .Append(parameter.Name);
                 first = false;
@@ -193,6 +192,13 @@ namespace SourceMock.Generators.SingleFile {
                 first = false;
             }
             builder.AppendLine(");");
+        }
+
+        private string GetFullTypeName(ITypeSymbol type, NullableAnnotation nullableAnnotation) {
+            var name = type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+            if (nullableAnnotation == NullableAnnotation.Annotated && !type.IsValueType)
+                name += "?";
+            return name;
         }
 
         private readonly struct MethodContext {

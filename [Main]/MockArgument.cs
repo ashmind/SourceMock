@@ -2,18 +2,19 @@ using System;
 using SourceMock.Internal;
 
 namespace SourceMock {
-    public class MockArgument<T>: IMockArgument {
+    public readonly struct MockArgument<T>: IMockArgument {
+        private readonly Func<T, bool>? _matches;
+
         private MockArgument(Func<T, bool> matches) {
-            Matches = matches;
+            _matches = matches;
         }
 
-        public Func<T, bool> Matches { get; }
+        bool IMockArgument.Matches(object? argument) => _matches == null || (argument switch {
+            T typed => _matches(typed),
+            null => _matches((T)((object?)null)!),
+            _ => false
+        });
 
-        bool IMockArgument.Matches(object? argument) =>
-            argument is T typed && Matches(typed);
-
-        public static implicit operator MockArgument<T>(T value) {
-            return new MockArgument<T>(v => Equals(v, value));
-        }
+        public static implicit operator MockArgument<T>(T value) => new(v => Equals(v, value));
     }
 }

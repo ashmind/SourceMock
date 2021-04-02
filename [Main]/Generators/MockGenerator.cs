@@ -1,5 +1,5 @@
 using System;
-using System.IO;
+//using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -12,7 +12,7 @@ using SourceMock.Generators.SingleFile;
 namespace SourceMock.Generators {
     [Generator]
     internal class MockGenerator : ISourceGenerator {
-        private const string LogPath = @"d:\Development\VS 2019\SourceMock\[Main]\generator.log";
+        //private const string LogPath = @"d:\Development\VS 2019\SourceMock\[Main]\generator.log";
 
         public void Initialize(GeneratorInitializationContext context) {
         }

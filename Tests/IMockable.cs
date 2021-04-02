@@ -7,6 +7,6 @@ namespace SourceMock.Tests
         string GetString();
         string? GetStringNullable();
 
-        int ParseToInt32(string value);
+        int ParseToInt32(string? value);
     }
 }

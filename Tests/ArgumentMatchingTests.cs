@@ -11,5 +11,23 @@ namespace SourceMock.Tests {
 
             Assert.Equal(2, mock.ParseToInt32("2"));
         }
+
+        [Fact]
+        public void SingleArgument_NullValue() {
+            var mock = Mocks.Get(default(IMockable));
+
+            mock.Setup.ParseToInt32(null).Returns(1);
+
+            Assert.Equal(1, mock.ParseToInt32(null));
+        }
+
+        [Fact]
+        public void SingleArgument_Optional() {
+            var mock = Mocks.Get(default(IMockable));
+
+            mock.Setup.ParseToInt32().Returns(1);
+
+            Assert.Equal(1, mock.ParseToInt32("x"));
+        }
     }
 }
