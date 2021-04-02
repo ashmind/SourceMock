@@ -3,12 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 
 namespace SourceMock.Internal {
-    public class MockMemberHandler
-    {
-        private readonly IList<IMockMethodSetup> _setups = new List<IMockMethodSetup>();
+    public class MockMemberHandler {
+        private readonly IList<IMockMethodSetupInternal> _setups = new List<IMockMethodSetupInternal>();
         private readonly IList<object?[]> _calls = new List<object?[]>();
 
-        public MockMethodSetup<TReturn> Setup<TReturn>(params IMockArgument[] arguments) {
+        public IMockMethodSetup<TReturn> Setup<TReturn>(params IMockArgument[] arguments) {
             var setup = new MockMethodSetup<TReturn>(arguments);
             _setups.Add(setup);
             return setup;

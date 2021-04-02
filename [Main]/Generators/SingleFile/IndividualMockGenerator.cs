@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Text;
 using Microsoft.CodeAnalysis;
 using SourceMock.Generators.Models;
 using SourceMock.Internal;
@@ -9,8 +8,9 @@ namespace SourceMock.Generators.SingleFile {
     internal class IndividualMockGenerator {
         private static class KnownTypeNames {
             public static readonly string Mock = $"global::{typeof(Mock<>).Namespace}.{nameof(Mock)}";
-            public static readonly string MockMethodSetup = $"global::{typeof(MockMethodSetup<>).Namespace}.{nameof(MockMethodSetup)}";
+            public static readonly string IMockMethodSetup = $"global::{typeof(IMockMethodSetup<>).Namespace}.{nameof(IMockMethodSetup)}";
             public static readonly string MockArgument = $"global::{typeof(MockArgument<>).Namespace}.{nameof(MockArgument)}";
+            public static readonly string IMockArgument = $"global::{typeof(IMockArgument).FullName}";
             public static readonly string MockMemberHandler = $"global::{typeof(MockMemberHandler).FullName}";
             public static readonly string NoArguments = $"global::{typeof(NoArguments).FullName}";
 
@@ -18,281 +18,256 @@ namespace SourceMock.Generators.SingleFile {
         }
 
         private static class Indents {
+            public const string Type = "    ";
             public const string Member = "        ";
-        }
+            public const string MemberBody = "            ";
+        }        
 
-        public string Generate(in MockInfo mock) {
-            var builder = new StringBuilder("public static class ")
-                .Append(mock.MockTypeName)
-                .AppendLine(" {");
+        public string Generate(in MockInfo mock, Func<ITypeSymbol, MockInfo> requestOtherMock) {
+            var mainWriter = new CodeWriter()
+                .WriteLine("#nullable enable")
+                .WriteLine("public static class ", mock.MockTypeName, " {")
+                .WriteLine(Indents.Type, "public class Instance : ", mock.TargetTypeQualifiedName, ", ISetup, ICalls {")
+                .WriteLine(Indents.Member, "public ISetup Setup => this;")
+                .WriteLine(Indents.Member, "public ICalls Calls => this;")
+                .WriteLine();
 
-            builder
-                .Append("    public class Instance : ")
-                .Append(mock.TargetTypeQualifiedName)
-                .AppendLine(", ISetup, ICalls {")
-                .Append(Indents.Member)
-                .AppendLine("public ISetup Setup => this;")
-                .Append(Indents.Member)
-                .AppendLine("public ICalls Calls => this;")
-                .AppendLine();
+            var setupInterfaceWriter = new CodeWriter()
+                .WriteLine(Indents.Type, "public interface ISetup {");
 
-            var setupInterfaceBuilder = new StringBuilder("    public interface ISetup {")
-                .AppendLine();
-
-            var callsInterfaceBuilder = new StringBuilder("    public interface ICalls {")
-                .AppendLine();
+            var callsInterfaceWriter = new CodeWriter()
+                .WriteLine(Indents.Type, "public interface ICalls {");
 
             foreach (var member in mock.TargetType.GetMembers())
             {
                 switch (member) {
                     case IMethodSymbol method:
-                        AppendMethodMocks(builder, setupInterfaceBuilder, callsInterfaceBuilder, method);
+                        WriteMethodMocks(mainWriter, setupInterfaceWriter, callsInterfaceWriter, method, requestOtherMock);
                         break;
 
                     default:
                         throw new NotSupportedException($"Member {mock.TargetTypeQualifiedName}.{member.Name} is {member.GetType()} which is not yet supported.");
                 }
 
-                builder.AppendLine();
+                mainWriter.WriteLine();
             }
 
-            builder
-                .AppendLine("    }")
-                .AppendLine();
+            setupInterfaceWriter.Write(Indents.Type, "}");
+            callsInterfaceWriter.Write(Indents.Type, "}");
 
-            setupInterfaceBuilder.Append("    }");
-            builder
-                .Append(setupInterfaceBuilder)
-                .AppendLine()
-                .AppendLine();
+            mainWriter
+                .WriteLine("    }")
+                .WriteLine();
 
-            callsInterfaceBuilder.Append("    }");
-            builder
-                .Append(callsInterfaceBuilder)
-                .AppendLine()
-                .AppendLine()
-                .Append("    public static ")
-                .Append(mock.MockTypeName)
-                .Append(".Instance Get(this ")
-                .Append(KnownTypeNames.Mock)
-                .Append("<")
-                .Append(mock.TargetTypeQualifiedName)
-                .Append(">")
-                .AppendLine(" _) => new();")
-                .Append("}");
+            WriteReturnedInstanceType(mainWriter, mock);
 
-            return builder.ToString();
+            mainWriter
+                .WriteLine()
+                .WriteLine()
+                .Append(setupInterfaceWriter)
+                .WriteLine()
+                .WriteLine()
+                .Append(callsInterfaceWriter)
+                .WriteLine()
+                .WriteLine()
+                .Write(Indents.Type, "public interface IReturnedSetup : ISetup, ")
+                .WriteGeneric(KnownTypeNames.IMockMethodSetup, mock.TargetTypeQualifiedName)
+                .WriteLine(" {}")
+                .WriteLine()
+                .Write(Indents.Type, "public static ", mock.MockTypeName, ".Instance Get(this ")
+                .WriteGeneric(KnownTypeNames.Mock, mock.TargetTypeQualifiedName)
+                .WriteLine(" _) => new();")
+                .Write("}");
+
+            return mainWriter.ToString();
         }
 
-        private void AppendMethodMocks(
-            StringBuilder mockBuilder,
-            StringBuilder setupInterfaceBuilder,
-            StringBuilder callsInterfaceBuilder,
-            IMethodSymbol method
+        private void WriteMethodMocks(
+            CodeWriter mockWriter,
+            CodeWriter setupInterfaceWriter,
+            CodeWriter callsInterfaceWriter,
+            IMethodSymbol method,
+            Func<ITypeSymbol, MockInfo> requestOtherMock
         ) {
             var handlerFieldName = "_" + char.ToLowerInvariant(method.Name[0]) + method.Name.Substring(1) + "Handler";
             var methodReturnTypeName = GetFullTypeName(method.ReturnType, method.ReturnNullableAnnotation);
             var context = new MethodContext(method, methodReturnTypeName, handlerFieldName);
 
-            AppendHandlerField(mockBuilder, context);
-            AppendSetupMethodInterface(setupInterfaceBuilder, context);
-            AppendSetupMethod(mockBuilder, context);
-            AppendImplementation(mockBuilder, context);
-            AppendCallsPropertyInterface(callsInterfaceBuilder, context);
-            AppendCallsProperty(mockBuilder, context);
+            WriteHandlerField(mockWriter, context);
+            WriteSetupMethodInterface(setupInterfaceWriter, context, requestOtherMock);
+            WriteSetupMethod(mockWriter, context, requestOtherMock);
+            WriteImplementation(mockWriter, context);
+            WriteCallsPropertyInterface(callsInterfaceWriter, context);
+            WriteCallsProperty(mockWriter, context);
         }
 
-        private void AppendHandlerField(StringBuilder builder, in MethodContext context) {
-            builder
-                .Append(Indents.Member)
-                .Append("private readonly ")
-                .Append(KnownTypeNames.MockMemberHandler)
-                .Append(" ")
-                .Append(context.HandlerFieldName)
-                .AppendLine(" = new();");
+        private void WriteHandlerField(CodeWriter writer, in MethodContext context) {
+            writer.WriteLine(
+                Indents.Member, "private readonly ", KnownTypeNames.MockMemberHandler, " ", context.HandlerFieldName, " = new();"
+            );
         }
 
-        private void AppendSetupMethodInterface(StringBuilder builder, in MethodContext context) {
-            builder
-                .Append(Indents.Member)
-                .Append(KnownTypeNames.MockMethodSetup)
-                .Append("<")
-                .Append(context.MethodReturnTypeName)
-                .Append(">")
-                .Append(" ")
-                .Append(context.Method.Name)
-                .Append("(");
-            AppendSetupMethodParameters(builder, context, appendDefaultValue: true);
-            builder
-                .Append(");")
-                .AppendLine();
+        private void WriteSetupMethodInterface(CodeWriter writer, in MethodContext context, Func<ITypeSymbol, MockInfo> requestOtherMock) {
+            writer.Write(Indents.Member);
+            WriteSetupMethodReturnType(writer, context, requestOtherMock);
+            writer.Write(" ", context.Method.Name, "(");
+
+            WriteSetupMethodParameters(writer, context, appendDefaultValue: true);
+
+            writer.WriteLine(");");
         }
 
-        private void AppendSetupMethod(StringBuilder builder, in MethodContext context) {
-            builder
-                .Append(Indents.Member)
-                .Append(KnownTypeNames.MockMethodSetup)
-                .Append("<")
-                .Append(context.MethodReturnTypeName)
-                .Append("> ISetup.")
-                .Append(context.Method.Name)
-                .Append("(");
-            AppendSetupMethodParameters(builder, context, appendDefaultValue: false);
-            builder
-                .Append(") => ")
-                .Append(context.HandlerFieldName)
-                .Append(".Setup");
-            if (!context.Method.ReturnsVoid) {
-                builder
-                    .Append("<")
-                    .Append(context.MethodReturnTypeName)
-                    .Append(">");
-            }
-            builder.Append("(");
+        private void WriteSetupMethod(CodeWriter writer, in MethodContext context, Func<ITypeSymbol, MockInfo> requestOtherMockName) {
+            writer.Write(Indents.Member);
+            var returnMock = WriteSetupMethodReturnType(writer, context, requestOtherMockName);
+            writer.Write(" ISetup.", context.Method.Name, "(");
+            WriteSetupMethodParameters(writer, context, appendDefaultValue: false);
+            writer.Write(") => ");
+            if (returnMock != null)
+                writer.Write("new ", returnMock.Value.MockTypeName, ".ReturnedInstance(");
+
+            writer.Write(context.HandlerFieldName, ".Setup");
+            if (!context.Method.ReturnsVoid)
+                writer.Write("<", context.MethodReturnTypeName, ">");
+
+            writer.Write("(");
 
             var first = true;
             foreach (var parameter in context.Method.Parameters) {
                 if (!first)
-                    builder.Append(", ");
-                builder.Append(parameter.Name);
+                    writer.Write(", ");
+                writer.Write(parameter.Name);
                 first = false;
             }
 
-            builder.AppendLine(");");
+            writer.Write(")");
+
+            if (returnMock != null)
+                writer.Write(")");
+            writer.WriteLine(";");
         }
 
-        private void AppendSetupMethodParameters(StringBuilder builder, in MethodContext context, bool appendDefaultValue) {
+        private MockInfo? WriteSetupMethodReturnType(CodeWriter writer, MethodContext context, Func<ITypeSymbol, MockInfo> requestOtherMock) {
+            if (context.Method.ReturnType is { TypeKind: TypeKind.Interface } interfaceType) {
+                var other = requestOtherMock(interfaceType);
+                writer.Write(other.MockTypeName, ".IReturnedSetup");
+                return other;
+            }
+
+            writer.WriteGeneric(KnownTypeNames.IMockMethodSetup, context.MethodReturnTypeName);
+            return null;
+        }
+
+        private void WriteSetupMethodParameters(CodeWriter writer, in MethodContext context, bool appendDefaultValue) {
             var first = true;
             foreach (var parameter in context.Method.Parameters) {
                 if (!first)
-                    builder.Append(", ");
-
-                builder
-                    .Append(KnownTypeNames.MockArgument)
-                    .Append("<")
-                    .Append(GetFullTypeName(parameter.Type, parameter.NullableAnnotation))
-                    .Append("> ")
-                    .Append(parameter.Name);
+                    writer.Write(", ");
+                writer
+                    .WriteGeneric(KnownTypeNames.MockArgument, GetFullTypeName(parameter.Type, parameter.NullableAnnotation))
+                    .Write(" ", parameter.Name);
                 if (appendDefaultValue)
-                    builder.Append(" = default");
+                    writer.Write(" = default");
                 first = false;
             }
         }
 
-        private void AppendImplementation(StringBuilder builder, in MethodContext context) {
-            builder
-                .Append(Indents.Member)
-                .Append("public ")
-                .Append(context.MethodReturnTypeName)
-                .Append(" ")
-                .Append(context.Method.Name)
-                .Append("(");
+        private void WriteImplementation(CodeWriter writer, in MethodContext context) {
+            writer.Write(
+                Indents.Member, "public ", context.MethodReturnTypeName, " ", context.Method.Name, "("
+            );
 
             var first = true;
             foreach (var parameter in context.Method.Parameters) {
                 if (!first)
-                    builder.Append(", ");
+                    writer.Write(", ");
 
-                builder
-                    .Append(GetFullTypeName(parameter.Type, parameter.NullableAnnotation))
-                    .Append(" ")
-                    .Append(parameter.Name);
+                writer.Write(GetFullTypeName(parameter.Type, parameter.NullableAnnotation), " ", parameter.Name);
                 first = false;
             }
 
-            builder
-                .Append(") => ")
-                .Append(context.HandlerFieldName)
-                .Append(".Call");
-            if (!context.Method.ReturnsVoid) {
-                builder
-                    .Append("<")
-                    .Append(context.MethodReturnTypeName)
-                    .Append(">");
-            }
-            builder.Append("(");
+            writer.Write(") => ", context.HandlerFieldName, ".Call");
+            if (!context.Method.ReturnsVoid)
+                writer.Write("<", context.MethodReturnTypeName, ">");
 
+            writer.Write("(");
             first = true;
             foreach (var parameter in context.Method.Parameters) {
                 if (!first)
-                    builder.Append(", ");
-                builder.Append(parameter.Name);
+                    writer.Write(", ");
+                writer.Write(parameter.Name);
                 first = false;
             }
-            builder.AppendLine(");");
+            writer.WriteLine(");");
         }
 
-        private void AppendCallsPropertyInterface(StringBuilder builder, in MethodContext context) {
-            builder.Append(Indents.Member);
-            AppendCallsReturnValue(builder, context);
-            builder
-                .Append(" ")
-                .Append(context.Method.Name)
-                .AppendLine(" { get; }");
+        private void WriteCallsPropertyInterface(CodeWriter writer, in MethodContext context) {
+            writer.Write(Indents.Member);
+            WriteCallsPropertyReturnType(writer, context);
+            writer.WriteLine(" ", context.Method.Name, " { get; }");
         }
 
-        private void AppendCallsProperty(StringBuilder builder, in MethodContext context) {
-            builder.Append(Indents.Member);
-            AppendCallsReturnValue(builder, context);
-            builder
-                .Append(" ICalls.")
-                .Append(context.Method.Name)
-                .Append(" => ")
-                .Append(context.HandlerFieldName)
-                .Append(".Calls(");
+        private void WriteCallsProperty(CodeWriter writer, in MethodContext context) {
+            writer.Write(Indents.Member);
+            WriteCallsPropertyReturnType(writer, context);
+            writer.Write(" ICalls.", context.Method.Name, " => ", context.HandlerFieldName, ".Calls(");
             if (context.Method.Parameters.Length > 0) {
-                builder.Append("args => (");
+                writer.Write("args => (");
                 var index = 0;
                 foreach (var parameter in context.Method.Parameters) {
                     if (index != 0)
-                        builder.Append(", ");
-                    builder
-                        .Append("(")
-                        .Append(GetFullTypeName(parameter.Type, parameter.NullableAnnotation))
-                        .Append(")args[")
-                        .Append(index)
-                        .Append("]!");
+                        writer.Write(", ");
+                    writer.Write(
+                        "(", GetFullTypeName(parameter.Type, parameter.NullableAnnotation), ")args[", index.ToString(), "]!"
+                    );
                     index += 1;
                 }
-                builder.Append(")");
+                writer.Write(")");
             }
             else {
-                builder
-                    .Append("_ => ")
-                    .Append(KnownTypeNames.NoArguments)
-                    .Append(".Value");
+                writer.Write("_ => ", KnownTypeNames.NoArguments, ".Value");
             }
-            builder.AppendLine(");");
+            writer.WriteLine(");");
         }
 
-        private void AppendCallsReturnValue(StringBuilder builder, in MethodContext context) {
-            builder
-                .Append(KnownTypeNames.IReadOnlyList)
-                .Append("<");
+        private void WriteCallsPropertyReturnType(CodeWriter writer, in MethodContext context) {
+            writer.Write(KnownTypeNames.IReadOnlyList, "<");
 
             var parameters = context.Method.Parameters;
             if (parameters.Length > 1) {
-                builder.Append("(");
+                writer.Write("(");
                 var first = true;
                 foreach (var parameter in parameters) {
                     if (!first)
-                        builder.Append(", ");
-                    builder
-                        .Append(GetFullTypeName(parameter.Type, parameter.NullableAnnotation))
-                        .Append(" ")
-                        .Append(parameter.Name);
+                        writer.Write(", ");
+                    writer.Write(GetFullTypeName(parameter.Type, parameter.NullableAnnotation), " ", parameter.Name);
                     first = false;
                 }
-                builder.Append(")");
+                writer.Write(")");
             }
             else if (parameters.Length == 1) {
-                builder.Append(GetFullTypeName(parameters[0].Type, parameters[0].NullableAnnotation));
+                writer.Write(GetFullTypeName(parameters[0].Type, parameters[0].NullableAnnotation));
             }
             else {
-                builder.Append(KnownTypeNames.NoArguments);
+                writer.Write(KnownTypeNames.NoArguments);
             }
 
-            builder.Append(">");
+            writer.Write(">");
+        }
+
+        private void WriteReturnedInstanceType(CodeWriter writer, in MockInfo mock) {
+            writer
+                .WriteLine(Indents.Type, "public class ReturnedInstance : Instance, IReturnedSetup {")
+                .WriteLine(Indents.Member, "private readonly ", KnownTypeNames.IMockMethodSetup, "<", mock.TargetTypeQualifiedName, "> _setup;")
+                .WriteLine(Indents.Member, "public ReturnedInstance(", KnownTypeNames.IMockMethodSetup, "<", mock.TargetTypeQualifiedName, "> setup) {")
+                .WriteLine(Indents.MemberBody, "_setup = setup;")
+                .WriteLine(Indents.MemberBody, "_setup.Returns(this);")
+                .WriteLine(Indents.Member, "}")
+                .WriteLine()
+                .Write(Indents.Member, "void ")
+                .WriteGeneric(KnownTypeNames.IMockMethodSetup, mock.TargetTypeQualifiedName)
+                .WriteLine(".Returns(", mock.TargetTypeQualifiedName, " value) => _setup.Returns(value);")
+                .Write(Indents.Type, "}");
         }
 
         private string GetFullTypeName(ITypeSymbol type, NullableAnnotation nullableAnnotation) {

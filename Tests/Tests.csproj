@@ -25,6 +25,7 @@
       <Compile Remove="Generated\**" />
     </ItemGroup>
   </Target>
+  
   <Target Name="AddSourceGeneratedFiles" AfterTargets="CoreCompile">
     <ItemGroup>
       <Compile Include="Generated\**" />

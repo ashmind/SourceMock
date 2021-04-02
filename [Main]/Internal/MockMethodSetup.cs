@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using SourceMock.Internal;
 
 namespace SourceMock {
-    public class MockMethodSetup<TReturn> : IMockMethodSetup {
+    internal class MockMethodSetup<TReturn> : IMockMethodSetupInternal, IMockMethodSetup<TReturn> {
         public MockMethodSetup(IReadOnlyList<IMockArgument> arguments) {
             Arguments = arguments;
         }
@@ -16,8 +16,8 @@ namespace SourceMock {
         internal bool HasReturnValue { get; private set; }
         internal TReturn? ReturnValue { get; private set; }
 
-        IReadOnlyList<IMockArgument> IMockMethodSetup.Arguments => Arguments;
-        bool IMockMethodSetup.HasReturnValue => HasReturnValue;
-        object? IMockMethodSetup.ReturnValue => ReturnValue;
+        IReadOnlyList<IMockArgument> IMockMethodSetupInternal.Arguments => Arguments;
+        bool IMockMethodSetupInternal.HasReturnValue => HasReturnValue;
+        object? IMockMethodSetupInternal.ReturnValue => ReturnValue;
     }
 }

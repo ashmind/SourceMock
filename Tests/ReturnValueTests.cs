@@ -38,5 +38,14 @@ namespace SourceMock.Tests {
 
             Assert.Null(mock.GetStringNullable());
         }
+
+        [Fact]
+        public void Chain() {
+            var mock = Mock.Of<IMockable>().Get();
+
+            mock.Setup.GetMockable2().GetString().Returns("a");
+
+            Assert.Equal("a", mock.GetMockable2().GetString());
+        }
     }
 }
