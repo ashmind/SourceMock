@@ -1,11 +1,10 @@
 using System;
-using SourceMock.Internal;
 
-namespace SourceMock {
+namespace SourceMock.Internal {
     public readonly struct MockArgument<T>: IMockArgument {
         private readonly Func<T, bool>? _matches;
 
-        private MockArgument(Func<T, bool> matches) {
+        internal MockArgument(Func<T, bool> matches) {
             _matches = matches;
         }
 

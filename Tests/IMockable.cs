@@ -8,5 +8,7 @@ namespace SourceMock.Tests
         string? GetStringNullable();
 
         int ParseToInt32(string? value);
+
+        int Sum(int value1, int value2);
     }
 }
