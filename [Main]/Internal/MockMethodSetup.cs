@@ -1,19 +1,34 @@
+using System;
 using System.Collections.Generic;
 
 namespace SourceMock.Internal {
-    internal class MockMethodSetup<TReturn> : IMockMethodSetup<TReturn>, IMockMethodSetupInternal {
+    internal class MockMethodSetup<TReturn> : IMockMethodSetup<TReturn> {
+        private bool _hasReturnValue;
+        private TReturn? _returnValue;
+        private Exception? _exception;
+
         public MockMethodSetup(IReadOnlyList<IMockArgumentMatcher> arguments) {
             Arguments = arguments;
         }
 
         public void Returns(TReturn value) {
-            HasReturnValue = true;
-            ReturnValue = value;
+            _hasReturnValue = true;
+            _returnValue = value;
+        }
+
+        public void Throws(Exception exception) {
+            _exception = exception;
         }
 
         public IReadOnlyList<IMockArgumentMatcher> Arguments { get; }
-        public bool HasReturnValue { get; private set; }
-        public TReturn? ReturnValue { get; private set; }
-        object? IMockMethodSetupInternal.ReturnValue => ReturnValue;
+
+        public TReturn? Execute() {
+            if (_exception != null)
+                throw _exception;
+
+            return _hasReturnValue
+                 ? _returnValue
+                 : default;
+        }
     }
 }

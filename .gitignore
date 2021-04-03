@@ -1,5 +1,4 @@
 .vs/
 bin/
 obj/
-/Tests/Generated
 /Generators/generator.log

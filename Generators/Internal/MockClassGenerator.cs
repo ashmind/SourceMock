@@ -11,7 +11,7 @@ namespace SourceMock.Generators.Internal {
             public const string MemberBody = "            ";
         }        
 
-        public string Generate(in MockInfo mock, Func<ITypeSymbol, MockInfo> requestOtherMock) {
+        public string Generate(in MockInfo mock) {
             var mainWriter = new CodeWriter()
                 .WriteLine("#nullable enable")
                 .WriteLine("public static class ", mock.MockTypeName, " {")
@@ -31,7 +31,7 @@ namespace SourceMock.Generators.Internal {
                 var context = GetMockedMember(member, memberId);
                 if (context == null)
                     continue;
-                WriteMemberMocks(mainWriter, setupInterfaceWriter, callsInterfaceWriter, context!.Value, requestOtherMock);
+                WriteMemberMocks(mainWriter, setupInterfaceWriter, callsInterfaceWriter, context!.Value);
                 memberId += 1;
                 mainWriter.WriteLine();
             }
@@ -41,11 +41,6 @@ namespace SourceMock.Generators.Internal {
 
             mainWriter
                 .WriteLine("    }")
-                .WriteLine();
-
-            WriteReturnedInstanceType(mainWriter, mock);
-
-            mainWriter
                 .WriteLine()
                 .WriteLine()
                 .Append(setupInterfaceWriter)
@@ -96,16 +91,22 @@ namespace SourceMock.Generators.Internal {
             );
         }
 
+        private string GetFullTypeName(ITypeSymbol type, NullableAnnotation nullableAnnotation) {
+            var name = type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+            if (nullableAnnotation == NullableAnnotation.Annotated && !type.IsValueType)
+                name += "?";
+            return name;
+        }
+
         private void WriteMemberMocks(
             CodeWriter mockWriter,
             CodeWriter setupInterfaceWriter,
             CodeWriter callsInterfaceWriter,
-            in MockedMember member,
-            Func<ITypeSymbol, MockInfo> requestOtherMock
+            in MockedMember member
         ) {
             WriteHandlerField(mockWriter, member);
-            WriteSetupInterfaceMember(setupInterfaceWriter, member, requestOtherMock);
-            WriteSetupMemberImplementation(mockWriter, member, requestOtherMock);
+            WriteSetupInterfaceMember(setupInterfaceWriter, member);
+            WriteSetupMemberImplementation(mockWriter, member);
             WriteMemberImplementation(mockWriter, member);
             WriteCallsInterfaceMember(callsInterfaceWriter, member);
             WriteCallsMemberImplementation(mockWriter, member);
@@ -125,17 +126,17 @@ namespace SourceMock.Generators.Internal {
                 .WriteLine(" ", member.HandlerFieldName, " = ", handlerValue, ";");
         }
 
-        private void WriteSetupInterfaceMember(CodeWriter writer, in MockedMember member, Func<ITypeSymbol, MockInfo> requestOtherMock) {
+        private void WriteSetupInterfaceMember(CodeWriter writer, in MockedMember member) {
             writer.Write(Indents.Member);
-            WriteSetupMemberType(writer, member, requestOtherMock);
+            WriteSetupMemberType(writer, member);
             writer.Write(" ");
             WriteSetupOrCallsInterfaceMemberNameAndParameters(writer, member);
             writer.WriteLine();
         }
 
-        private void WriteSetupMemberImplementation(CodeWriter writer, in MockedMember member, Func<ITypeSymbol, MockInfo> requestOtherMockName) {
+        private void WriteSetupMemberImplementation(CodeWriter writer, in MockedMember member) {
             writer.Write(Indents.Member);
-            var returnMock = WriteSetupMemberType(writer, member, requestOtherMockName);
+            var returnMock = WriteSetupMemberType(writer, member);
             writer.Write(" ISetup.", member.Name);
             if (member.Symbol is IMethodSymbol) {
                 writer.Write("(");
@@ -161,13 +162,8 @@ namespace SourceMock.Generators.Internal {
             writer.WriteLine(";");
         }
 
-        private MockInfo? WriteSetupMemberType(CodeWriter writer, in MockedMember member, Func<ITypeSymbol, MockInfo> requestOtherMock) {
-            if (member.Type is { TypeKind: TypeKind.Interface } interfaceType) {
-                var other = requestOtherMock(interfaceType);
-                writer.Write(other.MockTypeName, ".IReturnedSetup");
-                return other;
-            }
-            else if (member.IsVoidMethod) {
+        private MockInfo? WriteSetupMemberType(CodeWriter writer, in MockedMember member) {
+            if (member.IsVoidMethod) {
                 writer.Write(KnownTypes.IMockMethodSetup.FullName);
                 return null;
             }
@@ -322,28 +318,6 @@ namespace SourceMock.Generators.Internal {
             }
 
             writer.Write(">");
-        }
-
-        private void WriteReturnedInstanceType(CodeWriter writer, in MockInfo mock) {
-            writer
-                .WriteLine(Indents.Type, "public class ReturnedInstance : Instance, IReturnedSetup {")
-                .WriteLine(Indents.Member, "private readonly ", KnownTypes.IMockMethodSetup.FullName, "<", mock.TargetTypeQualifiedName, "> _setup;")
-                .WriteLine(Indents.Member, "public ReturnedInstance(", KnownTypes.IMockMethodSetup.FullName, "<", mock.TargetTypeQualifiedName, "> setup) {")
-                .WriteLine(Indents.MemberBody, "_setup = setup;")
-                .WriteLine(Indents.MemberBody, "_setup.Returns(this);")
-                .WriteLine(Indents.Member, "}")
-                .WriteLine()
-                .Write(Indents.Member, "void ")
-                .WriteGeneric(KnownTypes.IMockMethodSetup.FullName, mock.TargetTypeQualifiedName)
-                .WriteLine(".Returns(", mock.TargetTypeQualifiedName, " value) => _setup.Returns(value);")
-                .Write(Indents.Type, "}");
-        }
-
-        private string GetFullTypeName(ITypeSymbol type, NullableAnnotation nullableAnnotation) {
-            var name = type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
-            if (nullableAnnotation == NullableAnnotation.Annotated && !type.IsValueType)
-                name += "?";
-            return name;
         }
 
         private NotSupportedException MemberNotSupported(in MockedMember member) => new NotSupportedException($"Unknown member symbol type: {member.Symbol.GetType()}");

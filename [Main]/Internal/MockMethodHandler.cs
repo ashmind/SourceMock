@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace SourceMock.Internal {
     public class MockMethodHandler<TReturn> {
-        private readonly IList<IMockMethodSetupInternal> _setups = new List<IMockMethodSetupInternal>();
+        private readonly IList<MockMethodSetup<TReturn>> _setups = new List<MockMethodSetup<TReturn>>();
         private readonly IList<object?[]> _calls = new List<object?[]>();
 
         public IMockMethodSetup<TReturn> Setup(params IMockArgumentMatcher[] arguments) {
@@ -17,10 +17,7 @@ namespace SourceMock.Internal {
             _calls.Add(arguments);
 
             var setup = _setups.FirstOrDefault(s => ArgumentsMatch(arguments, s.Arguments));
-            if (setup == null || !setup.HasReturnValue)
-                return default!;
-
-            return (TReturn)setup.ReturnValue!;
+            return (setup != null ? setup.Execute() : default)!;
         }
 
         public IReadOnlyList<T> Calls<T>(Func<object?[], T> convertResult, params IMockArgumentMatcher[] arguments) {
