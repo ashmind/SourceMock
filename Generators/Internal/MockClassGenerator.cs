@@ -220,7 +220,7 @@ namespace SourceMock.Generators.SingleFile {
                 if (!first)
                     writer.Write(", ");
                 writer
-                    .WriteGeneric(KnownTypes.MockArgument.FullName, GetFullTypeName(parameter.Type, parameter.NullableAnnotation))
+                    .WriteGeneric(KnownTypes.MockArgumentMatcher.FullName, GetFullTypeName(parameter.Type, parameter.NullableAnnotation))
                     .Write(" ", parameter.Name);
                 if (appendDefaultValue)
                     writer.Write(" = default");

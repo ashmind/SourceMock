@@ -18,9 +18,9 @@ namespace SourceMock.Generators.SingleFile {
             public const string FullName = Namespace + "." + Name;
         }
 
-        public static class MockArgument {
+        public static class MockArgumentMatcher {
             public const string Namespace = "SourceMock.Internal";
-            public const string Name = "MockArgument";
+            public const string Name = "MockArgumentMatcher";
             public const string FullName = Namespace + "." + Name;
         }
 

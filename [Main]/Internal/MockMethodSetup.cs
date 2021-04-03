@@ -3,17 +3,17 @@ using SourceMock.Internal;
 
 namespace SourceMock {
     internal class MockMethodSetup : IMockMethodSetupInternal, IMockMethodSetup {
-        public MockMethodSetup(IReadOnlyList<IMockArgument> arguments) {
+        public MockMethodSetup(IReadOnlyList<IMockArgumentMatcher> arguments) {
             Arguments = arguments;
         }
 
-        public IReadOnlyList<IMockArgument> Arguments { get; }
+        public IReadOnlyList<IMockArgumentMatcher> Arguments { get; }
         bool IMockMethodSetupInternal.HasReturnValue => false;
         object? IMockMethodSetupInternal.ReturnValue => null;
     }
 
     internal class MockMethodSetup<TReturn> : MockMethodSetup, IMockMethodSetup<TReturn>, IMockMethodSetupInternal {
-        public MockMethodSetup(IReadOnlyList<IMockArgument> arguments) : base(arguments) {
+        public MockMethodSetup(IReadOnlyList<IMockArgumentMatcher> arguments) : base(arguments) {
         }
 
         public void Returns(TReturn value) {

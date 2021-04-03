@@ -7,13 +7,13 @@ namespace SourceMock.Internal {
         private readonly IList<IMockMethodSetupInternal> _setups = new List<IMockMethodSetupInternal>();
         private readonly IList<object?[]> _calls = new List<object?[]>();
 
-        public IMockMethodSetup Setup(params IMockArgument[] arguments) {
+        public IMockMethodSetup Setup(params IMockArgumentMatcher[] arguments) {
             var setup = new MockMethodSetup(arguments);
             _setups.Add(setup);
             return setup;
         }
 
-        public IMockMethodSetup<TReturn> Setup<TReturn>(params IMockArgument[] arguments) {
+        public IMockMethodSetup<TReturn> Setup<TReturn>(params IMockArgumentMatcher[] arguments) {
             var setup = new MockMethodSetup<TReturn>(arguments);
             _setups.Add(setup);
             return setup;
@@ -33,7 +33,7 @@ namespace SourceMock.Internal {
             return (TReturn)setup.ReturnValue!;
         }
 
-        public IReadOnlyList<T> Calls<T>(Func<object?[], T> convertResult, params IMockArgument[] arguments) {
+        public IReadOnlyList<T> Calls<T>(Func<object?[], T> convertResult, params IMockArgumentMatcher[] arguments) {
             return _calls
                 .Where(c => ArgumentsMatch(c, arguments))
                 .Select(convertResult)
@@ -41,7 +41,7 @@ namespace SourceMock.Internal {
                 .ToList();
         }
 
-        private bool ArgumentsMatch(object?[] arguments, IReadOnlyList<IMockArgument> matchers) {
+        private bool ArgumentsMatch(object?[] arguments, IReadOnlyList<IMockArgumentMatcher> matchers) {
             return arguments.Zip(matchers, (a, m) => m.Matches(a)).All(m => m);
         }
     }

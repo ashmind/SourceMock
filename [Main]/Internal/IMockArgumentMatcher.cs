@@ -1,5 +1,5 @@
 namespace SourceMock.Internal {
-    public interface IMockArgument {
+    public interface IMockArgumentMatcher {
         bool Matches(object? argument);
     }
 }
