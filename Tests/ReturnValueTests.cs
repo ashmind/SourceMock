@@ -47,5 +47,14 @@ namespace SourceMock.Tests {
 
             Assert.Equal("a", mock.GetMockable2().GetString());
         }
+
+        [Fact]
+        public void Property() {
+            var mock = Mock.Of<IMockable>().Get();
+
+            mock.Setup.Count.Returns(10);
+
+            Assert.Equal(10, mock.Count);
+        }
     }
 }

@@ -1,6 +1,6 @@
 using Microsoft.CodeAnalysis;
 
-namespace SourceMock.Generators.Models {
+namespace SourceMock.Generators.Internal {
     internal readonly struct MockInfo {
         public MockInfo(string mockTypeName, ITypeSymbol targetType, string targetTypeQualifiedName)
         {

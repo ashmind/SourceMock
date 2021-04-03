@@ -1,4 +1,4 @@
-namespace SourceMock.Generators.SingleFile {
+namespace SourceMock.Generators.Internal {
     internal static class KnownTypes {
         public static class Mock {
             public const string Namespace = "SourceMock";

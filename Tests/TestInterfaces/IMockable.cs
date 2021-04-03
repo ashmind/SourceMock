@@ -15,5 +15,7 @@ namespace SourceMock.Tests.TestInterfaces {
         int Sum(int value1, int value2, int value3);
 
         void Execute();
+
+        int Count { get; }
     }
 }

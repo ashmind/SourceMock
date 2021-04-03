@@ -1,6 +1,6 @@
 using System.Text;
 
-namespace SourceMock.Generators.SingleFile {
+namespace SourceMock.Generators.Internal {
     internal class CodeWriter {
         private readonly StringBuilder _builder;
 

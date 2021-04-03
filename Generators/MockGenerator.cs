@@ -1,19 +1,18 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.IO;
+//using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
-using SourceMock.Generators.Models;
-using SourceMock.Generators.SingleFile;
+using SourceMock.Generators.Internal;
 
 namespace SourceMock.Generators {
     [Generator]
     internal class MockGenerator : ISourceGenerator {
-        private const string LogPath = @"d:\Development\VS 2019\SourceMock\Generators\generator.log";
+        //private const string LogPath = @"d:\Development\VS 2019\SourceMock\Generators\generator.log";
 
         public void Initialize(GeneratorInitializationContext context) {
             context.RegisterForSyntaxNotifications(() => new TypesToMockCollectingReceiver());
@@ -66,7 +65,7 @@ namespace SourceMock.Generators {
         }
 
         private void Log(string message) {
-            File.AppendAllText(LogPath, $"[{DateTime.Now.ToString("s")}] {message}{Environment.NewLine}");
+            //File.AppendAllText(LogPath, $"[{DateTime.Now.ToString("s")}] {message}{Environment.NewLine}");
         }
 
         private class TypesToMockCollectingReceiver : ISyntaxContextReceiver {
