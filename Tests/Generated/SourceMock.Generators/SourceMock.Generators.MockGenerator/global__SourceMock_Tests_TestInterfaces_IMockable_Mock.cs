@@ -32,7 +32,7 @@ public static class global__SourceMock_Tests_TestInterfaces_IMockable_Mock {
         private readonly SourceMock.Internal.MockMethodHandler<int> _parseToInt326Handler = new();
         SourceMock.IMockMethodSetup<int> ISetup.ParseToInt32(SourceMock.Internal.MockArgumentMatcher<string?> value) => _parseToInt326Handler.Setup(value);
         public int ParseToInt32(string? value) => _parseToInt326Handler.Call(value);
-        System.Collections.Generic.IReadOnlyList<string?> ICalls.ParseToInt32(SourceMock.Internal.MockArgumentMatcher<string?> value) => _parseToInt326Handler.Calls(args => ((string?)args[0]!), value);
+        System.Collections.Generic.IReadOnlyList<string?> ICalls.ParseToInt32(SourceMock.Internal.MockArgumentMatcher<string?> value) => _parseToInt326Handler.Calls(args => ((string?)args[0]), value);
 
         private readonly SourceMock.Internal.MockMethodHandler<bool> _testInterface7Handler = new();
         SourceMock.IMockMethodSetup<bool> ISetup.TestInterface(SourceMock.Internal.MockArgumentMatcher<global::SourceMock.Tests.TestInterfaces.IEmptyInterface> value) => _testInterface7Handler.Setup(value);

@@ -247,7 +247,9 @@ namespace SourceMock.Generators.Internal {
                     foreach (var parameter in parameters) {
                         if (parameter.Index > 0)
                             writer.Write(", ");
-                        writer.Write("(", parameter.TypeFullName, ")args[", parameter.Index.ToString(), "]!");
+                        writer.Write("(", parameter.TypeFullName, ")args[", parameter.Index.ToString(), "]");
+                        if (!parameter.TypeFullName.EndsWith("?"))
+                            writer.Write("!");
                     }
                     writer.Write(")");
                 }
