@@ -92,6 +92,16 @@ namespace SourceMock.Generators.Internal {
             return this;
         }
 
+        public CodeWriter WriteLine(string part1, string part2, string part3, string part4, string part5) {
+            _builder
+                .Append(part1)
+                .Append(part2)
+                .Append(part3)
+                .Append(part4)
+                .AppendLine(part5);
+            return this;
+        }
+
         public CodeWriter WriteLine(string part1, string part2, string part3, string part4, string part5, string part6) {
             _builder
                 .Append(part1)
@@ -100,6 +110,19 @@ namespace SourceMock.Generators.Internal {
                 .Append(part4)
                 .Append(part5)
                 .AppendLine(part6);
+            return this;
+        }
+
+        public CodeWriter WriteLine(string part1, string part2, string part3, string part4, string part5, string part6, string part7, string part8) {
+            _builder
+                .Append(part1)
+                .Append(part2)
+                .Append(part3)
+                .Append(part4)
+                .Append(part5)
+                .Append(part6)
+                .Append(part7)
+                .AppendLine(part8);
             return this;
         }
 

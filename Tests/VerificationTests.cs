@@ -48,5 +48,23 @@ namespace SourceMock.Tests {
 
             Assert.Equal(new[] { (1, 2) }, mock.Calls.Sum(default, default));
         }
+
+        [Fact]
+        public void Property_Get() {
+            var mock = Mock.Of<IMockable>().Get();
+
+            var _ = mock.Count;
+
+            Assert.Single(mock.Calls.Count.get);
+        }
+
+        [Fact]
+        public void Property_Set() {
+            var mock = Mock.Of<IMockable>().Get();
+
+            mock.Name = "test";
+
+            Assert.Equal(new[] { "test" }, mock.Calls.Name.set());
+        }
     }
 }

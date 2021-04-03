@@ -3,27 +3,17 @@ using System.Collections.Generic;
 using System.Linq;
 
 namespace SourceMock.Internal {
-    public class MockMemberHandler {
+    public class MockMethodHandler<TReturn> {
         private readonly IList<IMockMethodSetupInternal> _setups = new List<IMockMethodSetupInternal>();
         private readonly IList<object?[]> _calls = new List<object?[]>();
 
-        public IMockMethodSetup Setup(params IMockArgumentMatcher[] arguments) {
-            var setup = new MockMethodSetup(arguments);
-            _setups.Add(setup);
-            return setup;
-        }
-
-        public IMockMethodSetup<TReturn> Setup<TReturn>(params IMockArgumentMatcher[] arguments) {
+        public IMockMethodSetup<TReturn> Setup(params IMockArgumentMatcher[] arguments) {
             var setup = new MockMethodSetup<TReturn>(arguments);
             _setups.Add(setup);
             return setup;
         }
 
-        public void Call(params object?[] arguments) {
-            _calls.Add(arguments);
-        }
-
-        public TReturn Call<TReturn>(params object?[] arguments) {
+        public TReturn Call(params object?[] arguments) {
             _calls.Add(arguments);
 
             var setup = _setups.FirstOrDefault(s => ArgumentsMatch(arguments, s.Arguments));

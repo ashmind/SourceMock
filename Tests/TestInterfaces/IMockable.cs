@@ -17,5 +17,6 @@ namespace SourceMock.Tests.TestInterfaces {
         void Execute();
 
         int Count { get; }
+        string Name { get; set; }
     }
 }
