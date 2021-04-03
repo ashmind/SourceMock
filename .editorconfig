@@ -8,6 +8,9 @@ end_of_line = crlf
 trim_trailing_whitespace = true
 insert_final_newline = false
 
+[*.md]
+trim_trailing_whitespace = false
+
 [*.{html,config,csproj,targets,props,yml}]
 indent_size = 2
 
