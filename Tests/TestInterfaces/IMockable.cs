@@ -9,6 +9,9 @@ namespace SourceMock.Tests.TestInterfaces {
         int ParseToInt32(string? value);
         bool TestInterface(IEmptyInterface value);
 
+        double Divide(double value1, double value2);
+
         int Sum(int value1, int value2);
+        int Sum(int value1, int value2, int value3);
     }
 }

@@ -16,15 +16,23 @@ namespace SourceMock.Internal {
         public TReturn Call<TReturn>(params object?[] arguments) {
             _calls.Add(arguments);
 
-            var setup = _setups.FirstOrDefault(
-                s => s.Arguments.Zip(arguments, (expected, actual) => expected.Matches(actual)).All(m => m)
-            );            
+            var setup = _setups.FirstOrDefault(s => ArgumentsMatch(arguments, s.Arguments));
             if (setup == null || !setup.HasReturnValue)
                 return default!;
 
             return (TReturn)setup.ReturnValue!;
         }
 
-        public IReadOnlyList<T> Calls<T>(Func<object?[], T> selector) => _calls.Select(selector).ToList();
+        public IReadOnlyList<T> Calls<T>(Func<object?[], T> convertResult, params IMockArgument[] arguments) {
+            return _calls
+                .Where(c => ArgumentsMatch(c, arguments))
+                .Select(convertResult)
+                .Cast<T>()
+                .ToList();
+        }
+
+        private bool ArgumentsMatch(object?[] arguments, IReadOnlyList<IMockArgument> matchers) {
+            return arguments.Zip(matchers, (a, m) => m.Matches(a)).All(m => m);
+        }
     }
 }

@@ -17,18 +17,12 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\[Main]\[Main].csproj" OutputItemType="Analyzer" />
+    <ProjectReference Include="..\[Main]\[Main].csproj" />
+    <ProjectReference Include="..\Generators\Generators.csproj" OutputItemType="Analyzer" />
   </ItemGroup>
 
-  <Target Name="RemoveSourceGeneratedFiles" BeforeTargets="CoreCompile">
-    <ItemGroup>
-      <Compile Remove="Generated\**" />
-    </ItemGroup>
-  </Target>
-  
-  <Target Name="AddSourceGeneratedFiles" AfterTargets="CoreCompile">
-    <ItemGroup>
-      <Compile Include="Generated\**" />
-    </ItemGroup>
-  </Target>
+  <ItemGroup>
+    <Compile Remove="Generated\**" />
+    <None Include="Generated\**" />
+  </ItemGroup>
 </Project>

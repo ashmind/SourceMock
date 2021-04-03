@@ -1,7 +1,7 @@
-//using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-//using System.IO;
+using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
 using Microsoft.CodeAnalysis;
@@ -13,16 +13,26 @@ using SourceMock.Generators.SingleFile;
 namespace SourceMock.Generators {
     [Generator]
     internal class MockGenerator : ISourceGenerator {
-        //private const string LogPath = @"d:\Development\VS 2019\SourceMock\[Main]\generator.log";
+        private const string LogPath = @"d:\Development\VS 2019\SourceMock\Generators\generator.log";
 
         public void Initialize(GeneratorInitializationContext context) {
             context.RegisterForSyntaxNotifications(() => new TypesToMockCollectingReceiver());
         }
 
         public void Execute(GeneratorExecutionContext context) {
+            try {
+                ExecuteSafe(context);
+            }
+            catch (Exception ex) {
+                Log(ex.ToString());
+                throw;
+            }
+        }
+
+        private void ExecuteSafe(GeneratorExecutionContext context) {
             Log("Execute Start");
             var targetTypes = ((TypesToMockCollectingReceiver)context.SyntaxContextReceiver!).TypesToMock;
-            var individualMockGenerator = new IndividualMockGenerator();
+            var individualMockGenerator = new MockClassGenerator();
 
             var mocks = targetTypes.Select(GetMockInfo).ToList();
 
@@ -32,19 +42,21 @@ namespace SourceMock.Generators {
 
                 var mockContent = individualMockGenerator.Generate(
                     mock,
-                    newTargetType => {
-                        var existing = mocks.FirstOrDefault(m => SymbolEqualityComparer.Default.Equals(m.TargetType, newTargetType));
-                        if (existing.TargetType != null)
-                            return existing;
-
-                        var newMock = GetMockInfo(newTargetType);
-                        mocks.Add(newMock);
-                        return newMock;
-                    }
+                    newTargetType => RequestMock(mocks, newTargetType)
                 );
                 context.AddSource(mock.MockTypeName + ".cs", SourceText.From(mockContent, Encoding.UTF8));
             }
             Log("Execute End");
+        }
+
+        private MockInfo RequestMock(IList<MockInfo> mocks, ITypeSymbol targetType) {
+            var existing = mocks.FirstOrDefault(m => SymbolEqualityComparer.Default.Equals(m.TargetType, targetType));
+            if (existing.TargetType != null)
+                return existing;
+
+            var newMock = GetMockInfo(targetType);
+            mocks.Add(newMock);
+            return newMock;
         }
 
         private MockInfo GetMockInfo(ITypeSymbol targetType) {
@@ -54,7 +66,7 @@ namespace SourceMock.Generators {
         }
 
         private void Log(string message) {
-            //File.AppendAllText(LogPath, $"[{DateTime.Now.ToString("s")}] {message}{Environment.NewLine}");
+            File.AppendAllText(LogPath, $"[{DateTime.Now.ToString("s")}] {message}{Environment.NewLine}");
         }
 
         private class TypesToMockCollectingReceiver : ISyntaxContextReceiver {
@@ -73,7 +85,7 @@ namespace SourceMock.Generators {
                 if (context.SemanticModel.GetTypeInfo(member.Expression).Type is not INamedTypeSymbol callerType)
                     return;
 
-                if (callerType is not { IsGenericType: true, Name: nameof(Mock), ContainingNamespace: { Name: var @namespace } } || @namespace != typeof(Mock).Namespace)
+                if (callerType is not { IsGenericType: true, Name: KnownTypes.Mock.Name, ContainingNamespace: { Name: KnownTypes.Mock.Namespace } })
                     return;
 
                 TypesToMock.Add(callerType.TypeArguments[0]);
