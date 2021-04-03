@@ -7,10 +7,20 @@ namespace SourceMock.Internal {
         private readonly IList<IMockMethodSetupInternal> _setups = new List<IMockMethodSetupInternal>();
         private readonly IList<object?[]> _calls = new List<object?[]>();
 
+        public IMockMethodSetup Setup(params IMockArgument[] arguments) {
+            var setup = new MockMethodSetup(arguments);
+            _setups.Add(setup);
+            return setup;
+        }
+
         public IMockMethodSetup<TReturn> Setup<TReturn>(params IMockArgument[] arguments) {
             var setup = new MockMethodSetup<TReturn>(arguments);
             _setups.Add(setup);
             return setup;
+        }
+
+        public void Call(params object?[] arguments) {
+            _calls.Add(arguments);
         }
 
         public TReturn Call<TReturn>(params object?[] arguments) {

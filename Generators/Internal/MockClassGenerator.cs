@@ -1,6 +1,4 @@
 using System;
-using System.Collections.Immutable;
-using System.Linq;
 using Microsoft.CodeAnalysis;
 using SourceMock.Generators.Models;
 
@@ -101,9 +99,7 @@ namespace SourceMock.Generators.SingleFile {
             writer.Write(Indents.Member);
             WriteSetupMethodReturnType(writer, context, requestOtherMock);
             writer.Write(" ", context.Method.Name, "(");
-
             WriteSetupOrCallsMethodParameters(writer, context, appendDefaultValue: true);
-
             writer.WriteLine(");");
         }
 
@@ -142,6 +138,10 @@ namespace SourceMock.Generators.SingleFile {
                 var other = requestOtherMock(interfaceType);
                 writer.Write(other.MockTypeName, ".IReturnedSetup");
                 return other;
+            }
+            else if (context.Method.ReturnsVoid) {
+                writer.Write(KnownTypes.IMockMethodSetup.FullName);
+                return null;
             }
 
             writer.WriteGeneric(KnownTypes.IMockMethodSetup.FullName, context.MethodReturnTypeName);
