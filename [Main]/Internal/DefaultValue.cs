@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Threading.Tasks;
 
 namespace SourceMock.Internal {
     internal static class DefaultValue {
@@ -15,6 +16,10 @@ namespace SourceMock.Internal {
             return (T?)GetStandard(typeof(T));
         }
 
+        private static object? Get(Type type) {
+            return GetStandard(type);
+        }
+
         private static object? GetStandard(Type type) {
             if (type.IsValueType) {
                 if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(ImmutableArray<>))
@@ -23,12 +28,25 @@ namespace SourceMock.Internal {
                 return Activator.CreateInstance(type);
             }
 
+            if (type == typeof(Task))
+                return Task.CompletedTask;
+
             if (type.IsArray)
                 return Array.CreateInstance(type.GetElementType(), 0);
 
             if (type.IsGenericType) {
                 var definition = type.GetGenericTypeDefinition();
                 var arguments = type.GetGenericArguments();
+
+                // TODO: some refelction caching
+                if (definition == typeof(Task<>)) {
+                    return ((Func<object?, Task<object?>>)Task.FromResult<object?>)
+                        .Method
+                        .GetGenericMethodDefinition()
+                        .MakeGenericMethod(arguments)
+                        .Invoke(null, new[] { Get(arguments[0]) });
+                }
+
                 if (MutableCollectionTypes.TryGetValue(definition, out var classType))
                     return Activator.CreateInstance(classType.MakeGenericType(arguments));
                 if (ImmutableCollectionTypes.TryGetValue(definition, out classType))

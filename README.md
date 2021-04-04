@@ -16,11 +16,10 @@ mock.Setup(x => x.Parse(It.IsAny<string>())).Return(3)
 The framework is NOT ready.  
 
 Abridged list of things that do not work:
-1. Default values (e.g. empty collections instead of null)
-2. ref/out parameters and ref returns
-3. Generic methods
-4. Events
-5. Pretty much anything fancy
+1. ref/out parameters and ref returns
+2. Generic methods
+3. Events
+4. Pretty much anything fancy
 
 However if you want to learn source generators, or your use cases are quite straightforward, it might actually work.
 
