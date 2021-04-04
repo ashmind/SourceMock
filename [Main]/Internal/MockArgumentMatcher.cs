@@ -4,7 +4,7 @@ namespace SourceMock.Internal {
     public readonly struct MockArgumentMatcher<T>: IMockArgumentMatcher {
         private readonly Func<T, bool>? _matches;
 
-        internal MockArgumentMatcher(Func<T, bool> matches) {
+        private MockArgumentMatcher(Func<T, bool> matches) {
             _matches = matches;
         }
 

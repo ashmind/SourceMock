@@ -23,15 +23,6 @@ namespace SourceMock.Tests {
         }
 
         [Fact]
-        public void SingleArgument_Matcher() {
-            var mock = Mock.Of<IMockable>().Get();
-
-            mock.Setup.ParseToInt32(It.Is<string?>(x => x!.StartsWith("a"))).Returns(1);
-
-            Assert.Equal(1, mock.ParseToInt32("abc"));
-        }
-
-        [Fact]
         public void SingleArgument_Interface() {
             var mock = Mock.Of<IMockable>().Get();
             var argument = new EmptyClass();
