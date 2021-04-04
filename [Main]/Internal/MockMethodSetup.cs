@@ -26,9 +26,10 @@ namespace SourceMock.Internal {
             if (_exception != null)
                 throw _exception;
 
-            return _hasReturnValue
-                 ? _returnValue
-                 : default;
+            if (!_hasReturnValue)
+                return DefaultValue.Get<TReturn>();
+
+            return _returnValue;
         }
     }
 }

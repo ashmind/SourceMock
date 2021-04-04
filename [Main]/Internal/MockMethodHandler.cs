@@ -17,7 +17,7 @@ namespace SourceMock.Internal {
             _calls.Add(arguments);
 
             var setup = _setups.FirstOrDefault(s => ArgumentsMatch(arguments, s.Arguments));
-            return (setup != null ? setup.Execute() : default)!;
+            return (setup != null ? setup.Execute() : DefaultValue.Get<TReturn>())!;
         }
 
         public IReadOnlyList<T> Calls<T>(Func<object?[], T> convertResult, params IMockArgumentMatcher[] arguments) {
