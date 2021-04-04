@@ -11,15 +11,6 @@ public static class global__SourceMock_Tests_TestInterfaces_IMockable2_Mock {
 
     }
 
-    public class ReturnedInstance : Instance, IReturnedSetup {
-        private readonly SourceMock.IMockMethodSetup<global::SourceMock.Tests.TestInterfaces.IMockable2> _setup;
-        public ReturnedInstance(SourceMock.IMockMethodSetup<global::SourceMock.Tests.TestInterfaces.IMockable2> setup) {
-            _setup = setup;
-            _setup.Returns(this);
-        }
-
-        void SourceMock.IMockMethodSetup<global::SourceMock.Tests.TestInterfaces.IMockable2>.Returns(global::SourceMock.Tests.TestInterfaces.IMockable2 value) => _setup.Returns(value);
-    }
 
     public interface ISetup {
         SourceMock.IMockMethodSetup<string> GetString();

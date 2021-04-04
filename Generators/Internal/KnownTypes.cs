@@ -1,5 +1,12 @@
 namespace SourceMock.Generators.Internal {
     internal static class KnownTypes {
+        public static class GenerateMocksForAssemblyOfAttribute {
+            public const string Namespace = "SourceMock";
+            public const string Name = "GenerateMocksForAssemblyOfAttribute";
+            public const string FullName = Namespace + "." + Name;
+            public const string ShortName = "GenerateMocksForAssemblyOf";
+        }
+
         public static class Mock {
             public const string Namespace = "SourceMock";
             public const string Name = "Mock";
