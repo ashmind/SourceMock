@@ -58,11 +58,11 @@ namespace SourceMock.Generators {
                     return;
 
                 foreach (var attribute in attributes) {
-                    ProcessAssemblyAttribute(attribute, context);
+                    ProcessAssemblyAttribute(attribute, context.SemanticModel);
                 }
             }
 
-            private void ProcessAssemblyAttribute(AttributeSyntax attribute, GeneratorSyntaxContext context) {
+            private void ProcessAssemblyAttribute(AttributeSyntax attribute, SemanticModel semanticModel) {
                 if (attribute.Name is not IdentifierNameSyntax name)
                     return;
 
@@ -71,48 +71,52 @@ namespace SourceMock.Generators {
                     return;
 
                 // Double check the resolved type
-                var attributeType = context.SemanticModel.GetTypeInfo(attribute).Type;
+                var attributeType = semanticModel.GetTypeInfo(attribute).Type;
                 if (attributeType is not { Name: KnownTypes.GenerateMocksForAssemblyOfAttribute.Name })
                     return;
 
                 if (!KnownTypes.GenerateMocksForAssemblyOfAttribute.NamespaceMatches(attributeType.ContainingNamespace))
                     return;
 
-                ProcessGenerateMocksForAssemblyOfAttribute(attribute, context);
+                ProcessGenerateMocksForAssemblyOfAttribute(attribute, semanticModel);
             }
 
-            private void ProcessGenerateMocksForAssemblyOfAttribute(AttributeSyntax attribute, GeneratorSyntaxContext context) {
+            private void ProcessGenerateMocksForAssemblyOfAttribute(AttributeSyntax attribute, SemanticModel semanticModel) {
                 var attributeArgument = attribute.ArgumentList?.Arguments.ElementAtOrDefault(0);
                 if (attributeArgument is not { Expression: TypeOfExpressionSyntax @typeof })
                     return;
 
-                var anyTypeInAssembly = context.SemanticModel.GetTypeInfo(@typeof.Type).Type;
+                var anyTypeInAssembly = semanticModel.GetTypeInfo(@typeof.Type).Type;
                 if (anyTypeInAssembly == null)
                     return;
 
-                CollectTypesRecursively(anyTypeInAssembly.ContainingAssembly.GlobalNamespace);                
+                CollectTypesRecursively(anyTypeInAssembly.ContainingAssembly.GlobalNamespace, semanticModel);                
             }
 
-            private void CollectTypesRecursively(INamespaceSymbol parent) {
+            private void CollectTypesRecursively(INamespaceSymbol parent, SemanticModel semanticModel) {
                 foreach (var member in parent.GetMembers()) {
                     switch (member) {
                         case ITypeSymbol type:
-                            CollectTypeIfMockable(type);
+                            CollectTypeIfMockable(type, semanticModel);
                             break;
 
                         case INamespaceSymbol nested:
-                            CollectTypesRecursively(nested);
+                            CollectTypesRecursively(nested, semanticModel);
                             break;
                     }
                 }
             }
 
-            private void CollectTypeIfMockable(ITypeSymbol type) {
+            private void CollectTypeIfMockable(ITypeSymbol type, SemanticModel semanticModel) {
                 if (type.TypeKind != TypeKind.Interface)
                     return;
 
-                if (type.DeclaredAccessibility != Accessibility.Public)
-                    return;
+                if (type.DeclaredAccessibility != Accessibility.Public) {
+                    var isVisibleInternal = type.DeclaredAccessibility == Accessibility.Internal
+                                         && type.ContainingAssembly.GivesAccessTo(semanticModel.Compilation.Assembly);
+                    if (!isVisibleInternal)
+                        return;
+                }
 
                 TypesToMock.Add(type);
             }
