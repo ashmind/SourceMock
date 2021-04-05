@@ -1,6 +1,6 @@
 ﻿#nullable enable
 namespace SourceMock.Tests.Interfaces.Mocks {
-    public class NeedsCollectionDefaultsMock : global::SourceMock.Tests.Interfaces.INeedsCollectionDefaults, INeedsCollectionDefaultsSetup, INeedsCollectionDefaultsCalls {
+    public class NeedsCollectionDefaultsMock : global::SourceMock.Tests.Interfaces.INeedsCollectionDefaults, INeedsCollectionDefaultsSetup, INeedsCollectionDefaultsCalls, SourceMock.IMock<global::SourceMock.Tests.Interfaces.INeedsCollectionDefaults> {
         public INeedsCollectionDefaultsSetup Setup => this;
         public INeedsCollectionDefaultsCalls Calls => this;
 

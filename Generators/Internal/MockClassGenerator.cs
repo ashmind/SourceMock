@@ -28,7 +28,9 @@ namespace SourceMock.Generators.Internal {
                 .WriteLine("#nullable enable")
                 .WriteLine("namespace ", targetTypeNamespace, ".Mocks {")
                 .Write(Indents.Type, "public class ", mockClassName, " : ")
-                    .WriteLine(target.FullTypeName, ", ", setupInterfaceName, ", ", callsInterfaceName, " {")
+                    .Write(target.FullTypeName, ", ", setupInterfaceName, ", ", callsInterfaceName, ", ")
+                    .WriteGeneric(KnownTypes.IMock.FullName, target.FullTypeName)
+                    .WriteLine(" {")
                 .WriteLine(Indents.Member, "public ", setupInterfaceName, " Setup => this;")
                 .WriteLine(Indents.Member, "public ", callsInterfaceName, " Calls => this;");
 
