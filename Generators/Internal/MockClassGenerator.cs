@@ -20,15 +20,16 @@ namespace SourceMock.Generators.Internal {
         public string Generate(in MockInfo mock) {
             var targetTypeNamespace = mock.TargetType.ContainingNamespace.ToDisplayString(TargetTypeNamespaceDisplayFormat);
             var setupInterfaceName = "ISetup" + mock.TargetType.Name;
+            var callsInterfaceName = "ICalls" + mock.TargetType.Name;
 
             var mainWriter = new CodeWriter()
                 .WriteLine("#nullable enable")
                 .WriteLine("namespace ", targetTypeNamespace, ".Mocks {")
                 .WriteLine(Indents.TopLevelType, "[", KnownTypes.GeneratedMockAttribute.FullNameWithoutAttribute, "]")
                 .WriteLine(Indents.TopLevelType, "public static class ", mock.MockTypeName, " {")
-                .WriteLine(Indents.Type, "public class Instance : ", mock.TargetTypeQualifiedName, ", ", setupInterfaceName,", ICalls {")
+                .WriteLine(Indents.Type, "public class Instance : ", mock.TargetTypeQualifiedName, ", ", setupInterfaceName, ", ", callsInterfaceName, " {")
                 .WriteLine(Indents.Member, "public ", setupInterfaceName, " Setup => this;")
-                .WriteLine(Indents.Member, "public ICalls Calls => this;")
+                .WriteLine(Indents.Member, "public ", callsInterfaceName, " Calls => this;")
                 .WriteLine();
 
             var setupInterfaceWriter = new CodeWriter()
@@ -36,7 +37,8 @@ namespace SourceMock.Generators.Internal {
                 .WriteLine(Indents.TopLevelType, "public interface ", setupInterfaceName, " {");
 
             var callsInterfaceWriter = new CodeWriter()
-                .WriteLine(Indents.Type, "public interface ICalls {");
+                .WriteLine(Indents.TopLevelType, "[", KnownTypes.GeneratedMockAttribute.FullNameWithoutAttribute, "]")
+                .WriteLine(Indents.TopLevelType, "public interface ", callsInterfaceName, " {");
 
             var memberId = 1;
             foreach (var memberSymbol in mock.TargetType.GetMembers()) {
@@ -46,23 +48,16 @@ namespace SourceMock.Generators.Internal {
                     mainWriter,
                     setupInterfaceWriter,
                     setupInterfaceName,
-                    callsInterfaceWriter,                    
+                    callsInterfaceWriter,
+                    callsInterfaceName,
                     member
                 );
                 memberId += 1;
                 mainWriter.WriteLine();
             }
 
-            setupInterfaceWriter.Write(Indents.TopLevelType, "}");
-            callsInterfaceWriter.Write(Indents.Type, "}");
-
             mainWriter
                 .WriteLine(Indents.Type, "}")
-                .WriteLine()
-                .WriteLine();
-
-            mainWriter
-                .Append(callsInterfaceWriter)
                 .WriteLine()
                 .WriteLine();
 
@@ -73,8 +68,15 @@ namespace SourceMock.Generators.Internal {
                 .WriteLine(Indents.TopLevelType, "}")
                 .WriteLine();
 
+            setupInterfaceWriter.Write(Indents.TopLevelType, "}");
             mainWriter
                 .Append(setupInterfaceWriter)
+                .WriteLine()
+                .WriteLine();
+
+            callsInterfaceWriter.Write(Indents.TopLevelType, "}");
+            mainWriter
+                .Append(callsInterfaceWriter)
                 .WriteLine();
 
             mainWriter.Write("}");
@@ -123,6 +125,7 @@ namespace SourceMock.Generators.Internal {
             CodeWriter setupInterfaceWriter,
             string setupInterfaceName,
             CodeWriter callsInterfaceWriter,
+            string callsInterfaceName,
             in MockedMember member
         ) {
             WriteHandlerField(mockWriter, member);
@@ -130,7 +133,7 @@ namespace SourceMock.Generators.Internal {
             WriteSetupMemberImplementation(mockWriter, setupInterfaceName, member);
             WriteMemberImplementation(mockWriter, member);
             WriteCallsInterfaceMember(callsInterfaceWriter, member);
-            WriteCallsMemberImplementation(mockWriter, member);
+            WriteCallsMemberImplementation(mockWriter, callsInterfaceName, member);
         }
 
         private void WriteHandlerField(CodeWriter writer, in MockedMember member)
@@ -244,17 +247,17 @@ namespace SourceMock.Generators.Internal {
         }
 
         private void WriteCallsInterfaceMember(CodeWriter writer, in MockedMember member) {
-            writer.Write(Indents.Member);            
+            writer.Write(Indents.TopLevelTypeMember);            
             WriteCallsMemberType(writer, member);
             writer.Write(" ");
             WriteSetupOrCallsInterfaceMemberNameAndParameters(writer, member);
             writer.WriteLine();
         }
 
-        private void WriteCallsMemberImplementation(CodeWriter writer, in MockedMember member) {
+        private void WriteCallsMemberImplementation(CodeWriter writer, string callsInterfaceName, in MockedMember member) {
             writer.Write(Indents.Member);
             WriteCallsMemberType(writer, member);
-            writer.Write(" ICalls.", member.Name);
+            writer.Write(" ", callsInterfaceName, ".", member.Name);
             if (member.Symbol is IMethodSymbol) {
                 writer.Write("(");
                 WriteSetupOrCallsMemberParameters(writer, member, appendDefaultValue: false);
