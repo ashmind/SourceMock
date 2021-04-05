@@ -16,18 +16,18 @@ namespace SourceMock.Generators.Internal {
             public const string Type = "        ";
         }        
 
-        public string Generate(in MockInfo mock) {
-            var targetTypeNamespace = mock.TargetType.ContainingNamespace.ToDisplayString(TargetTypeNamespaceDisplayFormat);
-            var mockClassName = "Mock" + mock.TargetType.Name;
-            var setupInterfaceName = "ISetup" + mock.TargetType.Name;
-            var callsInterfaceName = "ICalls" + mock.TargetType.Name;
+        public string Generate(in MockTarget target) {
+            var targetTypeNamespace = target.Type.ContainingNamespace.ToDisplayString(TargetTypeNamespaceDisplayFormat);
+            var mockClassName = "Mock" + target.Type.Name;
+            var setupInterfaceName = "ISetup" + target.Type.Name;
+            var callsInterfaceName = "ICalls" + target.Type.Name;
 
             var mainWriter = new CodeWriter()
                 .WriteLine("#nullable enable")
                 .WriteLine("namespace ", targetTypeNamespace, ".Mocks {")
                 .WriteLine(Indents.TopLevelType, "[", KnownTypes.GeneratedMockAttribute.FullNameWithoutAttribute, "]")
                 .Write(Indents.TopLevelType, "public class ", mockClassName, " : ")
-                    .WriteLine(mock.TargetTypeQualifiedName, ", ", setupInterfaceName, ", ", callsInterfaceName, " {")
+                    .WriteLine(target.FullTypeName, ", ", setupInterfaceName, ", ", callsInterfaceName, " {")
                 .WriteLine(Indents.TopLevelTypeMember, "public ", setupInterfaceName, " Setup => this;")
                 .WriteLine(Indents.TopLevelTypeMember, "public ", callsInterfaceName, " Calls => this;");
 
@@ -40,7 +40,7 @@ namespace SourceMock.Generators.Internal {
                 .WriteLine(Indents.TopLevelType, "public interface ", callsInterfaceName, " {");
 
             var memberId = 1;
-            foreach (var memberSymbol in mock.TargetType.GetMembers()) {
+            foreach (var memberSymbol in target.Type.GetMembers()) {
                 if (GetMockedMember(memberSymbol, memberId) is not {} member)
                     continue;
                 mainWriter.WriteLine();
@@ -55,29 +55,19 @@ namespace SourceMock.Generators.Internal {
                 memberId += 1;
             }
 
-            mainWriter
-                .WriteLine(Indents.TopLevelType, "}")
-                .WriteLine();
+            mainWriter.WriteLine(Indents.TopLevelType, "}");
 
             setupInterfaceWriter.Write(Indents.TopLevelType, "}");
             mainWriter
-                .Append(setupInterfaceWriter)
                 .WriteLine()
+                .Append(setupInterfaceWriter)
                 .WriteLine();
 
             callsInterfaceWriter.Write(Indents.TopLevelType, "}");
             mainWriter
+                .WriteLine()
                 .Append(callsInterfaceWriter)
                 .WriteLine();
-
-            mainWriter
-                .WriteLine()
-                .WriteLine(Indents.TopLevelType, "[", KnownTypes.GeneratedMockAttribute.FullNameWithoutAttribute, "]")
-                .WriteLine(Indents.TopLevelType, "public static class ", mock.MockTypeName, " {")
-                .Write(Indents.Type, "public static ", mockClassName, " Get(this ")
-                .WriteGeneric(KnownTypes.Mock.FullName, mock.TargetTypeQualifiedName)
-                .WriteLine(" _) => new();")
-                .WriteLine(Indents.TopLevelType, "}");
 
             mainWriter.Write("}");
             return mainWriter.ToString();
@@ -160,7 +150,7 @@ namespace SourceMock.Generators.Internal {
 
         private void WriteSetupMemberImplementation(CodeWriter writer, string setupInterfaceName, in MockedMember member) {
             writer.Write(Indents.TopLevelTypeMember);
-            var returnMock = WriteSetupMemberType(writer, member);
+            WriteSetupMemberType(writer, member);
             writer.Write(" ", setupInterfaceName, ".", member.Name);
             if (member.Symbol is IMethodSymbol) {
                 writer.Write("(");
@@ -168,8 +158,6 @@ namespace SourceMock.Generators.Internal {
                 writer.Write(")");
             }
             writer.Write(" => ");
-            if (returnMock != null)
-                writer.Write("new ", returnMock.Value.MockTypeName, ".ReturnedInstance(");
 
             writer.Write(member.HandlerFieldName, ".Setup(");
             if (member.Symbol is IMethodSymbol) {
@@ -179,17 +167,13 @@ namespace SourceMock.Generators.Internal {
                     writer.Write(parameter.Name);
                 }
             }
-            writer.Write(")");
-
-            if (returnMock != null)
-                writer.Write(")");
-            writer.WriteLine(";");
+            writer.WriteLine(");");
         }
 
-        private MockInfo? WriteSetupMemberType(CodeWriter writer, in MockedMember member) {
+        private void WriteSetupMemberType(CodeWriter writer, in MockedMember member) {
             if (member.IsVoidMethod) {
                 writer.Write(KnownTypes.IMockMethodSetup.FullName);
-                return null;
+                return;
             }
 
             var setupTypeFullName = member.Symbol switch {
@@ -199,9 +183,7 @@ namespace SourceMock.Generators.Internal {
                     : KnownTypes.IMockPropertySetup.FullName,
                 _ => throw MemberNotSupported(member)
             };
-
             writer.WriteGeneric(setupTypeFullName, member.TypeFullName);
-            return null;
         }
 
         private void WriteMemberImplementation(CodeWriter writer, in MockedMember member) {

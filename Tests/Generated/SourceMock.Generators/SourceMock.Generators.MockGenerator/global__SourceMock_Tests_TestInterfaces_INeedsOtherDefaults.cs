@@ -34,9 +34,4 @@ namespace SourceMock.Tests.TestInterfaces.Mocks {
         System.Collections.Generic.IReadOnlyList<SourceMock.NoArguments> GetStringAsync();
         System.Collections.Generic.IReadOnlyList<SourceMock.NoArguments> GetListAsync();
     }
-
-    [SourceMock.Internal.GeneratedMock]
-    public static class global__SourceMock_Tests_TestInterfaces_INeedsOtherDefaults_Mock {
-        public static MockINeedsOtherDefaults Get(this SourceMock.Mock<global::SourceMock.Tests.TestInterfaces.INeedsOtherDefaults> _) => new();
-    }
 }

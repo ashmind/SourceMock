@@ -24,10 +24,6 @@ namespace SourceMock.Generators.Internal {
             };
         }
 
-        public static class Mock {
-            public const string FullName = "SourceMock.Mock";
-        }
-
         public static class IMockMethodSetup {
             public const string FullName = "SourceMock.IMockMethodSetup";
         }

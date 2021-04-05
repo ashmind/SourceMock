@@ -20,9 +20,4 @@ namespace SourceMock.Tests.TestInterfaces.Mocks {
     public interface ICallsIMockable2 {
         System.Collections.Generic.IReadOnlyList<SourceMock.NoArguments> GetString();
     }
-
-    [SourceMock.Internal.GeneratedMock]
-    public static class global__SourceMock_Tests_TestInterfaces_IMockable2_Mock {
-        public static MockIMockable2 Get(this SourceMock.Mock<global::SourceMock.Tests.TestInterfaces.IMockable2> _) => new();
-    }
 }

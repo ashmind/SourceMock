@@ -25,12 +25,21 @@ However if you want to learn source generators, or your use cases are quite stra
 
 # Getting started
 
+All examples assume the following interface:
+```csharp
+namespace Parsing {
+    interface IParser { int Parse(string value); }
+}
+```
+
 ## Set up a simple mock
 
 ```csharp
-interface IParser { int Parse(string value); }
+[assembly: GenerateMocksForAssemblyOf(typeof(IParser))]
 
-var parser = Mock.Of<IParser>().Get();
+using Parsing.Mocks;
+
+var parser = new MockIParser();
 parser.Setup.Parse().Returns(1);
 
 Assert.Equal(1, parser.Parse());
@@ -39,9 +48,11 @@ Assert.Equal(1, parser.Parse());
 ## Verifying calls
 
 ```csharp
-interface IParser { int Parse(string value); }
+[assembly: GenerateMocksForAssemblyOf(typeof(IParser))]
 
-var parser = Mock.Of<IParser>().Get();
+using Parsing.Mocks;
+
+var parser = new MockIParser();
 
 parser.Parse("1");
 parser.Parse("2");

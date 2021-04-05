@@ -12,7 +12,7 @@ namespace SourceMock.Tests {
         [Theory]
         [MemberData(nameof(AllCollectionMethods))]
         public void Collection(MethodInfo method) {
-            var mock = Mock.Of<INeedsCollectionDefaults>().Get();
+            var mock = new MockINeedsCollectionDefaults();
 
             var result = method.Invoke(mock, null);
 
@@ -22,7 +22,7 @@ namespace SourceMock.Tests {
 
         [Fact]
         public void Task_NonGeneric() {
-            var mock = Mock.Of<INeedsOtherDefaults>().Get();
+            var mock = new MockINeedsOtherDefaults();
 
             var task = mock.ExecuteAsync();
 
@@ -31,7 +31,7 @@ namespace SourceMock.Tests {
 
         [Fact]
         public async Task Task_Generic() {
-            var mock = Mock.Of<INeedsOtherDefaults>().Get();
+            var mock = new MockINeedsOtherDefaults();
 
             var task = mock.GetStringAsync();
 
@@ -41,7 +41,7 @@ namespace SourceMock.Tests {
 
         [Fact]
         public async Task Task_Collection() {
-            var mock = Mock.Of<INeedsOtherDefaults>().Get();
+            var mock = new MockINeedsOtherDefaults();
 
             var task = mock.GetListAsync();
 

@@ -6,7 +6,7 @@ namespace SourceMock.Tests {
     public class VerificationTests {
         [Fact]
         public void NoArguments() {
-            var mock = Mock.Of<IMockable>().Get();
+            var mock = new MockIMockable();
 
             mock.GetInt32();
 
@@ -15,7 +15,7 @@ namespace SourceMock.Tests {
 
         [Fact]
         public void OneArgument() {
-            var mock = Mock.Of<IMockable>().Get();
+            var mock = new MockIMockable();
 
             mock.ParseToInt32("x");
 
@@ -24,7 +24,7 @@ namespace SourceMock.Tests {
 
         [Fact]
         public void MultipleArguments() {
-            var mock = Mock.Of<IMockable>().Get();
+            var mock = new MockIMockable();
 
             mock.Divide(4, 2);
 
@@ -33,7 +33,7 @@ namespace SourceMock.Tests {
 
         [Fact]
         public void MultipleArguments_Filtered() {
-            var mock = Mock.Of<IMockable>().Get();
+            var mock = new MockIMockable();
 
             mock.Divide(4, 2);
             mock.Divide(1, 5);
@@ -43,7 +43,7 @@ namespace SourceMock.Tests {
 
         [Fact]
         public void Overloaded() {
-            var mock = Mock.Of<IMockable>().Get();
+            var mock = new MockIMockable();
 
             mock.Sum(1, 2);
 
@@ -52,7 +52,7 @@ namespace SourceMock.Tests {
 
         [Fact]
         public void Property_Get() {
-            var mock = Mock.Of<IMockable>().Get();
+            var mock = new MockIMockable();
 
             var _ = mock.Count;
 
@@ -61,7 +61,7 @@ namespace SourceMock.Tests {
 
         [Fact]
         public void Property_Set() {
-            var mock = Mock.Of<IMockable>().Get();
+            var mock = new MockIMockable();
 
             mock.Name = "test";
 

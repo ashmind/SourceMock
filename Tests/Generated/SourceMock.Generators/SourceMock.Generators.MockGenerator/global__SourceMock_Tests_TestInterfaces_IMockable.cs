@@ -107,9 +107,4 @@ namespace SourceMock.Tests.TestInterfaces.Mocks {
         SourceMock.IMockPropertyCalls<int> Count { get; }
         SourceMock.IMockSettablePropertyCalls<string> Name { get; }
     }
-
-    [SourceMock.Internal.GeneratedMock]
-    public static class global__SourceMock_Tests_TestInterfaces_IMockable_Mock {
-        public static MockIMockable Get(this SourceMock.Mock<global::SourceMock.Tests.TestInterfaces.IMockable> _) => new();
-    }
 }

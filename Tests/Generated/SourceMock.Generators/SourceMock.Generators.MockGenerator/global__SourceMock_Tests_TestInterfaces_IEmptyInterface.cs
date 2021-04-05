@@ -13,9 +13,4 @@ namespace SourceMock.Tests.TestInterfaces.Mocks {
     [SourceMock.Internal.GeneratedMock]
     public interface ICallsIEmptyInterface {
     }
-
-    [SourceMock.Internal.GeneratedMock]
-    public static class global__SourceMock_Tests_TestInterfaces_IEmptyInterface_Mock {
-        public static MockIEmptyInterface Get(this SourceMock.Mock<global::SourceMock.Tests.TestInterfaces.IEmptyInterface> _) => new();
-    }
 }

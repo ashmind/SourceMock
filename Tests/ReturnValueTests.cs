@@ -1,12 +1,11 @@
 using Xunit;
-using SourceMock.Tests.TestInterfaces;
 using SourceMock.Tests.TestInterfaces.Mocks;
 
 namespace SourceMock.Tests {
     public class ReturnValueTests {
         [Fact]
         public void ValueType() {
-            var mock = Mock.Of<IMockable>().Get();
+            var mock = new MockIMockable();
 
             mock.Setup.GetInt32().Returns(3);
 
@@ -15,7 +14,7 @@ namespace SourceMock.Tests {
 
         [Fact]
         public void NullableValueType() {
-            var mock = Mock.Of<IMockable>().Get();
+            var mock = new MockIMockable();
 
             mock.Setup.GetInt32Nullable().Returns(null);
 
@@ -24,7 +23,7 @@ namespace SourceMock.Tests {
 
         [Fact]
         public void ReferenceType() {
-            var mock = Mock.Of<IMockable>().Get();
+            var mock = new MockIMockable();
 
             mock.Setup.GetString().Returns("a");
 
@@ -33,7 +32,7 @@ namespace SourceMock.Tests {
 
         [Fact]
         public void NullableReferenceType() {
-            var mock = Mock.Of<IMockable>().Get();
+            var mock = new MockIMockable();
 
             mock.Setup.GetStringNullable().Returns(null);
 
@@ -42,7 +41,7 @@ namespace SourceMock.Tests {
 
         [Fact]
         public void Property() {
-            var mock = Mock.Of<IMockable>().Get();
+            var mock = new MockIMockable();
 
             mock.Setup.Count.Returns(10);
 

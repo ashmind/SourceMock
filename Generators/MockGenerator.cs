@@ -19,16 +19,14 @@ namespace SourceMock.Generators {
 
         public void Execute(GeneratorExecutionContext context) {
             var targetTypes = ((TypesToMockCollectingReceiver)context.SyntaxContextReceiver!).TypesToMock;
-            foreach (var mock in targetTypes.Select(GetMockInfo)) {
-                var mockContent = _classGenerator.Generate(mock);
-                context.AddSource(mock.MockTypeName + ".cs", SourceText.From(mockContent, Encoding.UTF8));
-            }
-        }
+            foreach (var targetType in targetTypes) {
+                var targetTypeQualifiedName = targetType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+                var target = new MockTarget(targetType, targetTypeQualifiedName);
 
-        private MockInfo GetMockInfo(ITypeSymbol targetType) {
-            var targetTypeQualifiedName = targetType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
-            var mockTypeName = Regex.Replace(targetTypeQualifiedName, @"[^\w\d]", "_") + "_Mock";
-            return new MockInfo(mockTypeName, targetType, targetTypeQualifiedName);
+                var mockContent = _classGenerator.Generate(target);
+                var mockFileName = Regex.Replace(target.FullTypeName, @"[^\w\d]", "_");
+                context.AddSource(mockFileName + ".cs", SourceText.From(mockContent, Encoding.UTF8));
+            }
         }
 
         private class TypesToMockCollectingReceiver : ISyntaxContextReceiver {

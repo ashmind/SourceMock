@@ -153,9 +153,4 @@ namespace SourceMock.Tests.TestInterfaces.Mocks {
         System.Collections.Generic.IReadOnlyList<SourceMock.NoArguments> GetIReadOnlySet();
         System.Collections.Generic.IReadOnlyList<SourceMock.NoArguments> GetIImmutableSet();
     }
-
-    [SourceMock.Internal.GeneratedMock]
-    public static class global__SourceMock_Tests_TestInterfaces_INeedsCollectionDefaults_Mock {
-        public static MockINeedsCollectionDefaults Get(this SourceMock.Mock<global::SourceMock.Tests.TestInterfaces.INeedsCollectionDefaults> _) => new();
-    }
 }
