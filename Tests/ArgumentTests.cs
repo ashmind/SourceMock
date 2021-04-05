@@ -1,6 +1,6 @@
 using Xunit;
-using SourceMock.Tests.TestInterfaces.Mocks;
-using SourceMock.Tests.TestInterfaces;
+using SourceMock.Tests.Interfaces.Mocks;
+using SourceMock.Tests.Interfaces;
 
 namespace SourceMock.Tests {
     public class ArgumentTests {

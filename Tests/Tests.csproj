@@ -17,6 +17,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Tests.Interfaces\Tests.Interfaces.csproj" />
     <ProjectReference Include="..\[Main]\[Main].csproj" />
     <ProjectReference Include="..\Generators\Generators.csproj" OutputItemType="Analyzer" />
   </ItemGroup>

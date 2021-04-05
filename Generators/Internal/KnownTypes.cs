@@ -11,19 +11,6 @@ namespace SourceMock.Generators.Internal {
             };
         }
 
-        public static class GeneratedMockAttribute {
-            public const string Name = "GeneratedMockAttribute";
-            public const string FullNameWithoutAttribute = "SourceMock.Internal.GeneratedMock";
-
-            public static bool NamespaceMatches(INamespaceSymbol? @namespace) => @namespace is {
-                Name: "Internal",
-                ContainingNamespace: {
-                    Name: "SourceMock",
-                    ContainingNamespace: { IsGlobalNamespace: true }
-                }
-            };
-        }
-
         public static class IMockMethodSetup {
             public const string FullName = "SourceMock.IMockMethodSetup";
         }

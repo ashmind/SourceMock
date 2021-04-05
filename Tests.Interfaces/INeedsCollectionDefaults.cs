@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 
-namespace SourceMock.Tests.TestInterfaces {
+namespace SourceMock.Tests.Interfaces {
     public interface INeedsCollectionDefaults {
         int[] GetArray();
         List<int> GetList();

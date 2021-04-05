@@ -1,7 +1,6 @@
 ﻿#nullable enable
-namespace SourceMock.Tests.TestInterfaces.Mocks {
-    [SourceMock.Internal.GeneratedMock]
-    public class NeedsCollectionDefaultsMock : global::SourceMock.Tests.TestInterfaces.INeedsCollectionDefaults, INeedsCollectionDefaultsSetup, INeedsCollectionDefaultsCalls {
+namespace SourceMock.Tests.Interfaces.Mocks {
+    public class NeedsCollectionDefaultsMock : global::SourceMock.Tests.Interfaces.INeedsCollectionDefaults, INeedsCollectionDefaultsSetup, INeedsCollectionDefaultsCalls {
         public INeedsCollectionDefaultsSetup Setup => this;
         public INeedsCollectionDefaultsCalls Calls => this;
 
@@ -106,7 +105,6 @@ namespace SourceMock.Tests.TestInterfaces.Mocks {
         System.Collections.Generic.IReadOnlyList<SourceMock.NoArguments> INeedsCollectionDefaultsCalls.GetIImmutableSet() => _getIImmutableSet20Handler.Calls(_ => SourceMock.NoArguments.Value);
     }
 
-    [SourceMock.Internal.GeneratedMock]
     public interface INeedsCollectionDefaultsSetup {
         SourceMock.IMockMethodSetup<int[]> GetArray();
         SourceMock.IMockMethodSetup<global::System.Collections.Generic.List<int>> GetList();
@@ -130,7 +128,6 @@ namespace SourceMock.Tests.TestInterfaces.Mocks {
         SourceMock.IMockMethodSetup<global::System.Collections.Immutable.IImmutableSet<string>> GetIImmutableSet();
     }
 
-    [SourceMock.Internal.GeneratedMock]
     public interface INeedsCollectionDefaultsCalls {
         System.Collections.Generic.IReadOnlyList<SourceMock.NoArguments> GetArray();
         System.Collections.Generic.IReadOnlyList<SourceMock.NoArguments> GetList();

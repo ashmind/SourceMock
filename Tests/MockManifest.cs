@@ -1,4 +1,4 @@
 using SourceMock;
-using SourceMock.Tests.TestInterfaces;
+using SourceMock.Tests.Interfaces;
 
 [assembly: GenerateMocksForAssemblyOf(typeof(IMockable))]

@@ -1,7 +1,6 @@
 ﻿#nullable enable
-namespace SourceMock.Tests.TestInterfaces.Mocks {
-    [SourceMock.Internal.GeneratedMock]
-    public class NeedsParameterModifiersMock : global::SourceMock.Tests.TestInterfaces.INeedsParameterModifiers, INeedsParameterModifiersSetup, INeedsParameterModifiersCalls {
+namespace SourceMock.Tests.Interfaces.Mocks {
+    public class NeedsParameterModifiersMock : global::SourceMock.Tests.Interfaces.INeedsParameterModifiers, INeedsParameterModifiersSetup, INeedsParameterModifiersCalls {
         public INeedsParameterModifiersSetup Setup => this;
         public INeedsParameterModifiersCalls Calls => this;
 
@@ -24,14 +23,12 @@ namespace SourceMock.Tests.TestInterfaces.Mocks {
         System.Collections.Generic.IReadOnlyList<int> INeedsParameterModifiersCalls.TestOut(SourceMock.Internal.MockArgumentMatcher<int> value) => _testOut3Handler.Calls(args => ((int)args[0]!), value);
     }
 
-    [SourceMock.Internal.GeneratedMock]
     public interface INeedsParameterModifiersSetup {
         SourceMock.IMockMethodSetup<int> TestIn(SourceMock.Internal.MockArgumentMatcher<int> value = default);
         SourceMock.IMockMethodSetup<int> TestRef(SourceMock.Internal.MockArgumentMatcher<int> value = default);
         SourceMock.IMockMethodSetup<int> TestOut(SourceMock.Internal.MockArgumentMatcher<int> value = default);
     }
 
-    [SourceMock.Internal.GeneratedMock]
     public interface INeedsParameterModifiersCalls {
         System.Collections.Generic.IReadOnlyList<int> TestIn(SourceMock.Internal.MockArgumentMatcher<int> value = default);
         System.Collections.Generic.IReadOnlyList<int> TestRef(SourceMock.Internal.MockArgumentMatcher<int> value = default);

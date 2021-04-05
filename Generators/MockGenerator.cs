@@ -97,28 +97,24 @@ namespace SourceMock.Generators {
                 foreach (var member in parent.GetMembers()) {
                     switch (member) {
                         case ITypeSymbol type:
-                            if (type.TypeKind != TypeKind.Interface)
-                                continue;
-                            if (type.GetAttributes().Any(IsGeneratedMockAttribute))
-                                continue;
-                            TypesToMock.Add(type);
+                            CollectTypeIfMockable(type);
                             break;
 
                         case INamespaceSymbol nested:
                             CollectTypesRecursively(nested);
                             break;
-                    }                    
+                    }
                 }
             }
 
-            private bool IsGeneratedMockAttribute(AttributeData attribute) {
-                if (attribute.AttributeClass is not {} attributeClass)
-                    return false;
+            private void CollectTypeIfMockable(ITypeSymbol type) {
+                if (type.TypeKind != TypeKind.Interface)
+                    return;
 
-                if (attributeClass.Name != KnownTypes.GeneratedMockAttribute.Name)
-                    return false;
+                if (type.DeclaredAccessibility != Accessibility.Public)
+                    return;
 
-                return KnownTypes.GeneratedMockAttribute.NamespaceMatches(attributeClass.ContainingNamespace);
+                TypesToMock.Add(type);
             }
         }
     }

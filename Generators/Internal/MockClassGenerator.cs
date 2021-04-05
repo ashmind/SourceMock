@@ -27,18 +27,15 @@ namespace SourceMock.Generators.Internal {
             var mainWriter = new CodeWriter()
                 .WriteLine("#nullable enable")
                 .WriteLine("namespace ", targetTypeNamespace, ".Mocks {")
-                .WriteLine(Indents.Type, "[", KnownTypes.GeneratedMockAttribute.FullNameWithoutAttribute, "]")
                 .Write(Indents.Type, "public class ", mockClassName, " : ")
                     .WriteLine(target.FullTypeName, ", ", setupInterfaceName, ", ", callsInterfaceName, " {")
                 .WriteLine(Indents.Member, "public ", setupInterfaceName, " Setup => this;")
                 .WriteLine(Indents.Member, "public ", callsInterfaceName, " Calls => this;");
 
             var setupInterfaceWriter = new CodeWriter()
-                .WriteLine(Indents.Type, "[", KnownTypes.GeneratedMockAttribute.FullNameWithoutAttribute, "]")
                 .WriteLine(Indents.Type, "public interface ", setupInterfaceName, " {");
 
             var callsInterfaceWriter = new CodeWriter()
-                .WriteLine(Indents.Type, "[", KnownTypes.GeneratedMockAttribute.FullNameWithoutAttribute, "]")
                 .WriteLine(Indents.Type, "public interface ", callsInterfaceName, " {");
 
             var memberId = 1;

@@ -1,4 +1,4 @@
-namespace SourceMock.Tests.TestInterfaces {
+namespace SourceMock.Tests.Interfaces {
     public interface INeedsParameterModifiers {
         int TestIn(in int value);
         int TestRef(ref int value);

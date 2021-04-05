@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace SourceMock.Tests.TestInterfaces {
+namespace SourceMock.Tests.Interfaces {
     public interface INeedsOtherDefaults {
         Task ExecuteAsync();
         Task<object> GetStringAsync();
