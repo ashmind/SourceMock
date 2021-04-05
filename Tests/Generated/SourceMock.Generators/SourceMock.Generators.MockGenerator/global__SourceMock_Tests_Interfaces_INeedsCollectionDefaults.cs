@@ -4,104 +4,104 @@ namespace SourceMock.Tests.Interfaces.Mocks {
         public INeedsCollectionDefaultsSetup Setup => this;
         public INeedsCollectionDefaultsCalls Calls => this;
 
-        private readonly SourceMock.Internal.MockMethodHandler<int[]> _getArray1Handler = new();
-        SourceMock.IMockMethodSetup<int[]> INeedsCollectionDefaultsSetup.GetArray() => _getArray1Handler.Setup();
-        public int[] GetArray() => _getArray1Handler.Call();
+        private readonly SourceMock.Internal.MockMethodHandler _getArray1Handler = new();
+        SourceMock.IMockMethodSetup<int[]> INeedsCollectionDefaultsSetup.GetArray() => _getArray1Handler.Setup<int[]>();
+        public int[] GetArray() => _getArray1Handler.Call<int[]>();
         System.Collections.Generic.IReadOnlyList<SourceMock.NoArguments> INeedsCollectionDefaultsCalls.GetArray() => _getArray1Handler.Calls(_ => SourceMock.NoArguments.Value);
 
-        private readonly SourceMock.Internal.MockMethodHandler<global::System.Collections.Generic.List<int>> _getList2Handler = new();
-        SourceMock.IMockMethodSetup<global::System.Collections.Generic.List<int>> INeedsCollectionDefaultsSetup.GetList() => _getList2Handler.Setup();
-        public global::System.Collections.Generic.List<int> GetList() => _getList2Handler.Call();
+        private readonly SourceMock.Internal.MockMethodHandler _getList2Handler = new();
+        SourceMock.IMockMethodSetup<global::System.Collections.Generic.List<int>> INeedsCollectionDefaultsSetup.GetList() => _getList2Handler.Setup<global::System.Collections.Generic.List<int>>();
+        public global::System.Collections.Generic.List<int> GetList() => _getList2Handler.Call<global::System.Collections.Generic.List<int>>();
         System.Collections.Generic.IReadOnlyList<SourceMock.NoArguments> INeedsCollectionDefaultsCalls.GetList() => _getList2Handler.Calls(_ => SourceMock.NoArguments.Value);
 
-        private readonly SourceMock.Internal.MockMethodHandler<global::System.Collections.Immutable.ImmutableList<int>> _getImmutableList3Handler = new();
-        SourceMock.IMockMethodSetup<global::System.Collections.Immutable.ImmutableList<int>> INeedsCollectionDefaultsSetup.GetImmutableList() => _getImmutableList3Handler.Setup();
-        public global::System.Collections.Immutable.ImmutableList<int> GetImmutableList() => _getImmutableList3Handler.Call();
+        private readonly SourceMock.Internal.MockMethodHandler _getImmutableList3Handler = new();
+        SourceMock.IMockMethodSetup<global::System.Collections.Immutable.ImmutableList<int>> INeedsCollectionDefaultsSetup.GetImmutableList() => _getImmutableList3Handler.Setup<global::System.Collections.Immutable.ImmutableList<int>>();
+        public global::System.Collections.Immutable.ImmutableList<int> GetImmutableList() => _getImmutableList3Handler.Call<global::System.Collections.Immutable.ImmutableList<int>>();
         System.Collections.Generic.IReadOnlyList<SourceMock.NoArguments> INeedsCollectionDefaultsCalls.GetImmutableList() => _getImmutableList3Handler.Calls(_ => SourceMock.NoArguments.Value);
 
-        private readonly SourceMock.Internal.MockMethodHandler<global::System.Collections.Immutable.ImmutableArray<int>> _getImmutableArray4Handler = new();
-        SourceMock.IMockMethodSetup<global::System.Collections.Immutable.ImmutableArray<int>> INeedsCollectionDefaultsSetup.GetImmutableArray() => _getImmutableArray4Handler.Setup();
-        public global::System.Collections.Immutable.ImmutableArray<int> GetImmutableArray() => _getImmutableArray4Handler.Call();
+        private readonly SourceMock.Internal.MockMethodHandler _getImmutableArray4Handler = new();
+        SourceMock.IMockMethodSetup<global::System.Collections.Immutable.ImmutableArray<int>> INeedsCollectionDefaultsSetup.GetImmutableArray() => _getImmutableArray4Handler.Setup<global::System.Collections.Immutable.ImmutableArray<int>>();
+        public global::System.Collections.Immutable.ImmutableArray<int> GetImmutableArray() => _getImmutableArray4Handler.Call<global::System.Collections.Immutable.ImmutableArray<int>>();
         System.Collections.Generic.IReadOnlyList<SourceMock.NoArguments> INeedsCollectionDefaultsCalls.GetImmutableArray() => _getImmutableArray4Handler.Calls(_ => SourceMock.NoArguments.Value);
 
-        private readonly SourceMock.Internal.MockMethodHandler<global::System.Collections.Generic.IEnumerable<int>> _getIEnumerable5Handler = new();
-        SourceMock.IMockMethodSetup<global::System.Collections.Generic.IEnumerable<int>> INeedsCollectionDefaultsSetup.GetIEnumerable() => _getIEnumerable5Handler.Setup();
-        public global::System.Collections.Generic.IEnumerable<int> GetIEnumerable() => _getIEnumerable5Handler.Call();
+        private readonly SourceMock.Internal.MockMethodHandler _getIEnumerable5Handler = new();
+        SourceMock.IMockMethodSetup<global::System.Collections.Generic.IEnumerable<int>> INeedsCollectionDefaultsSetup.GetIEnumerable() => _getIEnumerable5Handler.Setup<global::System.Collections.Generic.IEnumerable<int>>();
+        public global::System.Collections.Generic.IEnumerable<int> GetIEnumerable() => _getIEnumerable5Handler.Call<global::System.Collections.Generic.IEnumerable<int>>();
         System.Collections.Generic.IReadOnlyList<SourceMock.NoArguments> INeedsCollectionDefaultsCalls.GetIEnumerable() => _getIEnumerable5Handler.Calls(_ => SourceMock.NoArguments.Value);
 
-        private readonly SourceMock.Internal.MockMethodHandler<global::System.Collections.Generic.IList<int>> _getIList6Handler = new();
-        SourceMock.IMockMethodSetup<global::System.Collections.Generic.IList<int>> INeedsCollectionDefaultsSetup.GetIList() => _getIList6Handler.Setup();
-        public global::System.Collections.Generic.IList<int> GetIList() => _getIList6Handler.Call();
+        private readonly SourceMock.Internal.MockMethodHandler _getIList6Handler = new();
+        SourceMock.IMockMethodSetup<global::System.Collections.Generic.IList<int>> INeedsCollectionDefaultsSetup.GetIList() => _getIList6Handler.Setup<global::System.Collections.Generic.IList<int>>();
+        public global::System.Collections.Generic.IList<int> GetIList() => _getIList6Handler.Call<global::System.Collections.Generic.IList<int>>();
         System.Collections.Generic.IReadOnlyList<SourceMock.NoArguments> INeedsCollectionDefaultsCalls.GetIList() => _getIList6Handler.Calls(_ => SourceMock.NoArguments.Value);
 
-        private readonly SourceMock.Internal.MockMethodHandler<global::System.Collections.Generic.ICollection<int>> _getICollection7Handler = new();
-        SourceMock.IMockMethodSetup<global::System.Collections.Generic.ICollection<int>> INeedsCollectionDefaultsSetup.GetICollection() => _getICollection7Handler.Setup();
-        public global::System.Collections.Generic.ICollection<int> GetICollection() => _getICollection7Handler.Call();
+        private readonly SourceMock.Internal.MockMethodHandler _getICollection7Handler = new();
+        SourceMock.IMockMethodSetup<global::System.Collections.Generic.ICollection<int>> INeedsCollectionDefaultsSetup.GetICollection() => _getICollection7Handler.Setup<global::System.Collections.Generic.ICollection<int>>();
+        public global::System.Collections.Generic.ICollection<int> GetICollection() => _getICollection7Handler.Call<global::System.Collections.Generic.ICollection<int>>();
         System.Collections.Generic.IReadOnlyList<SourceMock.NoArguments> INeedsCollectionDefaultsCalls.GetICollection() => _getICollection7Handler.Calls(_ => SourceMock.NoArguments.Value);
 
-        private readonly SourceMock.Internal.MockMethodHandler<global::System.Collections.Generic.IReadOnlyCollection<int>> _getIReadOnlyCollection8Handler = new();
-        SourceMock.IMockMethodSetup<global::System.Collections.Generic.IReadOnlyCollection<int>> INeedsCollectionDefaultsSetup.GetIReadOnlyCollection() => _getIReadOnlyCollection8Handler.Setup();
-        public global::System.Collections.Generic.IReadOnlyCollection<int> GetIReadOnlyCollection() => _getIReadOnlyCollection8Handler.Call();
+        private readonly SourceMock.Internal.MockMethodHandler _getIReadOnlyCollection8Handler = new();
+        SourceMock.IMockMethodSetup<global::System.Collections.Generic.IReadOnlyCollection<int>> INeedsCollectionDefaultsSetup.GetIReadOnlyCollection() => _getIReadOnlyCollection8Handler.Setup<global::System.Collections.Generic.IReadOnlyCollection<int>>();
+        public global::System.Collections.Generic.IReadOnlyCollection<int> GetIReadOnlyCollection() => _getIReadOnlyCollection8Handler.Call<global::System.Collections.Generic.IReadOnlyCollection<int>>();
         System.Collections.Generic.IReadOnlyList<SourceMock.NoArguments> INeedsCollectionDefaultsCalls.GetIReadOnlyCollection() => _getIReadOnlyCollection8Handler.Calls(_ => SourceMock.NoArguments.Value);
 
-        private readonly SourceMock.Internal.MockMethodHandler<global::System.Collections.Generic.IReadOnlyList<int>> _getIReadOnlyList9Handler = new();
-        SourceMock.IMockMethodSetup<global::System.Collections.Generic.IReadOnlyList<int>> INeedsCollectionDefaultsSetup.GetIReadOnlyList() => _getIReadOnlyList9Handler.Setup();
-        public global::System.Collections.Generic.IReadOnlyList<int> GetIReadOnlyList() => _getIReadOnlyList9Handler.Call();
+        private readonly SourceMock.Internal.MockMethodHandler _getIReadOnlyList9Handler = new();
+        SourceMock.IMockMethodSetup<global::System.Collections.Generic.IReadOnlyList<int>> INeedsCollectionDefaultsSetup.GetIReadOnlyList() => _getIReadOnlyList9Handler.Setup<global::System.Collections.Generic.IReadOnlyList<int>>();
+        public global::System.Collections.Generic.IReadOnlyList<int> GetIReadOnlyList() => _getIReadOnlyList9Handler.Call<global::System.Collections.Generic.IReadOnlyList<int>>();
         System.Collections.Generic.IReadOnlyList<SourceMock.NoArguments> INeedsCollectionDefaultsCalls.GetIReadOnlyList() => _getIReadOnlyList9Handler.Calls(_ => SourceMock.NoArguments.Value);
 
-        private readonly SourceMock.Internal.MockMethodHandler<global::System.Collections.Immutable.IImmutableList<int>> _getIImmutableList10Handler = new();
-        SourceMock.IMockMethodSetup<global::System.Collections.Immutable.IImmutableList<int>> INeedsCollectionDefaultsSetup.GetIImmutableList() => _getIImmutableList10Handler.Setup();
-        public global::System.Collections.Immutable.IImmutableList<int> GetIImmutableList() => _getIImmutableList10Handler.Call();
+        private readonly SourceMock.Internal.MockMethodHandler _getIImmutableList10Handler = new();
+        SourceMock.IMockMethodSetup<global::System.Collections.Immutable.IImmutableList<int>> INeedsCollectionDefaultsSetup.GetIImmutableList() => _getIImmutableList10Handler.Setup<global::System.Collections.Immutable.IImmutableList<int>>();
+        public global::System.Collections.Immutable.IImmutableList<int> GetIImmutableList() => _getIImmutableList10Handler.Call<global::System.Collections.Immutable.IImmutableList<int>>();
         System.Collections.Generic.IReadOnlyList<SourceMock.NoArguments> INeedsCollectionDefaultsCalls.GetIImmutableList() => _getIImmutableList10Handler.Calls(_ => SourceMock.NoArguments.Value);
 
-        private readonly SourceMock.Internal.MockMethodHandler<global::System.Collections.Generic.Dictionary<string, string>> _getDictionary11Handler = new();
-        SourceMock.IMockMethodSetup<global::System.Collections.Generic.Dictionary<string, string>> INeedsCollectionDefaultsSetup.GetDictionary() => _getDictionary11Handler.Setup();
-        public global::System.Collections.Generic.Dictionary<string, string> GetDictionary() => _getDictionary11Handler.Call();
+        private readonly SourceMock.Internal.MockMethodHandler _getDictionary11Handler = new();
+        SourceMock.IMockMethodSetup<global::System.Collections.Generic.Dictionary<string, string>> INeedsCollectionDefaultsSetup.GetDictionary() => _getDictionary11Handler.Setup<global::System.Collections.Generic.Dictionary<string, string>>();
+        public global::System.Collections.Generic.Dictionary<string, string> GetDictionary() => _getDictionary11Handler.Call<global::System.Collections.Generic.Dictionary<string, string>>();
         System.Collections.Generic.IReadOnlyList<SourceMock.NoArguments> INeedsCollectionDefaultsCalls.GetDictionary() => _getDictionary11Handler.Calls(_ => SourceMock.NoArguments.Value);
 
-        private readonly SourceMock.Internal.MockMethodHandler<global::System.Collections.Immutable.ImmutableDictionary<string, string>> _getImmutableDictionary12Handler = new();
-        SourceMock.IMockMethodSetup<global::System.Collections.Immutable.ImmutableDictionary<string, string>> INeedsCollectionDefaultsSetup.GetImmutableDictionary() => _getImmutableDictionary12Handler.Setup();
-        public global::System.Collections.Immutable.ImmutableDictionary<string, string> GetImmutableDictionary() => _getImmutableDictionary12Handler.Call();
+        private readonly SourceMock.Internal.MockMethodHandler _getImmutableDictionary12Handler = new();
+        SourceMock.IMockMethodSetup<global::System.Collections.Immutable.ImmutableDictionary<string, string>> INeedsCollectionDefaultsSetup.GetImmutableDictionary() => _getImmutableDictionary12Handler.Setup<global::System.Collections.Immutable.ImmutableDictionary<string, string>>();
+        public global::System.Collections.Immutable.ImmutableDictionary<string, string> GetImmutableDictionary() => _getImmutableDictionary12Handler.Call<global::System.Collections.Immutable.ImmutableDictionary<string, string>>();
         System.Collections.Generic.IReadOnlyList<SourceMock.NoArguments> INeedsCollectionDefaultsCalls.GetImmutableDictionary() => _getImmutableDictionary12Handler.Calls(_ => SourceMock.NoArguments.Value);
 
-        private readonly SourceMock.Internal.MockMethodHandler<global::System.Collections.Generic.IDictionary<string, string>> _getIDictionary13Handler = new();
-        SourceMock.IMockMethodSetup<global::System.Collections.Generic.IDictionary<string, string>> INeedsCollectionDefaultsSetup.GetIDictionary() => _getIDictionary13Handler.Setup();
-        public global::System.Collections.Generic.IDictionary<string, string> GetIDictionary() => _getIDictionary13Handler.Call();
+        private readonly SourceMock.Internal.MockMethodHandler _getIDictionary13Handler = new();
+        SourceMock.IMockMethodSetup<global::System.Collections.Generic.IDictionary<string, string>> INeedsCollectionDefaultsSetup.GetIDictionary() => _getIDictionary13Handler.Setup<global::System.Collections.Generic.IDictionary<string, string>>();
+        public global::System.Collections.Generic.IDictionary<string, string> GetIDictionary() => _getIDictionary13Handler.Call<global::System.Collections.Generic.IDictionary<string, string>>();
         System.Collections.Generic.IReadOnlyList<SourceMock.NoArguments> INeedsCollectionDefaultsCalls.GetIDictionary() => _getIDictionary13Handler.Calls(_ => SourceMock.NoArguments.Value);
 
-        private readonly SourceMock.Internal.MockMethodHandler<global::System.Collections.Generic.IReadOnlyDictionary<string, string>> _getIReadOnlyDictionary14Handler = new();
-        SourceMock.IMockMethodSetup<global::System.Collections.Generic.IReadOnlyDictionary<string, string>> INeedsCollectionDefaultsSetup.GetIReadOnlyDictionary() => _getIReadOnlyDictionary14Handler.Setup();
-        public global::System.Collections.Generic.IReadOnlyDictionary<string, string> GetIReadOnlyDictionary() => _getIReadOnlyDictionary14Handler.Call();
+        private readonly SourceMock.Internal.MockMethodHandler _getIReadOnlyDictionary14Handler = new();
+        SourceMock.IMockMethodSetup<global::System.Collections.Generic.IReadOnlyDictionary<string, string>> INeedsCollectionDefaultsSetup.GetIReadOnlyDictionary() => _getIReadOnlyDictionary14Handler.Setup<global::System.Collections.Generic.IReadOnlyDictionary<string, string>>();
+        public global::System.Collections.Generic.IReadOnlyDictionary<string, string> GetIReadOnlyDictionary() => _getIReadOnlyDictionary14Handler.Call<global::System.Collections.Generic.IReadOnlyDictionary<string, string>>();
         System.Collections.Generic.IReadOnlyList<SourceMock.NoArguments> INeedsCollectionDefaultsCalls.GetIReadOnlyDictionary() => _getIReadOnlyDictionary14Handler.Calls(_ => SourceMock.NoArguments.Value);
 
-        private readonly SourceMock.Internal.MockMethodHandler<global::System.Collections.Immutable.IImmutableDictionary<string, string>> _getIImmutableDictionary15Handler = new();
-        SourceMock.IMockMethodSetup<global::System.Collections.Immutable.IImmutableDictionary<string, string>> INeedsCollectionDefaultsSetup.GetIImmutableDictionary() => _getIImmutableDictionary15Handler.Setup();
-        public global::System.Collections.Immutable.IImmutableDictionary<string, string> GetIImmutableDictionary() => _getIImmutableDictionary15Handler.Call();
+        private readonly SourceMock.Internal.MockMethodHandler _getIImmutableDictionary15Handler = new();
+        SourceMock.IMockMethodSetup<global::System.Collections.Immutable.IImmutableDictionary<string, string>> INeedsCollectionDefaultsSetup.GetIImmutableDictionary() => _getIImmutableDictionary15Handler.Setup<global::System.Collections.Immutable.IImmutableDictionary<string, string>>();
+        public global::System.Collections.Immutable.IImmutableDictionary<string, string> GetIImmutableDictionary() => _getIImmutableDictionary15Handler.Call<global::System.Collections.Immutable.IImmutableDictionary<string, string>>();
         System.Collections.Generic.IReadOnlyList<SourceMock.NoArguments> INeedsCollectionDefaultsCalls.GetIImmutableDictionary() => _getIImmutableDictionary15Handler.Calls(_ => SourceMock.NoArguments.Value);
 
-        private readonly SourceMock.Internal.MockMethodHandler<global::System.Collections.Generic.HashSet<string>> _getHashSet16Handler = new();
-        SourceMock.IMockMethodSetup<global::System.Collections.Generic.HashSet<string>> INeedsCollectionDefaultsSetup.GetHashSet() => _getHashSet16Handler.Setup();
-        public global::System.Collections.Generic.HashSet<string> GetHashSet() => _getHashSet16Handler.Call();
+        private readonly SourceMock.Internal.MockMethodHandler _getHashSet16Handler = new();
+        SourceMock.IMockMethodSetup<global::System.Collections.Generic.HashSet<string>> INeedsCollectionDefaultsSetup.GetHashSet() => _getHashSet16Handler.Setup<global::System.Collections.Generic.HashSet<string>>();
+        public global::System.Collections.Generic.HashSet<string> GetHashSet() => _getHashSet16Handler.Call<global::System.Collections.Generic.HashSet<string>>();
         System.Collections.Generic.IReadOnlyList<SourceMock.NoArguments> INeedsCollectionDefaultsCalls.GetHashSet() => _getHashSet16Handler.Calls(_ => SourceMock.NoArguments.Value);
 
-        private readonly SourceMock.Internal.MockMethodHandler<global::System.Collections.Immutable.ImmutableHashSet<string>> _getImmutableHashSet17Handler = new();
-        SourceMock.IMockMethodSetup<global::System.Collections.Immutable.ImmutableHashSet<string>> INeedsCollectionDefaultsSetup.GetImmutableHashSet() => _getImmutableHashSet17Handler.Setup();
-        public global::System.Collections.Immutable.ImmutableHashSet<string> GetImmutableHashSet() => _getImmutableHashSet17Handler.Call();
+        private readonly SourceMock.Internal.MockMethodHandler _getImmutableHashSet17Handler = new();
+        SourceMock.IMockMethodSetup<global::System.Collections.Immutable.ImmutableHashSet<string>> INeedsCollectionDefaultsSetup.GetImmutableHashSet() => _getImmutableHashSet17Handler.Setup<global::System.Collections.Immutable.ImmutableHashSet<string>>();
+        public global::System.Collections.Immutable.ImmutableHashSet<string> GetImmutableHashSet() => _getImmutableHashSet17Handler.Call<global::System.Collections.Immutable.ImmutableHashSet<string>>();
         System.Collections.Generic.IReadOnlyList<SourceMock.NoArguments> INeedsCollectionDefaultsCalls.GetImmutableHashSet() => _getImmutableHashSet17Handler.Calls(_ => SourceMock.NoArguments.Value);
 
-        private readonly SourceMock.Internal.MockMethodHandler<global::System.Collections.Generic.ISet<string>> _getISet18Handler = new();
-        SourceMock.IMockMethodSetup<global::System.Collections.Generic.ISet<string>> INeedsCollectionDefaultsSetup.GetISet() => _getISet18Handler.Setup();
-        public global::System.Collections.Generic.ISet<string> GetISet() => _getISet18Handler.Call();
+        private readonly SourceMock.Internal.MockMethodHandler _getISet18Handler = new();
+        SourceMock.IMockMethodSetup<global::System.Collections.Generic.ISet<string>> INeedsCollectionDefaultsSetup.GetISet() => _getISet18Handler.Setup<global::System.Collections.Generic.ISet<string>>();
+        public global::System.Collections.Generic.ISet<string> GetISet() => _getISet18Handler.Call<global::System.Collections.Generic.ISet<string>>();
         System.Collections.Generic.IReadOnlyList<SourceMock.NoArguments> INeedsCollectionDefaultsCalls.GetISet() => _getISet18Handler.Calls(_ => SourceMock.NoArguments.Value);
 
-        private readonly SourceMock.Internal.MockMethodHandler<global::System.Collections.Generic.IReadOnlySet<string>> _getIReadOnlySet19Handler = new();
-        SourceMock.IMockMethodSetup<global::System.Collections.Generic.IReadOnlySet<string>> INeedsCollectionDefaultsSetup.GetIReadOnlySet() => _getIReadOnlySet19Handler.Setup();
-        public global::System.Collections.Generic.IReadOnlySet<string> GetIReadOnlySet() => _getIReadOnlySet19Handler.Call();
+        private readonly SourceMock.Internal.MockMethodHandler _getIReadOnlySet19Handler = new();
+        SourceMock.IMockMethodSetup<global::System.Collections.Generic.IReadOnlySet<string>> INeedsCollectionDefaultsSetup.GetIReadOnlySet() => _getIReadOnlySet19Handler.Setup<global::System.Collections.Generic.IReadOnlySet<string>>();
+        public global::System.Collections.Generic.IReadOnlySet<string> GetIReadOnlySet() => _getIReadOnlySet19Handler.Call<global::System.Collections.Generic.IReadOnlySet<string>>();
         System.Collections.Generic.IReadOnlyList<SourceMock.NoArguments> INeedsCollectionDefaultsCalls.GetIReadOnlySet() => _getIReadOnlySet19Handler.Calls(_ => SourceMock.NoArguments.Value);
 
-        private readonly SourceMock.Internal.MockMethodHandler<global::System.Collections.Immutable.IImmutableSet<string>> _getIImmutableSet20Handler = new();
-        SourceMock.IMockMethodSetup<global::System.Collections.Immutable.IImmutableSet<string>> INeedsCollectionDefaultsSetup.GetIImmutableSet() => _getIImmutableSet20Handler.Setup();
-        public global::System.Collections.Immutable.IImmutableSet<string> GetIImmutableSet() => _getIImmutableSet20Handler.Call();
+        private readonly SourceMock.Internal.MockMethodHandler _getIImmutableSet20Handler = new();
+        SourceMock.IMockMethodSetup<global::System.Collections.Immutable.IImmutableSet<string>> INeedsCollectionDefaultsSetup.GetIImmutableSet() => _getIImmutableSet20Handler.Setup<global::System.Collections.Immutable.IImmutableSet<string>>();
+        public global::System.Collections.Immutable.IImmutableSet<string> GetIImmutableSet() => _getIImmutableSet20Handler.Call<global::System.Collections.Immutable.IImmutableSet<string>>();
         System.Collections.Generic.IReadOnlyList<SourceMock.NoArguments> INeedsCollectionDefaultsCalls.GetIImmutableSet() => _getIImmutableSet20Handler.Calls(_ => SourceMock.NoArguments.Value);
     }
 

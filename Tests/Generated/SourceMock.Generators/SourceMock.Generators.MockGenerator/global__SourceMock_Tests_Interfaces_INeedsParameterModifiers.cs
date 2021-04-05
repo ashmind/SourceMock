@@ -4,21 +4,21 @@ namespace SourceMock.Tests.Interfaces.Mocks {
         public INeedsParameterModifiersSetup Setup => this;
         public INeedsParameterModifiersCalls Calls => this;
 
-        private readonly SourceMock.Internal.MockMethodHandler<int> _testIn1Handler = new();
-        SourceMock.IMockMethodSetup<int> INeedsParameterModifiersSetup.TestIn(SourceMock.Internal.MockArgumentMatcher<int> value) => _testIn1Handler.Setup(value);
-        public int TestIn(in int value) => _testIn1Handler.Call(value);
+        private readonly SourceMock.Internal.MockMethodHandler _testIn1Handler = new();
+        SourceMock.IMockMethodSetup<int> INeedsParameterModifiersSetup.TestIn(SourceMock.Internal.MockArgumentMatcher<int> value) => _testIn1Handler.Setup<int>(value);
+        public int TestIn(in int value) => _testIn1Handler.Call<int>(value);
         System.Collections.Generic.IReadOnlyList<int> INeedsParameterModifiersCalls.TestIn(SourceMock.Internal.MockArgumentMatcher<int> value) => _testIn1Handler.Calls(args => ((int)args[0]!), value);
 
-        private readonly SourceMock.Internal.MockMethodHandler<int> _testRef2Handler = new();
-        SourceMock.IMockMethodSetup<int> INeedsParameterModifiersSetup.TestRef(SourceMock.Internal.MockArgumentMatcher<int> value) => _testRef2Handler.Setup(value);
-        public int TestRef(ref int value) => _testRef2Handler.Call(value);
+        private readonly SourceMock.Internal.MockMethodHandler _testRef2Handler = new();
+        SourceMock.IMockMethodSetup<int> INeedsParameterModifiersSetup.TestRef(SourceMock.Internal.MockArgumentMatcher<int> value) => _testRef2Handler.Setup<int>(value);
+        public int TestRef(ref int value) => _testRef2Handler.Call<int>(value);
         System.Collections.Generic.IReadOnlyList<int> INeedsParameterModifiersCalls.TestRef(SourceMock.Internal.MockArgumentMatcher<int> value) => _testRef2Handler.Calls(args => ((int)args[0]!), value);
 
-        private readonly SourceMock.Internal.MockMethodHandler<int> _testOut3Handler = new();
-        SourceMock.IMockMethodSetup<int> INeedsParameterModifiersSetup.TestOut(SourceMock.Internal.MockArgumentMatcher<int> value) => _testOut3Handler.Setup(value);
+        private readonly SourceMock.Internal.MockMethodHandler _testOut3Handler = new();
+        SourceMock.IMockMethodSetup<int> INeedsParameterModifiersSetup.TestOut(SourceMock.Internal.MockArgumentMatcher<int> value) => _testOut3Handler.Setup<int>(value);
         public int TestOut(out int value) {
             value = default;
-            return _testOut3Handler.Call(value);
+            return _testOut3Handler.Call<int>(value);
         }
         System.Collections.Generic.IReadOnlyList<int> INeedsParameterModifiersCalls.TestOut(SourceMock.Internal.MockArgumentMatcher<int> value) => _testOut3Handler.Calls(args => ((int)args[0]!), value);
     }

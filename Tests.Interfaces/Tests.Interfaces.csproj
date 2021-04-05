@@ -2,6 +2,9 @@
 
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
+    <IsPackable>false</IsPackable>
+    <AssemblyName>SourceMock.Tests.Interfaces</AssemblyName>
+    <RootNamespace>SourceMock.Tests.Interfaces</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>

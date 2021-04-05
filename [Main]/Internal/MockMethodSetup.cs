@@ -21,8 +21,7 @@ namespace SourceMock.Internal {
         }
 
         public void Throws<TException>()
-            where TException : Exception, new()
-        {
+            where TException : Exception, new() {
             Throws(new TException());
         }
 
