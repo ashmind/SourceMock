@@ -65,12 +65,12 @@ Instead, assert `.Calls` at the end of the test to confirm the expected calls.
 These are not _intentionally_ excluded, just not yet supported:
 1. Abstract classes
 2. Generic constraints
-2. Custom default values
-3. Custom parameter matchers
-4. Custom mock callbacks
-5. Setting up output values for ref and out parameters
-6. Chained setups
-7. Anything more advanced than the above
+3. Custom default values
+4. Custom parameter matchers
+5. Custom mock callbacks
+6. Setting up output values for ref and out parameters
+7. Chained setups
+8. Anything more advanced than the above
 
 # Kudos
 
