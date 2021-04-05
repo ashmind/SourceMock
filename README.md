@@ -16,12 +16,7 @@ mock.Setup(x => x.Parse(It.IsAny<string>())).Return(3)
 The framework is NOT ready.  
 
 Abridged list of things that do not work:
-1. out parameters
-2. Generic methods
-3. Events
-4. Pretty much anything fancy
-
-However if you want to learn source generators, or your use cases are quite straightforward, it might actually work.
+- Generic methods
 
 # Getting started
 
@@ -60,6 +55,14 @@ parser.Parse("2");
 
 Assert.Equal(new[] { "1", "2" }, parser.Calls.Parse());
 ```
+
+# Limitations
+
+The following things are not (yet?) supported:
+1. Custom parameter matchers
+2. Custom mock callbacks
+3. Setting up output values for ref and out parameters
+4. Anything more advanced than the above
 
 # Kudos
 

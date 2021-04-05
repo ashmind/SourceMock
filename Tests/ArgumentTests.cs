@@ -70,6 +70,16 @@ namespace SourceMock.Tests {
             Assert.Equal(2, mock.TestRef(ref x));
         }
 
+        [Fact]
+        public void OutArgument() {
+            var mock = new NeedsParameterModifiersMock();
+
+            mock.Setup.TestOut().Returns(2);
+
+            int x;
+            Assert.Equal(2, mock.TestOut(out x));
+        }
+
         private class EmptyClass : IEmptyInterface {}
     }
 }

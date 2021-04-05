@@ -126,7 +126,10 @@ namespace SourceMock.Generators.Internal {
             WriteHandlerField(mockWriter, member);
             WriteSetupInterfaceMember(setupInterfaceWriter, member);
             WriteSetupMemberImplementation(mockWriter, setupInterfaceName, member);
+
             WriteMemberImplementation(mockWriter, member);
+            mockWriter.WriteLine();
+
             WriteCallsInterfaceMember(callsInterfaceWriter, member);
             WriteCallsMemberImplementation(mockWriter, callsInterfaceName, member);
         }
@@ -197,15 +200,17 @@ namespace SourceMock.Generators.Internal {
             switch (member.Symbol) {
                 case IMethodSymbol:
                     writer.Write("(");
+                    var hasOutParameters = false;
                     foreach (var parameter in member.Parameters) {
                         if (parameter.Index > 0)
                             writer.Write(", ");
                         if (GetRefModifier(parameter.RefKind) is {} modifier)
                             writer.Write(modifier, " ");
                         writer.Write(parameter.TypeFullName, " ", parameter.Name);
+                        hasOutParameters = hasOutParameters || (parameter.RefKind == RefKind.Out);
                     }
-                    writer.Write(") => ", member.HandlerFieldName);
-                    WriteMemberImplementationHandlerCall(writer, member.Parameters);
+                    writer.Write(") ");
+                    WriteMethodImplementationBody(writer, hasOutParameters, member);
                     break;
 
                 case IPropertySymbol property:
@@ -213,13 +218,16 @@ namespace SourceMock.Generators.Internal {
                         writer.WriteLine(" {");
                         writer.Write(Indents.MemberBody, "get => ", member.HandlerFieldName, ".GetterHandler");
                         WriteMemberImplementationHandlerCall(writer, ImmutableArray<Parameter>.Empty);
+                        writer.WriteLine(";");
                         writer.Write(Indents.MemberBody, "set => ", member.HandlerFieldName, ".SetterHandler");
                         WriteMemberImplementationHandlerCall(writer, member.Parameters);
-                        writer.WriteLine(Indents.Member, "}");
+                        writer.WriteLine(";");
+                        writer.Write(Indents.Member, "}");
                     }
                     else {
                         writer.Write(" => ", member.HandlerFieldName, ".GetterHandler");
                         WriteMemberImplementationHandlerCall(writer, member.Parameters);
+                        writer.Write(";");
                     }
                     break;
 
@@ -232,8 +240,29 @@ namespace SourceMock.Generators.Internal {
             RefKind.None => null,
             RefKind.Ref => "ref",
             RefKind.In => "in",
+            RefKind.Out => "out",
             _ => throw new NotSupportedException($"Unsupported parameter ref kind: {refKind}")
         };
+
+        private void WriteMethodImplementationBody(CodeWriter writer, bool hasOutParameters, in MockedMember member) {
+            if (hasOutParameters) {
+                writer.WriteLine("{");
+                foreach (var parameter in member.Parameters) {
+                    if (parameter.RefKind != RefKind.Out)
+                        continue;
+                    writer.WriteLine(Indents.MemberBody, parameter.Name, " = default;");
+                }
+                writer.Write(Indents.MemberBody, "return ", member.HandlerFieldName);
+                WriteMemberImplementationHandlerCall(writer, member.Parameters);
+                writer.WriteLine(";");
+                writer.Write(Indents.Member, "}");
+                return;
+            }
+
+            writer.Write("=> ", member.HandlerFieldName);
+            WriteMemberImplementationHandlerCall(writer, member.Parameters);
+            writer.Write(";");
+        }
 
         private void WriteMemberImplementationHandlerCall(CodeWriter writer, ImmutableArray<Parameter> parameters) {
             writer.Write(".Call(");
@@ -242,7 +271,7 @@ namespace SourceMock.Generators.Internal {
                     writer.Write(", ");
                 writer.Write(parameter.Name);
             }
-            writer.WriteLine(");");
+            writer.Write(")");
         }
 
         private void WriteCallsInterfaceMember(CodeWriter writer, in MockedMember member) {
