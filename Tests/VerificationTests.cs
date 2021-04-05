@@ -67,5 +67,15 @@ namespace SourceMock.Tests {
 
             Assert.Equal(new[] { "test" }, mock.Calls.Name.set());
         }
+
+        [Fact]
+        public void RefArgument() {
+            var mock = new NeedsParameterModifiersMock();
+
+            var x = 5;
+            mock.TestRef(ref x);
+
+            Assert.Equal(new[] { 5 }, mock.Calls.TestRef());
+        }
     }
 }

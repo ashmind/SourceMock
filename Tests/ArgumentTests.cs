@@ -51,6 +51,16 @@ namespace SourceMock.Tests {
             Assert.Equal(3, mock.Sum(1, 2));
         }
 
+        [Fact]
+        public void RefArgument() {
+            var mock = new NeedsParameterModifiersMock();
+
+            mock.Setup.TestRef(1).Returns(2);
+
+            var x = 1;
+            Assert.Equal(2, mock.TestRef(ref x));
+        }
+
         private class EmptyClass : IEmptyInterface {}
     }
 }

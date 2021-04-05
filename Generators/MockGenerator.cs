@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -11,7 +12,14 @@ using SourceMock.Generators.Internal;
 namespace SourceMock.Generators {
     [Generator]
     internal class MockGenerator : ISourceGenerator {
-        private readonly MockClassGenerator _classGenerator = new MockClassGenerator();
+        #pragma warning disable RS2008 // Enable analyzer release tracking
+        private static readonly DiagnosticDescriptor SingleMockFailedToGenerateDiagnosticDescriptor = new DiagnosticDescriptor(
+            "SM0001", "Failed to generate a single mock", "Failed to generate mock for {0}: {1}",   
+            "Generation", DiagnosticSeverity.Warning, isEnabledByDefault: true
+        );
+        #pragma warning restore RS2008 // Enable analyzer release tracking
+
+        private readonly MockClassGenerator _classGenerator = new();
 
         public void Initialize(GeneratorInitializationContext context) {
             context.RegisterForSyntaxNotifications(() => new TypesToMockCollectingReceiver());
@@ -19,11 +27,21 @@ namespace SourceMock.Generators {
 
         public void Execute(GeneratorExecutionContext context) {
             var targetTypes = ((TypesToMockCollectingReceiver)context.SyntaxContextReceiver!).TypesToMock;
-            foreach (var targetType in targetTypes) {
+            foreach (var targetType in targetTypes) {                
                 var targetTypeQualifiedName = targetType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
                 var target = new MockTarget(targetType, targetTypeQualifiedName);
 
-                var mockContent = _classGenerator.Generate(target);
+                string mockContent;
+                try {
+                    mockContent = _classGenerator.Generate(target);
+                }
+                catch (Exception ex) {
+                    context.ReportDiagnostic(Diagnostic.Create(
+                        SingleMockFailedToGenerateDiagnosticDescriptor, location: null, targetTypeQualifiedName, ex.ToString()
+                    ));
+                    continue;
+                }
+
                 var mockFileName = Regex.Replace(target.FullTypeName, @"[^\w\d]", "_");
                 context.AddSource(mockFileName + ".cs", SourceText.From(mockContent, Encoding.UTF8));
             }

@@ -100,9 +100,9 @@ namespace SourceMock.Generators.Internal {
         }
 
         private ImmutableArray<Parameter> ConvertParametersFromSymbols(ImmutableArray<IParameterSymbol> parameters) {
-            return ImmutableArray.CreateRange(
-                parameters.Select((p, index) => new Parameter(p.Name, GetFullTypeName(p.Type, p.NullableAnnotation), index))
-            );
+            return ImmutableArray.CreateRange(parameters.Select((p, index) => new Parameter(
+                p.Name, GetFullTypeName(p.Type, p.NullableAnnotation), p.RefKind, index
+            )));
         }
 
         private string GetFullTypeName(ITypeSymbol type, NullableAnnotation nullableAnnotation) {
@@ -197,6 +197,8 @@ namespace SourceMock.Generators.Internal {
                     foreach (var parameter in member.Parameters) {
                         if (parameter.Index > 0)
                             writer.Write(", ");
+                        if (GetRefModifier(parameter.RefKind) is {} modifier)
+                            writer.Write(modifier, " ");
                         writer.Write(parameter.TypeFullName, " ", parameter.Name);
                     }
                     writer.Write(") => ", member.HandlerFieldName);
@@ -219,6 +221,12 @@ namespace SourceMock.Generators.Internal {
                     break;
             }
         }
+
+        private string? GetRefModifier(RefKind refKind) => refKind switch {
+            RefKind.None => null,
+            RefKind.Ref => "ref",
+            _ => throw new NotSupportedException($"Unsupported parameter ref kind: {refKind}")
+        };
 
         private void WriteMemberImplementationHandlerCall(CodeWriter writer, ImmutableArray<Parameter> parameters) {
             writer.Write(".Call(");
@@ -360,14 +368,16 @@ namespace SourceMock.Generators.Internal {
         }
 
         private readonly struct Parameter {
-            public Parameter(string name, string typeFullName, int index) {
+            public Parameter(string name, string typeFullName, RefKind refKind, int index) {
                 Name = name;
                 TypeFullName = typeFullName;
+                RefKind = refKind;
                 Index = index;
             }
 
             public string Name { get; }
             public string TypeFullName { get; }
+            public RefKind RefKind { get; }
             public int Index { get; }
         }
     }
