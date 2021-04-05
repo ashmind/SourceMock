@@ -11,13 +11,6 @@ instead of
 mock.Setup(x => x.Parse(It.IsAny<string>())).Return(3)
 ```
 
-# Status
-
-The framework is NOT ready.  
-
-Abridged list of things that do not work:
-- Generic methods
-
 # Getting started
 
 All examples assume the following interface:
@@ -71,6 +64,7 @@ Instead, assert `.Calls` at the end of the test to confirm the expected calls.
 
 These are not _intentionally_ excluded, just not yet supported:
 1. Abstract classes
+2. Generic constraints
 2. Custom default values
 3. Custom parameter matchers
 4. Custom mock callbacks

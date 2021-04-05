@@ -26,8 +26,12 @@ namespace SourceMock.Generators.Internal {
 
             var mainWriter = new CodeWriter()
                 .WriteLine("#nullable enable")
-                .WriteLine("namespace ", targetTypeNamespace, ".Mocks {")
-                .Write(Indents.Type, "public class ", mockClassName, " : ")
+                .WriteLine("namespace ", targetTypeNamespace, ".Mocks {");
+
+            mainWriter.Write(Indents.Type, "public class ", mockClassName);
+            WriteMockTypeParametersIfAny(target, mainWriter);
+            mainWriter
+                .Write(" : ")
                     .Write(target.FullTypeName, ", ", setupInterfaceName, ", ", callsInterfaceName, ", ")
                     .WriteGeneric(KnownTypes.IMock.FullName, target.FullTypeName)
                     .WriteLine(" {")
@@ -42,7 +46,7 @@ namespace SourceMock.Generators.Internal {
 
             var memberId = 1;
             foreach (var memberSymbol in target.Type.GetMembers()) {
-                if (GetMockedMember(memberSymbol, memberId) is not {} member)
+                if (GetMockedMember(memberSymbol, memberId) is not { } member)
                     continue;
 
                 mainWriter.WriteLine();
@@ -73,6 +77,22 @@ namespace SourceMock.Generators.Internal {
 
             mainWriter.Write("}");
             return mainWriter.ToString();
+        }
+
+        private CodeWriter WriteMockTypeParametersIfAny(MockTarget target, CodeWriter mainWriter) {
+            if (target.Type.TypeParameters is not { Length: > 0 } parameters)
+                return mainWriter;
+
+            mainWriter.Write("<");
+            var index = 0;
+            foreach (var parameter in parameters) {
+                EnsureNoUnsupportedConstraints(parameter);
+                if (index > 0)
+                    mainWriter.Write(", ");
+                mainWriter.Write(parameter.Name);
+                index += 1;
+            }
+            return mainWriter.Write(">");
         }
 
         private MockedMember? GetMockedMember(ISymbol member, int uniqueMemberId) => member switch {
@@ -114,7 +134,23 @@ namespace SourceMock.Generators.Internal {
         private ImmutableArray<GenericParameter> ConvertGenericParametersFromSymbols(ImmutableArray<ITypeParameterSymbol> typeParameters) {
             if (typeParameters.Length == 0)
                 return ImmutableArray<GenericParameter>.Empty;
-            return ImmutableArray.CreateRange(typeParameters.Select((p, index) => new GenericParameter(p.Name, index)));
+            return ImmutableArray.CreateRange(typeParameters.Select((p, index) => {
+                EnsureNoUnsupportedConstraints(p);
+                return new GenericParameter(p.Name, index);
+            }));
+        }
+
+        private void EnsureNoUnsupportedConstraints(ITypeParameterSymbol parameter) {
+            var hasConstraints = parameter.HasConstructorConstraint
+                              || parameter.HasReferenceTypeConstraint
+                              || parameter.HasValueTypeConstraint
+                              || parameter.HasConstructorConstraint
+                              || parameter.HasNotNullConstraint
+                              || parameter.HasUnmanagedTypeConstraint
+                              || parameter.ConstraintTypes.Length > 0;
+
+            if (hasConstraints)
+                throw new NotSupportedException("Generic constraints are not yet supported.");
         }
 
         private string GetFullTypeName(ITypeSymbol type, NullableAnnotation nullableAnnotation) {

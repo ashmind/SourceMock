@@ -48,7 +48,7 @@ namespace SourceMock.Generators {
         }
 
         private class TypesToMockCollectingReceiver : ISyntaxContextReceiver {
-            public ISet<ITypeSymbol> TypesToMock { get; } = new HashSet<ITypeSymbol>(SymbolEqualityComparer.Default);
+            public ISet<INamedTypeSymbol> TypesToMock { get; } = new HashSet<INamedTypeSymbol>(SymbolEqualityComparer.Default);
 
             public void OnVisitSyntaxNode(GeneratorSyntaxContext context) {
                 if (context.Node is not AttributeListSyntax { Target: {} target, Attributes: var attributes })
@@ -96,7 +96,7 @@ namespace SourceMock.Generators {
             private void CollectTypesRecursively(INamespaceSymbol parent, SemanticModel semanticModel) {
                 foreach (var member in parent.GetMembers()) {
                     switch (member) {
-                        case ITypeSymbol type:
+                        case INamedTypeSymbol type:
                             CollectTypeIfMockable(type, semanticModel);
                             break;
 
@@ -107,7 +107,7 @@ namespace SourceMock.Generators {
                 }
             }
 
-            private void CollectTypeIfMockable(ITypeSymbol type, SemanticModel semanticModel) {
+            private void CollectTypeIfMockable(INamedTypeSymbol type, SemanticModel semanticModel) {
                 if (type.TypeKind != TypeKind.Interface)
                     return;
 
