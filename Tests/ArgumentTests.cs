@@ -52,6 +52,15 @@ namespace SourceMock.Tests {
         }
 
         [Fact]
+        public void InArgument() {
+            var mock = new NeedsParameterModifiersMock();
+
+            mock.Setup.TestIn(1).Returns(2);
+
+            Assert.Equal(2, mock.TestIn(1));
+        }
+
+        [Fact]
         public void RefArgument() {
             var mock = new NeedsParameterModifiersMock();
 

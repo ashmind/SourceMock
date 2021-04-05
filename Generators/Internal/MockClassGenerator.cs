@@ -225,6 +225,7 @@ namespace SourceMock.Generators.Internal {
         private string? GetRefModifier(RefKind refKind) => refKind switch {
             RefKind.None => null,
             RefKind.Ref => "ref",
+            RefKind.In => "in",
             _ => throw new NotSupportedException($"Unsupported parameter ref kind: {refKind}")
         };
 

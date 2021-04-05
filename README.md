@@ -16,7 +16,7 @@ mock.Setup(x => x.Parse(It.IsAny<string>())).Return(3)
 The framework is NOT ready.  
 
 Abridged list of things that do not work:
-1. ref/out parameters and ref returns
+1. out parameters
 2. Generic methods
 3. Events
 4. Pretty much anything fancy
