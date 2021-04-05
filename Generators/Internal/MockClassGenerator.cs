@@ -45,6 +45,7 @@ namespace SourceMock.Generators.Internal {
             foreach (var memberSymbol in target.Type.GetMembers()) {
                 if (GetMockedMember(memberSymbol, memberId) is not {} member)
                     continue;
+
                 mainWriter.WriteLine();
                 WriteMemberMocks(
                     mainWriter,
@@ -92,7 +93,9 @@ namespace SourceMock.Generators.Internal {
                 GetHandlerFieldName(property.Name, uniqueMemberId)
             ),
 
-            _ => null
+            IMethodSymbol { MethodKind: not MethodKind.Ordinary } => null,
+
+            _ => throw MemberNotSupported(member)
         };
 
         private string GetHandlerFieldName(string memberName, int uniqueMemberId) {
@@ -133,7 +136,7 @@ namespace SourceMock.Generators.Internal {
             var (handlerTypeFullName, handlerValue) = member.Symbol switch {
                 IMethodSymbol => (KnownTypes.MockMethodHandler.FullName, "new()"),
                 IPropertySymbol property => (KnownTypes.MockPropertyHandler.FullName, property.SetMethod != null ? "new(true)" : "new(false)"),
-                _ => throw MemberNotSupported(member)
+                var s => throw MemberNotSupported(s)
             };
             var handlerGenericParameterFullName = !member.IsVoidMethod ? member.TypeFullName : KnownTypes.VoidReturn.FullName;
             writer
@@ -183,7 +186,7 @@ namespace SourceMock.Generators.Internal {
                 IPropertySymbol property => property.SetMethod != null
                     ? KnownTypes.IMockSettablePropertySetup.FullName
                     : KnownTypes.IMockPropertySetup.FullName,
-                _ => throw MemberNotSupported(member)
+                var s => throw MemberNotSupported(s)
             };
             writer.WriteGeneric(setupTypeFullName, member.TypeFullName);
         }
@@ -219,6 +222,9 @@ namespace SourceMock.Generators.Internal {
                         WriteMemberImplementationHandlerCall(writer, member.Parameters);
                     }
                     break;
+
+                default:
+                    throw MemberNotSupported(member.Symbol);
             }
         }
 
@@ -292,7 +298,7 @@ namespace SourceMock.Generators.Internal {
                     writer.Write(" { get; }");
                     break;
                 default:
-                    throw MemberNotSupported(member);
+                    throw MemberNotSupported(member.Symbol);
             }
         }
 
@@ -339,7 +345,9 @@ namespace SourceMock.Generators.Internal {
             writer.Write(">");
         }
 
-        private NotSupportedException MemberNotSupported(in MockedMember member) => new NotSupportedException($"Unknown member symbol type: {member.Symbol.GetType()}");
+        private NotSupportedException MemberNotSupported(ISymbol symbol) => new NotSupportedException(
+            $"{symbol.Name} has an unsupported member symbol type ({symbol.GetType()})"
+        );
 
         private readonly struct MockedMember
         {
