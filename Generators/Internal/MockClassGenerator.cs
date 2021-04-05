@@ -10,11 +10,10 @@ namespace SourceMock.Generators.Internal {
         );
 
         private static class Indents {
-            public const string TopLevelType = "    ";
-            public const string TopLevelTypeMember = TopLevelType + "    ";
-            public const string TopLevelMemberBody = TopLevelTypeMember + "    ";
-            public const string Type = "        ";
-        }        
+            public const string Type = "    ";
+            public const string Member = Type + "    ";
+            public const string MemberBody = Member + "    ";
+        }
 
         public string Generate(in MockTarget target) {
             var targetTypeNamespace = target.Type.ContainingNamespace.ToDisplayString(TargetTypeNamespaceDisplayFormat);
@@ -25,19 +24,19 @@ namespace SourceMock.Generators.Internal {
             var mainWriter = new CodeWriter()
                 .WriteLine("#nullable enable")
                 .WriteLine("namespace ", targetTypeNamespace, ".Mocks {")
-                .WriteLine(Indents.TopLevelType, "[", KnownTypes.GeneratedMockAttribute.FullNameWithoutAttribute, "]")
-                .Write(Indents.TopLevelType, "public class ", mockClassName, " : ")
+                .WriteLine(Indents.Type, "[", KnownTypes.GeneratedMockAttribute.FullNameWithoutAttribute, "]")
+                .Write(Indents.Type, "public class ", mockClassName, " : ")
                     .WriteLine(target.FullTypeName, ", ", setupInterfaceName, ", ", callsInterfaceName, " {")
-                .WriteLine(Indents.TopLevelTypeMember, "public ", setupInterfaceName, " Setup => this;")
-                .WriteLine(Indents.TopLevelTypeMember, "public ", callsInterfaceName, " Calls => this;");
+                .WriteLine(Indents.Member, "public ", setupInterfaceName, " Setup => this;")
+                .WriteLine(Indents.Member, "public ", callsInterfaceName, " Calls => this;");
 
             var setupInterfaceWriter = new CodeWriter()
-                .WriteLine(Indents.TopLevelType, "[", KnownTypes.GeneratedMockAttribute.FullNameWithoutAttribute, "]")
-                .WriteLine(Indents.TopLevelType, "public interface ", setupInterfaceName, " {");
+                .WriteLine(Indents.Type, "[", KnownTypes.GeneratedMockAttribute.FullNameWithoutAttribute, "]")
+                .WriteLine(Indents.Type, "public interface ", setupInterfaceName, " {");
 
             var callsInterfaceWriter = new CodeWriter()
-                .WriteLine(Indents.TopLevelType, "[", KnownTypes.GeneratedMockAttribute.FullNameWithoutAttribute, "]")
-                .WriteLine(Indents.TopLevelType, "public interface ", callsInterfaceName, " {");
+                .WriteLine(Indents.Type, "[", KnownTypes.GeneratedMockAttribute.FullNameWithoutAttribute, "]")
+                .WriteLine(Indents.Type, "public interface ", callsInterfaceName, " {");
 
             var memberId = 1;
             foreach (var memberSymbol in target.Type.GetMembers()) {
@@ -55,15 +54,15 @@ namespace SourceMock.Generators.Internal {
                 memberId += 1;
             }
 
-            mainWriter.WriteLine(Indents.TopLevelType, "}");
+            mainWriter.WriteLine(Indents.Type, "}");
 
-            setupInterfaceWriter.Write(Indents.TopLevelType, "}");
+            setupInterfaceWriter.Write(Indents.Type, "}");
             mainWriter
                 .WriteLine()
                 .Append(setupInterfaceWriter)
                 .WriteLine();
 
-            callsInterfaceWriter.Write(Indents.TopLevelType, "}");
+            callsInterfaceWriter.Write(Indents.Type, "}");
             mainWriter
                 .WriteLine()
                 .Append(callsInterfaceWriter)
@@ -135,13 +134,13 @@ namespace SourceMock.Generators.Internal {
             };
             var handlerGenericParameterFullName = !member.IsVoidMethod ? member.TypeFullName : KnownTypes.VoidReturn.FullName;
             writer
-                .Write(Indents.TopLevelTypeMember, "private readonly ")
+                .Write(Indents.Member, "private readonly ")
                 .WriteGeneric(handlerTypeFullName, handlerGenericParameterFullName)
                 .WriteLine(" ", member.HandlerFieldName, " = ", handlerValue, ";");
         }
 
         private void WriteSetupInterfaceMember(CodeWriter writer, in MockedMember member) {
-            writer.Write(Indents.TopLevelTypeMember);
+            writer.Write(Indents.Member);
             WriteSetupMemberType(writer, member);
             writer.Write(" ");
             WriteSetupOrCallsInterfaceMemberNameAndParameters(writer, member);
@@ -149,7 +148,7 @@ namespace SourceMock.Generators.Internal {
         }
 
         private void WriteSetupMemberImplementation(CodeWriter writer, string setupInterfaceName, in MockedMember member) {
-            writer.Write(Indents.TopLevelTypeMember);
+            writer.Write(Indents.Member);
             WriteSetupMemberType(writer, member);
             writer.Write(" ", setupInterfaceName, ".", member.Name);
             if (member.Symbol is IMethodSymbol) {
@@ -187,7 +186,7 @@ namespace SourceMock.Generators.Internal {
         }
 
         private void WriteMemberImplementation(CodeWriter writer, in MockedMember member) {
-            writer.Write(Indents.TopLevelTypeMember, "public ", member.TypeFullName, " ", member.Name);
+            writer.Write(Indents.Member, "public ", member.TypeFullName, " ", member.Name);
 
             switch (member.Symbol) {
                 case IMethodSymbol:
@@ -204,11 +203,11 @@ namespace SourceMock.Generators.Internal {
                 case IPropertySymbol property:
                     if (property.SetMethod != null) {
                         writer.WriteLine(" {");
-                        writer.Write(Indents.TopLevelMemberBody, "get => ", member.HandlerFieldName, ".GetterHandler");
+                        writer.Write(Indents.MemberBody, "get => ", member.HandlerFieldName, ".GetterHandler");
                         WriteMemberImplementationHandlerCall(writer, ImmutableArray<Parameter>.Empty);
-                        writer.Write(Indents.TopLevelMemberBody, "set => ", member.HandlerFieldName, ".SetterHandler");
+                        writer.Write(Indents.MemberBody, "set => ", member.HandlerFieldName, ".SetterHandler");
                         WriteMemberImplementationHandlerCall(writer, member.Parameters);
-                        writer.WriteLine(Indents.TopLevelTypeMember, "}");
+                        writer.WriteLine(Indents.Member, "}");
                     }
                     else {
                         writer.Write(" => ", member.HandlerFieldName, ".GetterHandler");
@@ -229,7 +228,7 @@ namespace SourceMock.Generators.Internal {
         }
 
         private void WriteCallsInterfaceMember(CodeWriter writer, in MockedMember member) {
-            writer.Write(Indents.TopLevelTypeMember);            
+            writer.Write(Indents.Member);            
             WriteCallsMemberType(writer, member);
             writer.Write(" ");
             WriteSetupOrCallsInterfaceMemberNameAndParameters(writer, member);
@@ -237,7 +236,7 @@ namespace SourceMock.Generators.Internal {
         }
 
         private void WriteCallsMemberImplementation(CodeWriter writer, string callsInterfaceName, in MockedMember member) {
-            writer.Write(Indents.TopLevelTypeMember);
+            writer.Write(Indents.Member);
             WriteCallsMemberType(writer, member);
             writer.Write(" ", callsInterfaceName, ".", member.Name);
             if (member.Symbol is IMethodSymbol) {
