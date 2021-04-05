@@ -5,7 +5,7 @@ namespace SourceMock.Tests {
     public class ReturnValueTests {
         [Fact]
         public void ValueType() {
-            var mock = new MockIMockable();
+            var mock = new MockableMock();
 
             mock.Setup.GetInt32().Returns(3);
 
@@ -14,7 +14,7 @@ namespace SourceMock.Tests {
 
         [Fact]
         public void NullableValueType() {
-            var mock = new MockIMockable();
+            var mock = new MockableMock();
 
             mock.Setup.GetInt32Nullable().Returns(null);
 
@@ -23,7 +23,7 @@ namespace SourceMock.Tests {
 
         [Fact]
         public void ReferenceType() {
-            var mock = new MockIMockable();
+            var mock = new MockableMock();
 
             mock.Setup.GetString().Returns("a");
 
@@ -32,7 +32,7 @@ namespace SourceMock.Tests {
 
         [Fact]
         public void NullableReferenceType() {
-            var mock = new MockIMockable();
+            var mock = new MockableMock();
 
             mock.Setup.GetStringNullable().Returns(null);
 
@@ -41,7 +41,7 @@ namespace SourceMock.Tests {
 
         [Fact]
         public void Property() {
-            var mock = new MockIMockable();
+            var mock = new MockableMock();
 
             mock.Setup.Count.Returns(10);
 

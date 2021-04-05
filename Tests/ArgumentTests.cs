@@ -6,7 +6,7 @@ namespace SourceMock.Tests {
     public class ArgumentTests {
         [Fact]
         public void SingleArgument() {
-            var mock = new MockIMockable();
+            var mock = new MockableMock();
 
             mock.Setup.ParseToInt32("1").Returns(1);
             mock.Setup.ParseToInt32("2").Returns(2);
@@ -16,7 +16,7 @@ namespace SourceMock.Tests {
 
         [Fact]
         public void SingleArgument_NullValue() {
-            var mock = new MockIMockable();
+            var mock = new MockableMock();
 
             mock.Setup.ParseToInt32(null).Returns(1);
 
@@ -25,7 +25,7 @@ namespace SourceMock.Tests {
 
         [Fact]
         public void SingleArgument_Interface() {
-            var mock = new MockIMockable();
+            var mock = new MockableMock();
             var argument = new EmptyClass();
 
             mock.Setup.TestInterface(argument).Returns(true);
@@ -35,7 +35,7 @@ namespace SourceMock.Tests {
 
         [Fact]
         public void SingleArgument_Optional() {
-            var mock = new MockIMockable();
+            var mock = new MockableMock();
 
             mock.Setup.ParseToInt32().Returns(1);
 
@@ -44,7 +44,7 @@ namespace SourceMock.Tests {
 
         [Fact]
         public void MultipleArguments() {
-            var mock = new MockIMockable();
+            var mock = new MockableMock();
 
             mock.Setup.Sum(1, 2).Returns(3);
 

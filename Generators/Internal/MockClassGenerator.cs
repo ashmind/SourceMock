@@ -17,9 +17,12 @@ namespace SourceMock.Generators.Internal {
 
         public string Generate(in MockTarget target) {
             var targetTypeNamespace = target.Type.ContainingNamespace.ToDisplayString(TargetTypeNamespaceDisplayFormat);
-            var mockClassName = "Mock" + target.Type.Name;
-            var setupInterfaceName = "ISetup" + target.Type.Name;
-            var callsInterfaceName = "ICalls" + target.Type.Name;
+            var normalizedTargetTypeName = target.Type.Name.StartsWith("I") && char.IsUpper(target.Type.Name.ElementAtOrDefault(1))
+                ? target.Type.Name.Substring(1)
+                : target.Type.Name;
+            var mockClassName = normalizedTargetTypeName + "Mock";
+            var setupInterfaceName = "I" + normalizedTargetTypeName + "Setup";
+            var callsInterfaceName = "I" + normalizedTargetTypeName + "Calls";
 
             var mainWriter = new CodeWriter()
                 .WriteLine("#nullable enable")

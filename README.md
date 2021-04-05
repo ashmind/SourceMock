@@ -39,7 +39,7 @@ namespace Parsing {
 
 using Parsing.Mocks;
 
-var parser = new MockIParser();
+var parser = new ParserMock();
 parser.Setup.Parse().Returns(1);
 
 Assert.Equal(1, parser.Parse());
@@ -52,7 +52,7 @@ Assert.Equal(1, parser.Parse());
 
 using Parsing.Mocks;
 
-var parser = new MockIParser();
+var parser = new ParserMock();
 
 parser.Parse("1");
 parser.Parse("2");

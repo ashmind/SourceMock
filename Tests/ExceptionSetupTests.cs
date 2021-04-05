@@ -6,7 +6,7 @@ namespace SourceMock.Tests {
     public class ExceptionSetupTests {
         [Fact]
         public void Simple() {
-            var mock = new MockIMockable();
+            var mock = new MockableMock();
 
             mock.Setup.GetInt32().Throws<Exception>();
 

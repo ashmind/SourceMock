@@ -1,16 +1,16 @@
 ﻿#nullable enable
 namespace SourceMock.Tests.TestInterfaces.Mocks {
     [SourceMock.Internal.GeneratedMock]
-    public class MockIEmptyInterface : global::SourceMock.Tests.TestInterfaces.IEmptyInterface, ISetupIEmptyInterface, ICallsIEmptyInterface {
-        public ISetupIEmptyInterface Setup => this;
-        public ICallsIEmptyInterface Calls => this;
+    public class EmptyInterfaceMock : global::SourceMock.Tests.TestInterfaces.IEmptyInterface, IEmptyInterfaceSetup, IEmptyInterfaceCalls {
+        public IEmptyInterfaceSetup Setup => this;
+        public IEmptyInterfaceCalls Calls => this;
     }
 
     [SourceMock.Internal.GeneratedMock]
-    public interface ISetupIEmptyInterface {
+    public interface IEmptyInterfaceSetup {
     }
 
     [SourceMock.Internal.GeneratedMock]
-    public interface ICallsIEmptyInterface {
+    public interface IEmptyInterfaceCalls {
     }
 }
