@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 
 namespace SourceMock.Internal {
-    public class MockPropertyCalls<T> : IMockSettablePropertyCalls<T> {
+    internal class MockPropertyCalls<T> : IMockSettablePropertyCalls<T> {
         private readonly MockPropertyHandler<T> _handler;
 
         public MockPropertyCalls(MockPropertyHandler<T> handler) {

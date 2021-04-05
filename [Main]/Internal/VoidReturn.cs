@@ -1,6 +1,6 @@
 namespace SourceMock.Internal {
-    public class VoidReturn
-    {
+    /// <summary>This type supports generated code and is not intended to be used directly.</summary>
+    public class VoidReturn {
         private VoidReturn() {}
     }
 }

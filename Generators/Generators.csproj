@@ -2,6 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
+    <IsPackable>false</IsPackable>
     <AssemblyName>SourceMock.Generators</AssemblyName>
     <RootNamespace>SourceMock.Generators</RootNamespace>
   </PropertyGroup>

@@ -1,6 +1,7 @@
 using System;
 
 namespace SourceMock.Internal {
+    /// <summary>This type supports generated code and is not intended to be used directly.</summary>
     public readonly struct MockArgumentMatcher<T>: IMockArgumentMatcher {
         private readonly Func<T, bool>? _matches;
 
@@ -14,6 +15,7 @@ namespace SourceMock.Internal {
             _ => false
         });
 
+        /// <summary>This operator supports generated code and is not intended to be used directly.</summary>
         public static implicit operator MockArgumentMatcher<T>(T value) => new(v => Equals(v, value));
     }
 }

@@ -3,10 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 
 namespace SourceMock.Internal {
-    public partial class MockMethodHandler {
+    /// <summary>This type supports generated code and is not intended to be used directly.</summary>
+    public class MockMethodHandler {
         private readonly IList<IMockMethodSetupInternal> _setups = new List<IMockMethodSetupInternal>();
         private readonly IList<MockCall> _calls = new List<MockCall>();
 
+        /// <summary>This method supports generated code and is not intended to be used directly.</summary>
         public IMockMethodSetup<TReturn> Setup<TReturn>(IReadOnlyList<Type>? genericArguments, IReadOnlyList<IMockArgumentMatcher>? arguments) {
             genericArguments ??= Array.Empty<Type>();
             arguments ??= Array.Empty<IMockArgumentMatcher>();
@@ -16,6 +18,7 @@ namespace SourceMock.Internal {
             return setup;
         }
 
+        /// <summary>This method supports generated code and is not intended to be used directly.</summary>
         public TReturn Call<TReturn>(IReadOnlyList<Type>? genericArguments, IReadOnlyList<object?>? arguments) {
             genericArguments ??= Array.Empty<Type>();
             arguments ??= Array.Empty<object?>();
@@ -27,6 +30,7 @@ namespace SourceMock.Internal {
             return (setup != null ? ((MockMethodSetup<TReturn>)setup).Execute() : DefaultValue.Get<TReturn>())!;
         }
 
+        /// <summary>This method supports generated code and is not intended to be used directly.</summary>
         public IReadOnlyList<T> Calls<T>(
             IReadOnlyList<Type>? genericArguments,
             IReadOnlyList<IMockArgumentMatcher>? arguments,

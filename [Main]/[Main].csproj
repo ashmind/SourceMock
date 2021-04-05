@@ -3,6 +3,14 @@
     <TargetFrameworks>netstandard2.1; net471</TargetFrameworks>
     <AssemblyName>SourceMock</AssemblyName>
     <RootNamespace>SourceMock</RootNamespace>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+  </PropertyGroup>
+  <PropertyGroup>
+    <Description>Mocking framework that uses Roslyn source generators for extra flexibility.</Description>
+    <Authors>Andrey Shchekin</Authors>
+    <PackageProjectUrl>https://github.com/ashmind/SourceMock</PackageProjectUrl>
+    <RepositoryType>git</RepositoryType>
+    <RepositoryUrl>https://github.com/ashmind/SourceMock.git</RepositoryUrl>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="System.Collections.Immutable" Version="5.0.0" />
