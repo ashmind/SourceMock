@@ -20,6 +20,12 @@ namespace SourceMock.Internal {
             _exception = exception;
         }
 
+        public void Throws<TException>()
+            where TException : Exception, new()
+        {
+            Throws(new TException());
+        }
+
         public IReadOnlyList<IMockArgumentMatcher> Arguments { get; }
 
         public TReturn? Execute() {

@@ -8,6 +8,15 @@ namespace SourceMock.Tests {
         public void Simple() {
             var mock = new MockableMock();
 
+            mock.Setup.GetInt32().Throws(new Exception());
+
+            Assert.Throws<Exception>(() => mock.GetInt32());
+        }
+
+        [Fact]
+        public void Generic() {
+            var mock = new MockableMock();
+
             mock.Setup.GetInt32().Throws<Exception>();
 
             Assert.Throws<Exception>(() => mock.GetInt32());
