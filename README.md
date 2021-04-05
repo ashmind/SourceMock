@@ -2,7 +2,7 @@
 
 SourceMock is a C# mocking framework based on source generators.  
 
-This potentially allows for a nicer interface than reflection based frameworks, for example:
+This allows for a nicer interface than reflection based frameworks, for example:
 ```csharp
 mock.Setup.Parse().Returns(3);
 ```
@@ -40,6 +40,7 @@ namespace Parsing {
 using Parsing.Mocks;
 
 var parser = new ParserMock();
+
 parser.Setup.Parse().Returns(1);
 
 Assert.Equal(1, parser.Parse());
