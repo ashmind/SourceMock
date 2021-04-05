@@ -1,4 +1,5 @@
 using System;
+using System.Text.RegularExpressions;
 
 namespace SourceMock {
     /// <summary>Requests mock generation for a specific assembly.</summary>
@@ -20,5 +21,13 @@ namespace SourceMock {
         }
 
         internal Type AnyTypeInTargetAssembly { get; }
+
+        /// <summary>
+        /// Pattern of type names to exclude from mock generation.
+        /// </summary>
+        /// <remarks>
+        /// PAttern is based on <see cref="Regex"/> syntax.
+        /// </remarks>
+        public string? ExcludeRegex { get; set; }
     }
 }

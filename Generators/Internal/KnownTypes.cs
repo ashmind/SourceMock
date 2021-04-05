@@ -9,6 +9,10 @@ namespace SourceMock.Generators.Internal {
             public static bool NamespaceMatches(INamespaceSymbol? @namespace) => @namespace is {
                 Name: "SourceMock", ContainingNamespace: { IsGlobalNamespace: true }
             };
+
+            public static class NamedParameters {
+                public const string ExcludeRegex = "ExcludeRegex";
+            }
         }
 
         public static class IMock {

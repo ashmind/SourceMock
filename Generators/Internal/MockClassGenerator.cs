@@ -15,7 +15,7 @@ namespace SourceMock.Generators.Internal {
             public const string MemberBody = Member + "    ";
         }
 
-        public string Generate(in MockTarget target) {
+        public string Generate(MockTarget target) {
             var targetTypeNamespace = target.Type.ContainingNamespace.ToDisplayString(TargetTypeNamespaceDisplayFormat);
             var normalizedTargetTypeName = target.Type.Name.StartsWith("I") && char.IsUpper(target.Type.Name.ElementAtOrDefault(1))
                 ? target.Type.Name.Substring(1)
