@@ -50,12 +50,16 @@ namespace SourceMock.Generators {
                 if (attribute.Name is not IdentifierNameSyntax name)
                     return;
 
-                if (name.Identifier.ValueText is not KnownTypes.GenerateMocksForAssemblyOfAttribute.Name and not KnownTypes.GenerateMocksForAssemblyOfAttribute.ShortName)
+                if (name.Identifier.ValueText is not KnownTypes.GenerateMocksForAssemblyOfAttribute.Name
+                                             and not KnownTypes.GenerateMocksForAssemblyOfAttribute.NameWithoutAttribute)
                     return;
 
                 // Double check the resolved type
                 var attributeType = context.SemanticModel.GetTypeInfo(attribute).Type;
-                if (attributeType is not { Name: KnownTypes.GenerateMocksForAssemblyOfAttribute.Name, ContainingNamespace: { Name: KnownTypes.GenerateMocksForAssemblyOfAttribute.Namespace } })
+                if (attributeType is not { Name: KnownTypes.GenerateMocksForAssemblyOfAttribute.Name })
+                    return;
+
+                if (!KnownTypes.GenerateMocksForAssemblyOfAttribute.NamespaceMatches(attributeType.ContainingNamespace))
                     return;
 
                 ProcessGenerateMocksForAssemblyOfAttribute(attribute, context);
@@ -79,6 +83,8 @@ namespace SourceMock.Generators {
                         case ITypeSymbol type:
                             if (type.TypeKind != TypeKind.Interface)
                                 continue;
+                            if (type.GetAttributes().Any(IsGeneratedMockAttribute))
+                                continue;
                             TypesToMock.Add(type);
                             break;
 
@@ -87,6 +93,16 @@ namespace SourceMock.Generators {
                             break;
                     }                    
                 }
+            }
+
+            private bool IsGeneratedMockAttribute(AttributeData attribute) {
+                if (attribute.AttributeClass is not {} attributeClass)
+                    return false;
+
+                if (attributeClass.Name != KnownTypes.GeneratedMockAttribute.Name)
+                    return false;
+
+                return KnownTypes.GeneratedMockAttribute.NamespaceMatches(attributeClass.ContainingNamespace);
             }
         }
     }

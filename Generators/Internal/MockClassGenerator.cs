@@ -10,6 +10,8 @@ namespace SourceMock.Generators.Internal {
         );
 
         private static class Indents {
+            public const string TopLevelType = "    ";
+            public const string TopLevelTypeMember = TopLevelType + "    ";
             public const string Type = "        ";
             public const string Member = Type + "    ";
             public const string MemberBody = Member +  "    ";
@@ -17,33 +19,41 @@ namespace SourceMock.Generators.Internal {
 
         public string Generate(in MockInfo mock) {
             var targetTypeNamespace = mock.TargetType.ContainingNamespace.ToDisplayString(TargetTypeNamespaceDisplayFormat);
+            var setupInterfaceName = "ISetup" + mock.TargetType.Name;
 
             var mainWriter = new CodeWriter()
                 .WriteLine("#nullable enable")
                 .WriteLine("namespace ", targetTypeNamespace, ".Mocks {")
-                .WriteLine("    public static class ", mock.MockTypeName, " {")
-                .WriteLine(Indents.Type, "public class Instance : ", mock.TargetTypeQualifiedName, ", ISetup, ICalls {")
-                .WriteLine(Indents.Member, "public ISetup Setup => this;")
+                .WriteLine(Indents.TopLevelType, "[", KnownTypes.GeneratedMockAttribute.FullNameWithoutAttribute, "]")
+                .WriteLine(Indents.TopLevelType, "public static class ", mock.MockTypeName, " {")
+                .WriteLine(Indents.Type, "public class Instance : ", mock.TargetTypeQualifiedName, ", ", setupInterfaceName,", ICalls {")
+                .WriteLine(Indents.Member, "public ", setupInterfaceName, " Setup => this;")
                 .WriteLine(Indents.Member, "public ICalls Calls => this;")
                 .WriteLine();
 
             var setupInterfaceWriter = new CodeWriter()
-                .WriteLine(Indents.Type, "public interface ISetup {");
+                .WriteLine(Indents.TopLevelType, "[", KnownTypes.GeneratedMockAttribute.FullNameWithoutAttribute, "]")
+                .WriteLine(Indents.TopLevelType, "public interface ", setupInterfaceName, " {");
 
             var callsInterfaceWriter = new CodeWriter()
                 .WriteLine(Indents.Type, "public interface ICalls {");
 
             var memberId = 1;
-            foreach (var member in mock.TargetType.GetMembers()) {
-                var context = GetMockedMember(member, memberId);
-                if (context == null)
+            foreach (var memberSymbol in mock.TargetType.GetMembers()) {
+                if (GetMockedMember(memberSymbol, memberId) is not {} member)
                     continue;
-                WriteMemberMocks(mainWriter, setupInterfaceWriter, callsInterfaceWriter, context!.Value);
+                WriteMemberMocks(
+                    mainWriter,
+                    setupInterfaceWriter,
+                    setupInterfaceName,
+                    callsInterfaceWriter,                    
+                    member
+                );
                 memberId += 1;
                 mainWriter.WriteLine();
             }
 
-            setupInterfaceWriter.Write(Indents.Type, "}");
+            setupInterfaceWriter.Write(Indents.TopLevelType, "}");
             callsInterfaceWriter.Write(Indents.Type, "}");
 
             mainWriter
@@ -52,9 +62,6 @@ namespace SourceMock.Generators.Internal {
                 .WriteLine();
 
             mainWriter
-                .Append(setupInterfaceWriter)
-                .WriteLine()
-                .WriteLine()
                 .Append(callsInterfaceWriter)
                 .WriteLine()
                 .WriteLine();
@@ -63,9 +70,14 @@ namespace SourceMock.Generators.Internal {
                 .Write(Indents.Type, "public static ", mock.MockTypeName, ".Instance Get(this ")
                 .WriteGeneric(KnownTypes.Mock.FullName, mock.TargetTypeQualifiedName)
                 .WriteLine(" _) => new();")
-                .WriteLine("    }")
-                .Write("}");
+                .WriteLine(Indents.TopLevelType, "}")
+                .WriteLine();
 
+            mainWriter
+                .Append(setupInterfaceWriter)
+                .WriteLine();
+
+            mainWriter.Write("}");
             return mainWriter.ToString();
         }
 
@@ -109,12 +121,13 @@ namespace SourceMock.Generators.Internal {
         private void WriteMemberMocks(
             CodeWriter mockWriter,
             CodeWriter setupInterfaceWriter,
+            string setupInterfaceName,
             CodeWriter callsInterfaceWriter,
             in MockedMember member
         ) {
             WriteHandlerField(mockWriter, member);
             WriteSetupInterfaceMember(setupInterfaceWriter, member);
-            WriteSetupMemberImplementation(mockWriter, member);
+            WriteSetupMemberImplementation(mockWriter, setupInterfaceName, member);
             WriteMemberImplementation(mockWriter, member);
             WriteCallsInterfaceMember(callsInterfaceWriter, member);
             WriteCallsMemberImplementation(mockWriter, member);
@@ -135,17 +148,17 @@ namespace SourceMock.Generators.Internal {
         }
 
         private void WriteSetupInterfaceMember(CodeWriter writer, in MockedMember member) {
-            writer.Write(Indents.Member);
+            writer.Write(Indents.TopLevelTypeMember);
             WriteSetupMemberType(writer, member);
             writer.Write(" ");
             WriteSetupOrCallsInterfaceMemberNameAndParameters(writer, member);
             writer.WriteLine();
         }
 
-        private void WriteSetupMemberImplementation(CodeWriter writer, in MockedMember member) {
+        private void WriteSetupMemberImplementation(CodeWriter writer, string setupInterfaceName, in MockedMember member) {
             writer.Write(Indents.Member);
             var returnMock = WriteSetupMemberType(writer, member);
-            writer.Write(" ISetup.", member.Name);
+            writer.Write(" ", setupInterfaceName, ".", member.Name);
             if (member.Symbol is IMethodSymbol) {
                 writer.Write("(");
                 WriteSetupOrCallsMemberParameters(writer, member, appendDefaultValue: false);
