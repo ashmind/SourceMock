@@ -17,12 +17,10 @@ namespace SourceMock.Generators.Internal {
 
         public string Generate(MockTarget target) {
             var targetTypeNamespace = target.Type.ContainingNamespace.ToDisplayString(TargetTypeNamespaceDisplayFormat);
-            var normalizedTargetTypeName = target.Type.Name.StartsWith("I") && char.IsUpper(target.Type.Name.ElementAtOrDefault(1))
-                ? target.Type.Name.Substring(1)
-                : target.Type.Name;
-            var mockClassName = normalizedTargetTypeName + "Mock";
-            var setupInterfaceName = "I" + normalizedTargetTypeName + "Setup";
-            var callsInterfaceName = "I" + normalizedTargetTypeName + "Calls";
+            var mockBaseName = GenerateMockBaseName(target.Type.Name);
+            var mockClassName = mockBaseName + "Mock";
+            var setupInterfaceName = "I" + mockBaseName + "Setup";
+            var callsInterfaceName = "I" + mockBaseName + "Calls";
 
             var mainWriter = new CodeWriter()
                 .WriteLine("#nullable enable")
@@ -77,6 +75,17 @@ namespace SourceMock.Generators.Internal {
 
             mainWriter.Write("}");
             return mainWriter.ToString();
+        }
+
+        private string GenerateMockBaseName(string targetName) {
+            if (targetName.Length < 3)
+                return targetName;
+
+            var canRemoveI = targetName[0] == 'I'
+                          && char.IsUpper(targetName[1])
+                          && char.IsLower(targetName[2]);
+
+            return canRemoveI ? targetName.Substring(1) : targetName;
         }
 
         private CodeWriter WriteMockTypeParametersIfAny(MockTarget target, CodeWriter mainWriter) {
