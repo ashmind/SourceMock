@@ -1,11 +1,12 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFrameworks>netstandard2.1; net471</TargetFrameworks>
     <AssemblyName>SourceMock</AssemblyName>
     <RootNamespace>SourceMock</RootNamespace>
-    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>    
   </PropertyGroup>
   <PropertyGroup>
+    <Version>0.9-preview-01</Version>
     <Description>Mocking framework that uses Roslyn source generators for extra flexibility.</Description>
     <Authors>Andrey Shchekin</Authors>
     <PackageProjectUrl>https://github.com/ashmind/SourceMock</PackageProjectUrl>
@@ -14,5 +15,11 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="System.Collections.Immutable" Version="5.0.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Generators\Generators.csproj" ReferenceOutputAssembly="false" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="../Generators/bin/$(Configuration)/netstandard2.0/SourceMock.Generators.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
   </ItemGroup>
 </Project>
