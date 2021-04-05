@@ -1,5 +1,6 @@
 using Xunit;
 using SourceMock.Tests.TestInterfaces;
+using SourceMock.Tests.TestInterfaces.Mocks;
 
 namespace SourceMock.Tests {
     public class VerificationTests {

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using SourceMock.Tests.TestInterfaces;
+using SourceMock.Tests.TestInterfaces.Mocks;
 using Xunit;
 
 namespace SourceMock.Tests {

@@ -5,16 +5,23 @@ using Microsoft.CodeAnalysis;
 
 namespace SourceMock.Generators.Internal {
     internal class MockClassGenerator {
+        private static readonly SymbolDisplayFormat TargetTypeNamespaceDisplayFormat = SymbolDisplayFormat.FullyQualifiedFormat.WithGlobalNamespaceStyle(
+            SymbolDisplayGlobalNamespaceStyle.OmittedAsContaining
+        );
+
         private static class Indents {
-            public const string Type = "    ";
-            public const string Member = "        ";
-            public const string MemberBody = "            ";
+            public const string Type = "        ";
+            public const string Member = Type + "    ";
+            public const string MemberBody = Member +  "    ";
         }        
 
         public string Generate(in MockInfo mock) {
+            var targetTypeNamespace = mock.TargetType.ContainingNamespace.ToDisplayString(TargetTypeNamespaceDisplayFormat);
+
             var mainWriter = new CodeWriter()
                 .WriteLine("#nullable enable")
-                .WriteLine("public static class ", mock.MockTypeName, " {")
+                .WriteLine("namespace ", targetTypeNamespace, ".Mocks {")
+                .WriteLine("    public static class ", mock.MockTypeName, " {")
                 .WriteLine(Indents.Type, "public class Instance : ", mock.TargetTypeQualifiedName, ", ISetup, ICalls {")
                 .WriteLine(Indents.Member, "public ISetup Setup => this;")
                 .WriteLine(Indents.Member, "public ICalls Calls => this;")
@@ -40,22 +47,23 @@ namespace SourceMock.Generators.Internal {
             callsInterfaceWriter.Write(Indents.Type, "}");
 
             mainWriter
-                .WriteLine("    }")
+                .WriteLine(Indents.Type, "}")
                 .WriteLine()
-                .WriteLine()
+                .WriteLine();
+
+            mainWriter
                 .Append(setupInterfaceWriter)
                 .WriteLine()
                 .WriteLine()
                 .Append(callsInterfaceWriter)
                 .WriteLine()
-                .WriteLine()
-                .Write(Indents.Type, "public interface IReturnedSetup : ISetup, ")
-                .WriteGeneric(KnownTypes.IMockMethodSetup.FullName, mock.TargetTypeQualifiedName)
-                .WriteLine(" {}")
-                .WriteLine()
+                .WriteLine();
+
+            mainWriter
                 .Write(Indents.Type, "public static ", mock.MockTypeName, ".Instance Get(this ")
                 .WriteGeneric(KnownTypes.Mock.FullName, mock.TargetTypeQualifiedName)
                 .WriteLine(" _) => new();")
+                .WriteLine("    }")
                 .Write("}");
 
             return mainWriter.ToString();
