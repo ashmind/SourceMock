@@ -1,3 +1,4 @@
+using System;
 using System.Text;
 
 namespace SourceMock.Generators.Internal {
@@ -141,5 +142,9 @@ namespace SourceMock.Generators.Internal {
         }
 
         public override string ToString() => _builder.ToString();
+
+        internal void Write(object fullName, string v) {
+            throw new NotImplementedException();
+        }
     }
 }

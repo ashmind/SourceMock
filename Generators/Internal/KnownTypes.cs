@@ -19,6 +19,10 @@ namespace SourceMock.Generators.Internal {
             public const string FullName = "SourceMock.IMockMethodSetup";
         }
 
+        public static class IMockArgumentMatcher {
+            public const string FullName = "SourceMock.Internal.IMockArgumentMatcher";
+        }
+
         public static class MockMethodHandler {
             public const string FullName = "SourceMock.Internal.MockMethodHandler";
         }

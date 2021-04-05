@@ -5,9 +5,9 @@ namespace SourceMock.Tests.Interfaces.Mocks {
         public IMockable2Calls Calls => this;
 
         private readonly SourceMock.Internal.MockMethodHandler _getString1Handler = new();
-        SourceMock.IMockMethodSetup<string> IMockable2Setup.GetString() => _getString1Handler.Setup<string>();
-        public string GetString() => _getString1Handler.Call<string>();
-        System.Collections.Generic.IReadOnlyList<SourceMock.NoArguments> IMockable2Calls.GetString() => _getString1Handler.Calls(_ => SourceMock.NoArguments.Value);
+        SourceMock.IMockMethodSetup<string> IMockable2Setup.GetString() => _getString1Handler.Setup<string>(null, null);
+        public string GetString() => _getString1Handler.Call<string>(null, null);
+        System.Collections.Generic.IReadOnlyList<SourceMock.NoArguments> IMockable2Calls.GetString() => _getString1Handler.Calls(null, null, _ => SourceMock.NoArguments.Value);
     }
 
     public interface IMockable2Setup {

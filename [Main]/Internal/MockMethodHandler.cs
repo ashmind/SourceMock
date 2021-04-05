@@ -3,35 +3,42 @@ using System.Collections.Generic;
 using System.Linq;
 
 namespace SourceMock.Internal {
-    public class MockMethodHandler {
-        private readonly IList<IMockMethodSetup> _setups = new List<IMockMethodSetup>();
-        private readonly IList<object?[]> _calls = new List<object?[]>();
+    public partial class MockMethodHandler {
+        private readonly IList<IMockMethodSetupInternal> _setups = new List<IMockMethodSetupInternal>();
+        private readonly IList<MockCall> _calls = new List<MockCall>();
 
-        public IMockMethodSetup<TReturn> Setup<TReturn>(params IMockArgumentMatcher[] arguments) {
-            var setup = new MockMethodSetup<TReturn>(arguments);
+        public IMockMethodSetup<TReturn> Setup<TReturn>(IReadOnlyList<Type>? genericArguments, IReadOnlyList<IMockArgumentMatcher>? arguments) {
+            genericArguments ??= Array.Empty<Type>();
+            arguments ??= Array.Empty<IMockArgumentMatcher>();
+            var setup = new MockMethodSetup<TReturn>(genericArguments, arguments);
             _setups.Add(setup);
+
             return setup;
         }
 
-        public TReturn Call<TReturn>(params object?[] arguments) {
-            _calls.Add(arguments);
+        public TReturn Call<TReturn>(IReadOnlyList<Type>? genericArguments, IReadOnlyList<object?>? arguments) {
+            genericArguments ??= Array.Empty<Type>();
+            arguments ??= Array.Empty<object?>();
+            var call = new MockCall(genericArguments, arguments);
+            _calls.Add(call);
 
-            var setup = _setups
-                .Cast<MockMethodSetup<TReturn>>()
-                .FirstOrDefault(s => ArgumentsMatch(arguments, s.Arguments));
-            return (setup != null ? setup.Execute() : DefaultValue.Get<TReturn>())!;
+            // setups added later take priority
+            var setup = _setups.LastOrDefault(s => s.Matches(call));
+            return (setup != null ? ((MockMethodSetup<TReturn>)setup).Execute() : DefaultValue.Get<TReturn>())!;
         }
 
-        public IReadOnlyList<T> Calls<T>(Func<object?[], T> convertResult, params IMockArgumentMatcher[] arguments) {
+        public IReadOnlyList<T> Calls<T>(
+            IReadOnlyList<Type>? genericArguments,
+            IReadOnlyList<IMockArgumentMatcher>? arguments,
+            Func<IReadOnlyList<object?>, T> convertResult
+        ) {
+            genericArguments ??= Array.Empty<Type>();
+            arguments ??= Array.Empty<IMockArgumentMatcher>();
             return _calls
-                .Where(c => ArgumentsMatch(c, arguments))
-                .Select(convertResult)
+                .Where(c => c.Matches(genericArguments, arguments))
+                .Select(c => convertResult(c.Arguments))
                 .Cast<T>()
                 .ToList();
-        }
-
-        private bool ArgumentsMatch(object?[] arguments, IReadOnlyList<IMockArgumentMatcher> matchers) {
-            return arguments.Zip(matchers, (a, m) => m.Matches(a)).All(m => m);
         }
     }
 }

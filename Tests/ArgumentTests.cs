@@ -80,6 +80,17 @@ namespace SourceMock.Tests {
             Assert.Equal(2, mock.TestOut(out x));
         }
 
+        [Fact]
+        public void Generic() {
+            var mock = new NeedsGenericsMock();
+
+            mock.Setup.Get<long>().Returns(1);
+            mock.Setup.Get<int>().Returns(2);
+            mock.Setup.Get<double>().Returns(3);
+
+            Assert.Equal(2, mock.Get<int>());
+        }
+
         private class EmptyClass : IEmptyInterface {}
     }
 }

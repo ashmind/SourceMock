@@ -5,19 +5,19 @@ namespace SourceMock.Tests.Interfaces.Mocks {
         public INeedsOtherDefaultsCalls Calls => this;
 
         private readonly SourceMock.Internal.MockMethodHandler _executeAsync1Handler = new();
-        SourceMock.IMockMethodSetup<global::System.Threading.Tasks.Task> INeedsOtherDefaultsSetup.ExecuteAsync() => _executeAsync1Handler.Setup<global::System.Threading.Tasks.Task>();
-        public global::System.Threading.Tasks.Task ExecuteAsync() => _executeAsync1Handler.Call<global::System.Threading.Tasks.Task>();
-        System.Collections.Generic.IReadOnlyList<SourceMock.NoArguments> INeedsOtherDefaultsCalls.ExecuteAsync() => _executeAsync1Handler.Calls(_ => SourceMock.NoArguments.Value);
+        SourceMock.IMockMethodSetup<global::System.Threading.Tasks.Task> INeedsOtherDefaultsSetup.ExecuteAsync() => _executeAsync1Handler.Setup<global::System.Threading.Tasks.Task>(null, null);
+        public global::System.Threading.Tasks.Task ExecuteAsync() => _executeAsync1Handler.Call<global::System.Threading.Tasks.Task>(null, null);
+        System.Collections.Generic.IReadOnlyList<SourceMock.NoArguments> INeedsOtherDefaultsCalls.ExecuteAsync() => _executeAsync1Handler.Calls(null, null, _ => SourceMock.NoArguments.Value);
 
         private readonly SourceMock.Internal.MockMethodHandler _getStringAsync2Handler = new();
-        SourceMock.IMockMethodSetup<global::System.Threading.Tasks.Task<object>> INeedsOtherDefaultsSetup.GetStringAsync() => _getStringAsync2Handler.Setup<global::System.Threading.Tasks.Task<object>>();
-        public global::System.Threading.Tasks.Task<object> GetStringAsync() => _getStringAsync2Handler.Call<global::System.Threading.Tasks.Task<object>>();
-        System.Collections.Generic.IReadOnlyList<SourceMock.NoArguments> INeedsOtherDefaultsCalls.GetStringAsync() => _getStringAsync2Handler.Calls(_ => SourceMock.NoArguments.Value);
+        SourceMock.IMockMethodSetup<global::System.Threading.Tasks.Task<object>> INeedsOtherDefaultsSetup.GetStringAsync() => _getStringAsync2Handler.Setup<global::System.Threading.Tasks.Task<object>>(null, null);
+        public global::System.Threading.Tasks.Task<object> GetStringAsync() => _getStringAsync2Handler.Call<global::System.Threading.Tasks.Task<object>>(null, null);
+        System.Collections.Generic.IReadOnlyList<SourceMock.NoArguments> INeedsOtherDefaultsCalls.GetStringAsync() => _getStringAsync2Handler.Calls(null, null, _ => SourceMock.NoArguments.Value);
 
         private readonly SourceMock.Internal.MockMethodHandler _getListAsync3Handler = new();
-        SourceMock.IMockMethodSetup<global::System.Threading.Tasks.Task<global::System.Collections.Generic.IList<int>>> INeedsOtherDefaultsSetup.GetListAsync() => _getListAsync3Handler.Setup<global::System.Threading.Tasks.Task<global::System.Collections.Generic.IList<int>>>();
-        public global::System.Threading.Tasks.Task<global::System.Collections.Generic.IList<int>> GetListAsync() => _getListAsync3Handler.Call<global::System.Threading.Tasks.Task<global::System.Collections.Generic.IList<int>>>();
-        System.Collections.Generic.IReadOnlyList<SourceMock.NoArguments> INeedsOtherDefaultsCalls.GetListAsync() => _getListAsync3Handler.Calls(_ => SourceMock.NoArguments.Value);
+        SourceMock.IMockMethodSetup<global::System.Threading.Tasks.Task<global::System.Collections.Generic.IList<int>>> INeedsOtherDefaultsSetup.GetListAsync() => _getListAsync3Handler.Setup<global::System.Threading.Tasks.Task<global::System.Collections.Generic.IList<int>>>(null, null);
+        public global::System.Threading.Tasks.Task<global::System.Collections.Generic.IList<int>> GetListAsync() => _getListAsync3Handler.Call<global::System.Threading.Tasks.Task<global::System.Collections.Generic.IList<int>>>(null, null);
+        System.Collections.Generic.IReadOnlyList<SourceMock.NoArguments> INeedsOtherDefaultsCalls.GetListAsync() => _getListAsync3Handler.Calls(null, null, _ => SourceMock.NoArguments.Value);
     }
 
     public interface INeedsOtherDefaultsSetup {

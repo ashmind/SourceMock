@@ -187,11 +187,7 @@ namespace SourceMock.Generators.Internal {
             writer.Write(member.HandlerFieldName, ".Setup");
             if (member.Symbol is IMethodSymbol) {
                 writer.Write("<", member.HandlerGenericParameterFullName, ">(");
-                foreach (var parameter in member.Parameters) {
-                    if (parameter.Index > 0)
-                        writer.Write(", ");
-                    writer.Write(parameter.Name);
-                }
+                WriteCommonMethodHandlerArguments(writer, member, KnownTypes.IMockArgumentMatcher.FullName);
                 writer.Write(")");
             }
             else {
@@ -242,13 +238,13 @@ namespace SourceMock.Generators.Internal {
                         WriteMemberImplementationHandlerCall(writer, member, ImmutableArray<Parameter>.Empty);
                         writer.WriteLine(";");
                         writer.Write(Indents.MemberBody, "set => ", member.HandlerFieldName, ".SetterHandler");
-                        WriteMemberImplementationHandlerCall(writer, member, member.Parameters);
+                        WriteMemberImplementationHandlerCall(writer, member);
                         writer.WriteLine(";");
                         writer.Write(Indents.Member, "}");
                     }
                     else {
                         writer.Write(" => ", member.HandlerFieldName, ".GetterHandler");
-                        WriteMemberImplementationHandlerCall(writer, member, member.Parameters);
+                        WriteMemberImplementationHandlerCall(writer, member);
                         writer.Write(";");
                     }
                     break;
@@ -287,13 +283,9 @@ namespace SourceMock.Generators.Internal {
             return writer.Write(";");
         }
 
-        private CodeWriter WriteMemberImplementationHandlerCall(CodeWriter writer, in MockedMember member, ImmutableArray<Parameter> parameters) {
+        private CodeWriter WriteMemberImplementationHandlerCall(CodeWriter writer, in MockedMember member, ImmutableArray<Parameter>? parametersOverride = null) {
             writer.Write(".Call<", member.HandlerGenericParameterFullName, ">(");
-            foreach (var parameter in parameters) {
-                if (parameter.Index > 0)
-                    writer.Write(", ");
-                writer.Write(parameter.Name);
-            }
+            WriteCommonMethodHandlerArguments(writer, member, "object?", parametersOverride);
             return writer.Write(")");
         }
 
@@ -316,8 +308,9 @@ namespace SourceMock.Generators.Internal {
             }
             writer.Write(" => ", member.HandlerFieldName, ".Calls(");
             if (member.Symbol is IMethodSymbol) {
+                WriteCommonMethodHandlerArguments(writer, member, KnownTypes.IMockArgumentMatcher.FullName).Write(", ");
                 var parameters = member.Parameters;
-                if (parameters.Length > 0) {
+                if (!parameters.IsEmpty) {
                     writer.Write("args => (");
                     foreach (var parameter in parameters) {
                         if (parameter.Index > 0)
@@ -330,9 +323,6 @@ namespace SourceMock.Generators.Internal {
                 }
                 else {
                     writer.Write("_ => ", KnownTypes.NoArguments.FullName, ".Value");
-                }
-                foreach (var parameter in parameters) {
-                    writer.Write(", ", parameter.Name);
                 }
             }
             return writer.Write(");");
@@ -395,6 +385,43 @@ namespace SourceMock.Generators.Internal {
                     .Write(" ", parameter.Name);
                 if (appendDefaultValue)
                     writer.Write(" = default");
+            }
+            return writer;
+        }
+
+        private CodeWriter WriteCommonMethodHandlerArguments(
+            CodeWriter writer,
+            in MockedMember member,
+            string argumentTypeFullName,
+            ImmutableArray<Parameter>? parametersOverride = null
+        ) {
+            var parameters = parametersOverride ?? member.Parameters;
+
+            if (!member.GenericParameters.IsEmpty) {
+                writer.Write("new[] { ");
+                foreach (var parameter in member.GenericParameters) {
+                    if (parameter.Index > 0)
+                        writer.Write(", ");
+                    writer.Write("typeof(", parameter.Name, ")");
+                }
+                writer.Write("}");
+            }
+            else {
+                writer.Write("null");
+            }
+            writer.Write(", ");
+
+            if (!parameters.IsEmpty) {
+                writer.Write("new ", argumentTypeFullName, "[] { ");
+                foreach (var parameter in parameters) {
+                    if (parameter.Index > 0)
+                        writer.Write(", ");
+                    writer.Write(parameter.Name);
+                }
+                writer.Write("}");
+            }
+            else {
+                writer.Write("null");
             }
             return writer;
         }

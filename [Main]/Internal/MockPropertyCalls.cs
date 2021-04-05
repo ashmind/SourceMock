@@ -8,8 +8,8 @@ namespace SourceMock.Internal {
             _handler = handler;
         }
 
-        public IReadOnlyList<NoArguments> get => _handler.GetterHandler.Calls(_ => NoArguments.Value);
+        public IReadOnlyList<NoArguments> get => _handler.GetterHandler.Calls(null, null, _ => NoArguments.Value);
 
-        public IReadOnlyList<T> set(MockArgumentMatcher<T> value = default) => _handler.SetterHandler.Calls(args => (T)args[0]!, value);
+        public IReadOnlyList<T> set(MockArgumentMatcher<T> value = default) => _handler.SetterHandler.Calls(null, new IMockArgumentMatcher[] { value }, args => (T)args[0]!);
     }
 }
