@@ -41,7 +41,7 @@ parser.Setup.Parse().Returns(1);
 Assert.Equal(1, parser.Parse());
 ```
 
-## Verifying calls
+## Verify calls
 
 ```csharp
 [assembly: GenerateMocksForAssemblyOf(typeof(IParser))]
@@ -58,11 +58,25 @@ Assert.Equal(new[] { "1", "2" }, parser.Calls.Parse());
 
 # Limitations
 
-The following things are not (yet?) supported:
-1. Custom parameter matchers
-2. Custom mock callbacks
-3. Setting up output values for ref and out parameters
-4. Anything more advanced than the above
+## By Design
+
+### Strict Mocks
+
+SourceMock does not provide strict mocks — this is by design.  
+I believe that verifying setups blurs the line between Arrange and Assert and decreases test readability. 
+
+Instead, assert `.Calls` at the end of the test to confirm the expected calls.
+
+## Not Yet
+
+These are not _intentionally_ excluded, just not yet supported:
+1. Abstract classes
+2. Custom default values
+3. Custom parameter matchers
+4. Custom mock callbacks
+5. Setting up output values for ref and out parameters
+6. Chained setups
+7. Anything more advanced than the above
 
 # Kudos
 
