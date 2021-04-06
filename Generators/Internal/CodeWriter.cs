@@ -1,4 +1,3 @@
-using System;
 using System.Text;
 
 namespace SourceMock.Generators.Internal {
@@ -127,12 +126,12 @@ namespace SourceMock.Generators.Internal {
             return this;
         }
 
-        public CodeWriter WriteGeneric(string genericTypeName, string genericArgumentName) {
-            _builder
-                .Append(genericTypeName)
+        public CodeWriter WriteGeneric(string genericTypeName, params string[] genericArgumentNames) {
+            _builder.Append(genericTypeName)
                 .Append("<")
-                .Append(genericArgumentName)
+                .Append(string.Join(",", genericArgumentNames))
                 .Append(">");
+
             return this;
         }
 
@@ -142,9 +141,5 @@ namespace SourceMock.Generators.Internal {
         }
 
         public override string ToString() => _builder.ToString();
-
-        internal void Write(object fullName, string v) {
-            throw new NotImplementedException();
-        }
     }
 }

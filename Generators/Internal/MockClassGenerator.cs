@@ -104,7 +104,8 @@ namespace SourceMock.Generators.Internal {
                 GetFullTypeName(method.ReturnType, method.ReturnNullableAnnotation),
                 ConvertGenericParametersFromSymbols(method.TypeParameters),
                 ConvertParametersFromSymbols(method.Parameters),
-                GetHandlerFieldName(method.Name, uniqueMemberId)
+                GetHandlerFieldName(method.Name, uniqueMemberId),
+                GetCallbackDelegateName(method.Name, uniqueMemberId)
             ),
 
             IPropertySymbol property => new(
@@ -114,7 +115,8 @@ namespace SourceMock.Generators.Internal {
                 property.SetMethod == null
                     ? ImmutableArray<Parameter>.Empty
                     : ConvertParametersFromSymbols(property.SetMethod.Parameters),
-                GetHandlerFieldName(property.Name, uniqueMemberId)
+                GetHandlerFieldName(property.Name, uniqueMemberId),
+                GetCallbackDelegateName(property.Name, uniqueMemberId)
             ),
 
             IMethodSymbol { MethodKind: not MethodKind.Ordinary } => null,
@@ -124,6 +126,10 @@ namespace SourceMock.Generators.Internal {
 
         private string GetHandlerFieldName(string memberName, int uniqueMemberId) {
             return $"_{char.ToLowerInvariant(memberName[0])}{memberName.Substring(1)}{uniqueMemberId}Handler";
+        }
+
+        private string GetCallbackDelegateName(string memberName, int uniqueMemberId) {
+            return $"{memberName}{uniqueMemberId}Callback";
         }
 
         private ImmutableArray<Parameter> ConvertParametersFromSymbols(ImmutableArray<IParameterSymbol> parameters) {
@@ -172,6 +178,7 @@ namespace SourceMock.Generators.Internal {
             in MockedMember member
         ) {
             WriteHandlerField(mockWriter, member).WriteLine();
+            WriteSetupCallbackDelegate(mockWriter, member).WriteLine();
             WriteSetupInterfaceMember(setupInterfaceWriter, member).WriteLine();
             WriteSetupMemberImplementation(mockWriter, setupInterfaceName, member).WriteLine();
             WriteMemberImplementation(mockWriter, member).WriteLine();
@@ -180,8 +187,7 @@ namespace SourceMock.Generators.Internal {
             return mockWriter;
         }
 
-        private CodeWriter WriteHandlerField(CodeWriter writer, in MockedMember member)
-        {
+        private CodeWriter WriteHandlerField(CodeWriter writer, in MockedMember member) {
             writer.Write(Indents.Member, "private readonly ");
             switch (member.Symbol) {
                 case IMethodSymbol:
@@ -225,7 +231,12 @@ namespace SourceMock.Generators.Internal {
 
             writer.Write(member.HandlerFieldName, ".Setup");
             if (member.Symbol is IMethodSymbol) {
-                writer.Write("<", member.HandlerGenericParameterFullName, ">(");
+                var callbackType = GetCallbackType(member);
+                var callGenericTypes = callbackType != null
+                    ? callbackType + ", " + member.HandlerGenericParameterFullName
+                    : member.HandlerGenericParameterFullName;
+
+                writer.Write("<", callGenericTypes, ">(");
                 WriteCommonMethodHandlerArguments(writer, member, KnownTypes.IMockArgumentMatcher.FullName);
                 writer.Write(")");
             }
@@ -247,7 +258,29 @@ namespace SourceMock.Generators.Internal {
                     : KnownTypes.IMockPropertySetup.FullName,
                 var s => throw MemberNotSupported(s)
             };
-            return writer.WriteGeneric(setupTypeFullName, member.TypeFullName);
+
+            var callbackType = GetCallbackType(member);
+
+            if (callbackType == null || member.Symbol is IPropertySymbol) {
+                return writer.WriteGeneric(setupTypeFullName, member.TypeFullName);
+            }
+
+            return writer.WriteGeneric(setupTypeFullName, callbackType, member.TypeFullName);
+        }
+
+        private string? GetCallbackType(in MockedMember member) {
+            if (member.Parameters.Length > 0) {
+                return $"System.Action<{string.Join(",", member.Parameters.Select(x => x.TypeFullName).ToArray())}>";
+            }
+
+            return "System.Action";
+        }
+
+        private CodeWriter WriteSetupCallbackDelegate(CodeWriter writer, in MockedMember member) {
+            if (true)
+                return writer;
+
+            //return writer.Write($"delegate void {member.CallbackDelegateName}({string.Join(",", member.Parameters.Select(x => x.TypeFullName + " " + x.Name))});");
         }
 
         private CodeWriter WriteMemberImplementation(CodeWriter writer, in MockedMember member) {
@@ -261,7 +294,7 @@ namespace SourceMock.Generators.Internal {
                     foreach (var parameter in member.Parameters) {
                         if (parameter.Index > 0)
                             writer.Write(", ");
-                        if (GetRefModifier(parameter.RefKind) is {} modifier)
+                        if (GetRefModifier(parameter.RefKind) is { } modifier)
                             writer.Write(modifier, " ");
                         writer.Write(parameter.TypeFullName, " ", parameter.Name);
                         hasOutParameters = hasOutParameters || (parameter.RefKind == RefKind.Out);
@@ -323,16 +356,21 @@ namespace SourceMock.Generators.Internal {
         }
 
         private CodeWriter WriteMemberImplementationHandlerCall(CodeWriter writer, in MockedMember member, ImmutableArray<Parameter>? parametersOverride = null) {
-            writer.Write(".Call<", member.HandlerGenericParameterFullName, ">(");
+            var callbackType = GetCallbackType(member);
+            var callGenericTypes = callbackType != null
+                ? callbackType + ", " + member.HandlerGenericParameterFullName
+                : member.HandlerGenericParameterFullName;
+
+            writer.Write(".Call<", callGenericTypes, ">(");
             WriteCommonMethodHandlerArguments(writer, member, "object?", parametersOverride);
             return writer.Write(")");
         }
 
         private CodeWriter WriteCallsInterfaceMember(CodeWriter writer, in MockedMember member) {
-            writer.Write(Indents.Member);            
+            writer.Write(Indents.Member);
             WriteCallsMemberType(writer, member);
             writer.Write(" ");
-            return WriteSetupOrCallsInterfaceMemberNameAndParameters(writer, member);            
+            return WriteSetupOrCallsInterfaceMemberNameAndParameters(writer, member);
         }
 
         private CodeWriter WriteCallsMemberImplementation(CodeWriter writer, string callsInterfaceName, in MockedMember member) {
@@ -482,8 +520,7 @@ namespace SourceMock.Generators.Internal {
             $"{symbol.Name} has an unsupported member symbol type ({symbol.GetType()})"
         );
 
-        private readonly struct MockedMember
-        {
+        private readonly struct MockedMember {
             public MockedMember(
                 ISymbol symbol,
                 string name,
@@ -491,7 +528,8 @@ namespace SourceMock.Generators.Internal {
                 string typeFullName,
                 ImmutableArray<GenericParameter> genericParameters,
                 ImmutableArray<Parameter> parameters,
-                string handlerFieldName
+                string handlerFieldName,
+                string callbackDelegateName
             ) {
                 Symbol = symbol;
                 Name = name;
@@ -500,6 +538,7 @@ namespace SourceMock.Generators.Internal {
                 GenericParameters = genericParameters;
                 Parameters = parameters;
                 HandlerFieldName = handlerFieldName;
+                CallbackDelegateName = callbackDelegateName;
             }
 
             public ISymbol Symbol { get; }
@@ -509,6 +548,7 @@ namespace SourceMock.Generators.Internal {
             public ImmutableArray<GenericParameter> GenericParameters { get; }
             public ImmutableArray<Parameter> Parameters { get; }
             public string HandlerFieldName { get; }
+            public string CallbackDelegateName { get; }
             public bool IsVoidMethod => Symbol is IMethodSymbol && Type.SpecialType == SpecialType.System_Void;
             public string HandlerGenericParameterFullName => !IsVoidMethod ? TypeFullName : KnownTypes.VoidReturn.FullName;
         }

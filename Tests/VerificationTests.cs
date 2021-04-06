@@ -1,5 +1,4 @@
 using Xunit;
-using SourceMock.Tests.Interfaces;
 using SourceMock.Tests.Interfaces.Mocks;
 
 namespace SourceMock.Tests {
