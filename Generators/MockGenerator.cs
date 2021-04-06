@@ -3,6 +3,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Text;
+using Roslyn.Utilities;
 using SourceMock.Generators.Internal;
 
 namespace SourceMock.Generators {
@@ -26,6 +27,7 @@ namespace SourceMock.Generators {
         public void Initialize(GeneratorInitializationContext context) {
         }
 
+        [PerformanceSensitive("")]
         public void Execute(GeneratorExecutionContext context) {
             foreach (var attribute in context.Compilation.Assembly.GetAttributes()) {
                 if (attribute.AttributeClass is not { Name: KnownTypes.GenerateMocksForAssemblyOfAttribute.Name } attributeClass)
@@ -38,6 +40,7 @@ namespace SourceMock.Generators {
             }
         }
 
+        [PerformanceSensitive("")]
         private void GenerateMocksForAttributeTargetAssembly(AttributeData attribute, in GeneratorExecutionContext context) {
             // intermediate code state? just in case
             if (attribute.ConstructorArguments[0].Value is not INamedTypeSymbol anyTypeInAssembly)
@@ -51,23 +54,30 @@ namespace SourceMock.Generators {
 
             Regex? excludeRegex;
             try {
+                #pragma warning disable HAA0502 // Explicit new reference type allocation -- No alternative at the moment (cache/pool later?)
                 excludeRegex = excludePattern != null ? new Regex(excludePattern) : null;
+                #pragma warning restore HAA0502
             }
             catch (ArgumentException ex) {
                 var attributeSyntax = attribute.ApplicationSyntaxReference;
+                #pragma warning disable HAA0101 // Array allocation for params parameter -- Exceptional case: OK to allocate
                 context.ReportDiagnostic(Diagnostic.Create(
                     DiagnosticDescriptors.RegexPatternFailedToParse,
                     attributeSyntax?.SyntaxTree.GetLocation(attributeSyntax.Span),
                     excludePattern, ex.Message
                 ));
+                #pragma warning restore HAA0101 // Array allocation for params parameter
                 return;
             }
 
             GenerateMocksForNamespace(anyTypeInAssembly.ContainingAssembly.GlobalNamespace, excludeRegex, context);
         }
 
+        [PerformanceSensitive("")]
         private void GenerateMocksForNamespace(INamespaceSymbol parent, Regex? excludeRegex, in GeneratorExecutionContext context) {
+            #pragma warning disable HAA0401 // Possible allocation of reference type enumerator -- TODO to revisit later
             foreach (var member in parent.GetMembers()) {
+            #pragma warning restore HAA0401
                 switch (member) {
                     case INamedTypeSymbol type:
                         GenerateMockForTypeIfApplicable(type, excludeRegex, context);
@@ -80,6 +90,7 @@ namespace SourceMock.Generators {
             }
         }
 
+        [PerformanceSensitive("")]
         private void GenerateMockForTypeIfApplicable(INamedTypeSymbol type, Regex? excludeRegex, in GeneratorExecutionContext context) {
             if (type.TypeKind != TypeKind.Interface)
                 return;
@@ -98,15 +109,19 @@ namespace SourceMock.Generators {
             GenerateMockForType(new MockTarget(type, fullName), context);
         }
 
+        [PerformanceSensitive("")]
         private void GenerateMockForType(MockTarget target, in GeneratorExecutionContext context) {
             string mockContent;
             try {
                 mockContent = _classGenerator.Generate(target);
             }
             catch (Exception ex) {
+                #pragma warning disable HAA0101 // Array allocation for params parameter
+                // Exceptional case: OK to allocate
                 context.ReportDiagnostic(Diagnostic.Create(
                     DiagnosticDescriptors.SingleMockFailedToGenerate, location: null, target.FullTypeName, ex.ToString()
                 ));
+                #pragma warning restore HAA0101 // Array allocation for params parameter
                 return;
             }
 

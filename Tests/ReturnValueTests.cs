@@ -56,5 +56,14 @@ namespace SourceMock.Tests {
 
             Assert.Equal(5, mock.Parse<int>("2+2"));
         }
+
+        [Fact]
+        public void Generic_ContainingInterface() {
+            var mock = new NeedsGenericsMock<int>();
+
+            mock.Setup.Get().Returns(5);
+
+            Assert.Equal(5, mock.Get());
+        }
     }
 }
