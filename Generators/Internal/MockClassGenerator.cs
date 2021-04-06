@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Linq;
 using Microsoft.CodeAnalysis;
+using Roslyn.Utilities;
 
 namespace SourceMock.Generators.Internal {
     internal class MockClassGenerator {
@@ -10,6 +10,7 @@ namespace SourceMock.Generators.Internal {
             SymbolDisplayGlobalNamespaceStyle.OmittedAsContaining
         );
 
+        [PerformanceSensitive("")]
         public string Generate(MockTarget target) {
             var targetTypeNamespace = target.Type.ContainingNamespace.ToDisplayString(TargetTypeNamespaceDisplayFormat);
             var mockBaseName = GenerateMockBaseName(target.Type.Name);
@@ -18,7 +19,9 @@ namespace SourceMock.Generators.Internal {
             var setupInterfaceName = "I" + mockBaseName + "Setup" + typeParameters;
             var callsInterfaceName = "I" + mockBaseName + "Calls" + typeParameters;
 
+            #pragma warning disable HAA0502 // Explicit allocation -- unavoidable for now, can be pooled later
             var mainWriter = new CodeWriter()
+            #pragma warning restore HAA0502
                 .WriteLine("#nullable enable")
                 .WriteLine("namespace ", targetTypeNamespace, ".Mocks {");
 
@@ -30,14 +33,20 @@ namespace SourceMock.Generators.Internal {
                 .WriteLine(Indents.Member, "public ", setupInterfaceName, " Setup => this;")
                 .WriteLine(Indents.Member, "public ", callsInterfaceName, " Calls => this;");
 
+            #pragma warning disable HAA0502 // Explicit allocation -- unavoidable for now, can be pooled later
             var setupInterfaceWriter = new CodeWriter()
+            #pragma warning restore HAA0502
                 .WriteLine(Indents.Type, "public interface ", setupInterfaceName, " {");
 
+            #pragma warning disable HAA0502 // Explicit allocation -- unavoidable for now, can be pooled later
             var callsInterfaceWriter = new CodeWriter()
+            #pragma warning restore HAA0502
                 .WriteLine(Indents.Type, "public interface ", callsInterfaceName, " {");
 
             var memberId = 1;
+            #pragma warning disable HAA0401 // Possible allocation of reference type enumerator - TODO
             foreach (var memberSymbol in GetAllMembers(target)) {
+            #pragma warning restore HAA0401
                 if (GetMockedMember(memberSymbol, memberId) is not { } member)
                     continue;
 
@@ -71,8 +80,11 @@ namespace SourceMock.Generators.Internal {
             return mainWriter.ToString();
         }
 
+        [PerformanceSensitive("")]
         private IEnumerable<ISymbol> GetAllMembers(MockTarget target) {
+            #pragma warning disable HAA0502 // Explicit allocation -- unavoidable for now, can be pooled later (or removed if we handle them differently)
             var seen = new HashSet<string>();
+            #pragma warning restore HAA0502
             foreach (var member in target.Type.GetMembers()) {
                 seen.Add(member.Name);
                 yield return member;
@@ -81,12 +93,13 @@ namespace SourceMock.Generators.Internal {
             foreach (var @interface in target.Type.AllInterfaces) {
                 foreach (var member in @interface.GetMembers()) {
                     if (!seen.Add(member.Name))
-                        throw new NotSupportedException($"Interface member {@interface.Name}.{member.Name} is hidden or overloaded by another interface member. This is not yet supported.");
+                        throw NotSupported($"Interface member {@interface.Name}.{member.Name} is hidden or overloaded by another interface member. This is not yet supported.");
                     yield return member;
                 }
             }
         }
 
+        [PerformanceSensitive("")]
         private string GenerateMockBaseName(string targetName) {
             if (targetName.Length < 3)
                 return targetName;
@@ -98,11 +111,14 @@ namespace SourceMock.Generators.Internal {
             return canRemoveI ? targetName.Substring(1) : targetName;
         }
 
+        [PerformanceSensitive("")]
         private string GenerateTypeParametersAsString(MockTarget target) {
             if (target.Type.TypeParameters is not { Length: > 0 } parameters)
                 return "";
 
+            #pragma warning disable HAA0502 // Explicit allocation -- unavoidable for now, can be pooled later
             var writer = new CodeWriter();
+            #pragma warning restore HAA0502
             writer.Write("<");
             var index = 0;
             foreach (var parameter in parameters) {
@@ -116,6 +132,7 @@ namespace SourceMock.Generators.Internal {
             return writer.ToString();
         }
 
+        [PerformanceSensitive("")]
         private MockedMember? GetMockedMember(ISymbol member, int uniqueMemberId) => member switch {
             IMethodSymbol { MethodKind: MethodKind.Ordinary } method => new(
                 method, method.Name, method.ReturnType,
@@ -140,27 +157,43 @@ namespace SourceMock.Generators.Internal {
             _ => throw MemberNotSupported(member)
         };
 
+        [PerformanceSensitive("")]
         private string GetHandlerFieldName(string memberName, int uniqueMemberId) {
+            #pragma warning disable HAA0601 // Boxing - unavoidable for now, will revisit later
             return $"_{char.ToLowerInvariant(memberName[0])}{memberName.Substring(1)}{uniqueMemberId}Handler";
+            #pragma warning restore HAA0601
         }
 
+        [PerformanceSensitive("")]
         private ImmutableArray<Parameter> ConvertParametersFromSymbols(ImmutableArray<IParameterSymbol> parameters) {
             if (parameters.Length == 0)
                 return ImmutableArray<Parameter>.Empty;
-            return ImmutableArray.CreateRange(parameters.Select((p, index) => new Parameter(
-                p.Name, GetFullTypeName(p.Type, p.NullableAnnotation), p.RefKind, index
-            )));
+
+            var builder = ImmutableArray.CreateBuilder<Parameter>(parameters.Length);
+            for (var i = 0; i < parameters.Length; i++) {
+                var parameter = parameters[i];
+                builder.Add(new Parameter(
+                    parameter.Name, GetFullTypeName(parameter.Type, parameter.NullableAnnotation), parameter.RefKind, i
+                ));
+            }
+            return builder.MoveToImmutable();
         }
 
+        [PerformanceSensitive("")]
         private ImmutableArray<GenericParameter> ConvertGenericParametersFromSymbols(ImmutableArray<ITypeParameterSymbol> typeParameters) {
             if (typeParameters.Length == 0)
                 return ImmutableArray<GenericParameter>.Empty;
-            return ImmutableArray.CreateRange(typeParameters.Select((p, index) => {
-                EnsureNoUnsupportedConstraints(p);
-                return new GenericParameter(p.Name, index);
-            }));
+
+            var builder = ImmutableArray.CreateBuilder<GenericParameter>(typeParameters.Length);
+            for (var i = 0; i < typeParameters.Length; i++) {
+                var typeParameter = typeParameters[i];
+                EnsureNoUnsupportedConstraints(typeParameter);
+                builder.Add(new GenericParameter(typeParameter.Name, i));
+            }
+            return builder.MoveToImmutable();
         }
 
+        [PerformanceSensitive("")]
         private void EnsureNoUnsupportedConstraints(ITypeParameterSymbol parameter) {
             var hasConstraints = parameter.HasConstructorConstraint
                               || parameter.HasReferenceTypeConstraint
@@ -170,10 +203,14 @@ namespace SourceMock.Generators.Internal {
                               || parameter.HasUnmanagedTypeConstraint
                               || parameter.ConstraintTypes.Length > 0;
 
-            if (hasConstraints)
+            if (hasConstraints) {
+                #pragma warning disable HAA0502 // Explicit allocation -- OK in exceptional case
                 throw new NotSupportedException("Generic constraints are not yet supported.");
+                #pragma warning restore HAA0502
+            }
         }
 
+        [PerformanceSensitive("")]
         private string GetFullTypeName(ITypeSymbol type, NullableAnnotation nullableAnnotation) {
             var name = type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
             if (nullableAnnotation == NullableAnnotation.Annotated && !type.IsValueType)
@@ -181,6 +218,7 @@ namespace SourceMock.Generators.Internal {
             return name;
         }
 
+        [PerformanceSensitive("")]
         private CodeWriter WriteMemberMocks(
             CodeWriter mockWriter,
             CodeWriter setupInterfaceWriter,
@@ -198,6 +236,7 @@ namespace SourceMock.Generators.Internal {
             return mockWriter;
         }
 
+        [PerformanceSensitive("")]
         private CodeWriter WriteHandlerField(CodeWriter writer, in MockedMember member)
         {
             writer.Write(Indents.Member, "private readonly ");
@@ -219,6 +258,7 @@ namespace SourceMock.Generators.Internal {
             return writer.Write(";");
         }
 
+        [PerformanceSensitive("")]
         private CodeWriter WriteSetupInterfaceMember(CodeWriter writer, in MockedMember member) {
             writer.Write(Indents.Member);
             WriteSetupMemberType(writer, member);
@@ -227,6 +267,7 @@ namespace SourceMock.Generators.Internal {
             return writer;
         }
 
+        [PerformanceSensitive("")]
         private CodeWriter WriteSetupMemberImplementation(CodeWriter writer, string setupInterfaceName, in MockedMember member) {
             writer.Write(Indents.Member);
 
@@ -254,6 +295,7 @@ namespace SourceMock.Generators.Internal {
             return writer.Write(";");
         }
 
+        [PerformanceSensitive("")]
         private CodeWriter WriteSetupMemberType(CodeWriter writer, in MockedMember member) {
             if (member.IsVoidMethod)
                 return writer.Write(KnownTypes.IMockMethodSetup.FullName);
@@ -268,6 +310,7 @@ namespace SourceMock.Generators.Internal {
             return writer.WriteGeneric(setupTypeFullName, member.TypeFullName);
         }
 
+        [PerformanceSensitive("")]
         private CodeWriter WriteMemberImplementation(CodeWriter writer, in MockedMember member) {
             writer.Write(Indents.Member, "public ", member.TypeFullName, " ", member.Name);
 
@@ -313,14 +356,18 @@ namespace SourceMock.Generators.Internal {
             return writer;
         }
 
+        [PerformanceSensitive("")]
         private string? GetRefModifier(RefKind refKind) => refKind switch {
             RefKind.None => null,
             RefKind.Ref => "ref",
             RefKind.In => "in",
             RefKind.Out => "out",
-            _ => throw new NotSupportedException($"Unsupported parameter ref kind: {refKind}")
+            #pragma warning disable HAA0601 // Boxing -- OK in exceptional case
+            _ => throw NotSupported($"Unsupported parameter ref kind: {refKind}")
+            #pragma warning restore HAA0601
         };
 
+        [PerformanceSensitive("")]
         private CodeWriter WriteMethodImplementationBody(CodeWriter writer, bool hasOutParameters, in MockedMember member) {
             if (hasOutParameters) {
                 writer.WriteLine("{");
@@ -340,12 +387,14 @@ namespace SourceMock.Generators.Internal {
             return writer.Write(";");
         }
 
+        [PerformanceSensitive("")]
         private CodeWriter WriteMemberImplementationHandlerCall(CodeWriter writer, in MockedMember member, ImmutableArray<Parameter>? parametersOverride = null) {
             writer.Write(".Call<", member.HandlerGenericParameterFullName, ">(");
             WriteCommonMethodHandlerArguments(writer, member, "object?", parametersOverride);
             return writer.Write(")");
         }
 
+        [PerformanceSensitive("")]
         private CodeWriter WriteCallsInterfaceMember(CodeWriter writer, in MockedMember member) {
             writer.Write(Indents.Member);            
             WriteCallsMemberType(writer, member);
@@ -353,6 +402,7 @@ namespace SourceMock.Generators.Internal {
             return WriteSetupOrCallsInterfaceMemberNameAndParameters(writer, member);            
         }
 
+        [PerformanceSensitive("")]
         private CodeWriter WriteCallsMemberImplementation(CodeWriter writer, string callsInterfaceName, in MockedMember member) {
             writer.Write(Indents.Member);
             WriteCallsMemberType(writer, member);
@@ -385,6 +435,7 @@ namespace SourceMock.Generators.Internal {
             return writer.Write(");");
         }
 
+        [PerformanceSensitive("")]
         private CodeWriter WriteCallsMemberType(CodeWriter writer, in MockedMember member) {
             if (member.Symbol is IPropertySymbol property) {
                 var callsTypeFullName = property.SetMethod != null
@@ -415,6 +466,7 @@ namespace SourceMock.Generators.Internal {
             return writer.Write(">");
         }
 
+        [PerformanceSensitive("")]
         private CodeWriter WriteSetupOrCallsInterfaceMemberNameAndParameters(CodeWriter writer, in MockedMember member) {
             writer.Write(member.Name);
             switch (member.Symbol) {
@@ -433,6 +485,7 @@ namespace SourceMock.Generators.Internal {
             return writer;
         }
 
+        [PerformanceSensitive("")]
         private CodeWriter WriteSetupOrCallsMemberParameters(CodeWriter writer, in MockedMember member, bool appendDefaultValue) {
             foreach (var parameter in member.Parameters) {
                 if (parameter.Index > 0)
@@ -446,6 +499,7 @@ namespace SourceMock.Generators.Internal {
             return writer;
         }
 
+        [PerformanceSensitive("")]
         private CodeWriter WriteCommonMethodHandlerArguments(
             CodeWriter writer,
             in MockedMember member,
@@ -483,6 +537,7 @@ namespace SourceMock.Generators.Internal {
             return writer;
         }
 
+        [PerformanceSensitive("")]
         private CodeWriter WriteMemberGenericParametersIfAny(CodeWriter writer, in MockedMember member) {
             if (member.GenericParameters.Length == 0)
                 return writer;
@@ -495,13 +550,16 @@ namespace SourceMock.Generators.Internal {
             return writer.Write(">");
         }
 
+        // Having this as a separate method removes need to suppress allocation warnings each time in exceptional situations
+        private NotSupportedException NotSupported(string message) => new(message);
 
-        private NotSupportedException MemberNotSupported(ISymbol symbol) => new NotSupportedException(
+        private NotSupportedException MemberNotSupported(ISymbol symbol) => NotSupported(
             $"{symbol.Name} has an unsupported member symbol type ({symbol.GetType()})"
         );
 
         private readonly struct MockedMember
         {
+            [PerformanceSensitive("")]
             public MockedMember(
                 ISymbol symbol,
                 string name,
@@ -527,7 +585,9 @@ namespace SourceMock.Generators.Internal {
             public ImmutableArray<GenericParameter> GenericParameters { get; }
             public ImmutableArray<Parameter> Parameters { get; }
             public string HandlerFieldName { get; }
+            [PerformanceSensitive("")]
             public bool IsVoidMethod => Symbol is IMethodSymbol && Type.SpecialType == SpecialType.System_Void;
+            [PerformanceSensitive("")]
             public string HandlerGenericParameterFullName => !IsVoidMethod ? TypeFullName : KnownTypes.VoidReturn.FullName;
         }
 

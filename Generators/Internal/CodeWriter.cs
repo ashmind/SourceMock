@@ -1,19 +1,25 @@
 using System;
 using System.Text;
+using Roslyn.Utilities;
 
 namespace SourceMock.Generators.Internal {
     internal class CodeWriter {
         private readonly StringBuilder _builder;
 
+        [PerformanceSensitive("")]
         public CodeWriter() {
+            #pragma warning disable HAA0502 // Explicit allocation -- unavoidable for now, can be pooled later
             _builder = new StringBuilder();
+            #pragma warning restore HAA0502
         }
 
+        [PerformanceSensitive("")]
         public CodeWriter Write(string value) {
             _builder.Append(value);
             return this;
         }
 
+        [PerformanceSensitive("")]
         public CodeWriter Write(string part1, string part2) {
             _builder
                 .Append(part1)
@@ -21,6 +27,7 @@ namespace SourceMock.Generators.Internal {
             return this;
         }
 
+        [PerformanceSensitive("")]
         public CodeWriter Write(string part1, string part2, string part3) {
             _builder
                 .Append(part1)
@@ -29,6 +36,7 @@ namespace SourceMock.Generators.Internal {
             return this;
         }
 
+        [PerformanceSensitive("")]
         public CodeWriter Write(string part1, string part2, string part3, string part4) {
             _builder
                 .Append(part1)
@@ -38,6 +46,7 @@ namespace SourceMock.Generators.Internal {
             return this;
         }
 
+        [PerformanceSensitive("")]
         internal CodeWriter Write(string part1, string part2, string part3, string part4, string part5) {
             _builder
                 .Append(part1)
@@ -48,6 +57,7 @@ namespace SourceMock.Generators.Internal {
             return this;
         }
 
+        [PerformanceSensitive("")]
         public CodeWriter Write(string part1, string part2, string part3, string part4, string part5, string part6) {
             _builder
                 .Append(part1)
@@ -59,16 +69,19 @@ namespace SourceMock.Generators.Internal {
             return this;
         }
 
+        [PerformanceSensitive("")]
         public CodeWriter WriteLine() {
             _builder.AppendLine();
             return this;
         }
 
+        [PerformanceSensitive("")]
         public CodeWriter WriteLine(string line) {
             _builder.AppendLine(line);
             return this;
         }
 
+        [PerformanceSensitive("")]
         public CodeWriter WriteLine(string part1, string part2) {
             _builder
                 .Append(part1)
@@ -76,6 +89,7 @@ namespace SourceMock.Generators.Internal {
             return this;
         }
 
+        [PerformanceSensitive("")]
         public CodeWriter WriteLine(string part1, string part2, string part3) {
             _builder
                 .Append(part1)
@@ -84,6 +98,7 @@ namespace SourceMock.Generators.Internal {
             return this;
         }
 
+        [PerformanceSensitive("")]
         public CodeWriter WriteLine(string part1, string part2, string part3, string part4) {
             _builder
                 .Append(part1)
@@ -93,6 +108,7 @@ namespace SourceMock.Generators.Internal {
             return this;
         }
 
+        [PerformanceSensitive("")]
         public CodeWriter WriteLine(string part1, string part2, string part3, string part4, string part5) {
             _builder
                 .Append(part1)
@@ -103,6 +119,7 @@ namespace SourceMock.Generators.Internal {
             return this;
         }
 
+        [PerformanceSensitive("")]
         public CodeWriter WriteLine(string part1, string part2, string part3, string part4, string part5, string part6) {
             _builder
                 .Append(part1)
@@ -114,6 +131,7 @@ namespace SourceMock.Generators.Internal {
             return this;
         }
 
+        [PerformanceSensitive("")]
         public CodeWriter WriteLine(string part1, string part2, string part3, string part4, string part5, string part6, string part7, string part8) {
             _builder
                 .Append(part1)
@@ -127,6 +145,7 @@ namespace SourceMock.Generators.Internal {
             return this;
         }
 
+        [PerformanceSensitive("")]
         public CodeWriter WriteGeneric(string genericTypeName, string genericArgumentName) {
             _builder
                 .Append(genericTypeName)
@@ -136,6 +155,7 @@ namespace SourceMock.Generators.Internal {
             return this;
         }
 
+        [PerformanceSensitive("")]
         public CodeWriter Append(CodeWriter other) {
             _builder.Append(other._builder);
             return this;
