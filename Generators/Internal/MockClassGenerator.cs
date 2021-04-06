@@ -4,16 +4,10 @@ using System.Linq;
 using Microsoft.CodeAnalysis;
 
 namespace SourceMock.Generators.Internal {
-    internal class MockClassGenerator {
+    internal partial class MockClassGenerator {
         private static readonly SymbolDisplayFormat TargetTypeNamespaceDisplayFormat = SymbolDisplayFormat.FullyQualifiedFormat.WithGlobalNamespaceStyle(
             SymbolDisplayGlobalNamespaceStyle.OmittedAsContaining
         );
-
-        private static class Indents {
-            public const string Type = "    ";
-            public const string Member = Type + "    ";
-            public const string MemberBody = Member + "    ";
-        }
 
         public string Generate(MockTarget target) {
             var targetTypeNamespace = target.Type.ContainingNamespace.ToDisplayString(TargetTypeNamespaceDisplayFormat);
