@@ -3,4 +3,8 @@ namespace SourceMock.Tests.Interfaces {
         T Parse<T>(string value);
         T Get<T>();
     }
+
+    public interface INeedsGenerics<U> {
+        U Get();
+    }
 }

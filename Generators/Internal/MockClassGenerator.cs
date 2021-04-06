@@ -1,10 +1,11 @@
 using System;
 using System.Collections.Immutable;
 using System.Linq;
+using System.Text;
 using Microsoft.CodeAnalysis;
 
 namespace SourceMock.Generators.Internal {
-    internal partial class MockClassGenerator {
+    internal class MockClassGenerator {
         private static readonly SymbolDisplayFormat TargetTypeNamespaceDisplayFormat = SymbolDisplayFormat.FullyQualifiedFormat.WithGlobalNamespaceStyle(
             SymbolDisplayGlobalNamespaceStyle.OmittedAsContaining
         );
@@ -12,18 +13,17 @@ namespace SourceMock.Generators.Internal {
         public string Generate(MockTarget target) {
             var targetTypeNamespace = target.Type.ContainingNamespace.ToDisplayString(TargetTypeNamespaceDisplayFormat);
             var mockBaseName = GenerateMockBaseName(target.Type.Name);
-            var mockClassName = mockBaseName + "Mock";
-            var setupInterfaceName = "I" + mockBaseName + "Setup";
-            var callsInterfaceName = "I" + mockBaseName + "Calls";
+            var typeParameters = GenerateTypeParametersAsString(target);
+            var mockClassName = mockBaseName + "Mock" + typeParameters;
+            var setupInterfaceName = "I" + mockBaseName + "Setup" + typeParameters;
+            var callsInterfaceName = "I" + mockBaseName + "Calls" + typeParameters;
 
             var mainWriter = new CodeWriter()
                 .WriteLine("#nullable enable")
                 .WriteLine("namespace ", targetTypeNamespace, ".Mocks {");
 
-            mainWriter.Write(Indents.Type, "public class ", mockClassName);
-            WriteMockTypeParametersIfAny(target, mainWriter);
             mainWriter
-                .Write(" : ")
+                .Write(Indents.Type, "public class ", mockClassName, " : ")
                     .Write(target.FullTypeName, ", ", setupInterfaceName, ", ", callsInterfaceName, ", ")
                     .WriteGeneric(KnownTypes.IMock.FullName, target.FullTypeName)
                     .WriteLine(" {")
@@ -82,20 +82,22 @@ namespace SourceMock.Generators.Internal {
             return canRemoveI ? targetName.Substring(1) : targetName;
         }
 
-        private CodeWriter WriteMockTypeParametersIfAny(MockTarget target, CodeWriter mainWriter) {
+        private string GenerateTypeParametersAsString(MockTarget target) {
             if (target.Type.TypeParameters is not { Length: > 0 } parameters)
-                return mainWriter;
+                return "";
 
-            mainWriter.Write("<");
+            var writer = new CodeWriter();
+            writer.Write("<");
             var index = 0;
             foreach (var parameter in parameters) {
                 EnsureNoUnsupportedConstraints(parameter);
                 if (index > 0)
-                    mainWriter.Write(", ");
-                mainWriter.Write(parameter.Name);
+                    writer.Write(", ");
+                writer.Write(parameter.Name);
                 index += 1;
             }
-            return mainWriter.Write(">");
+            writer.Write(">");
+            return writer.ToString();
         }
 
         private MockedMember? GetMockedMember(ISymbol member, int uniqueMemberId) => member switch {
