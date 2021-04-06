@@ -1,7 +1,7 @@
 using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
-using System.Text;
 using Microsoft.CodeAnalysis;
 
 namespace SourceMock.Generators.Internal {
@@ -37,7 +37,7 @@ namespace SourceMock.Generators.Internal {
                 .WriteLine(Indents.Type, "public interface ", callsInterfaceName, " {");
 
             var memberId = 1;
-            foreach (var memberSymbol in target.Type.GetMembers()) {
+            foreach (var memberSymbol in GetAllMembers(target)) {
                 if (GetMockedMember(memberSymbol, memberId) is not { } member)
                     continue;
 
@@ -69,6 +69,22 @@ namespace SourceMock.Generators.Internal {
 
             mainWriter.Write("}");
             return mainWriter.ToString();
+        }
+
+        private IEnumerable<ISymbol> GetAllMembers(MockTarget target) {
+            var seen = new HashSet<string>();
+            foreach (var member in target.Type.GetMembers()) {
+                seen.Add(member.Name);
+                yield return member;
+            }
+
+            foreach (var @interface in target.Type.AllInterfaces) {
+                foreach (var member in @interface.GetMembers()) {
+                    if (!seen.Add(member.Name))
+                        throw new NotSupportedException($"Interface member {@interface.Name}.{member.Name} is hidden or overloaded by another interface member. This is not yet supported.");
+                    yield return member;
+                }
+            }
         }
 
         private string GenerateMockBaseName(string targetName) {
