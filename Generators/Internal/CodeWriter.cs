@@ -145,7 +145,7 @@ namespace SourceMock.Generators.Internal {
         }
 
         [PerformanceSensitive("")]
-        public CodeWriter WriteGeneric(string genericTypeName, params string[] genericArgumentName) {
+        public CodeWriter WriteGeneric(string genericTypeName, params string[] genericArgumentNames) {
             _builder
                 .Append(genericTypeName)
                 .Append("<")
