@@ -11,6 +11,9 @@ jobs:
       with:
           dotnet-version: 5.0.x
 
+    # https://github.com/actions/setup-dotnet/issues/155
+    - run: dotnet nuget locals all --clear
+
     - run: dotnet build --configuration Release
     - run: dotnet test --no-build --configuration Release
     - run: dotnet pack --no-build --output . --configuration Release
