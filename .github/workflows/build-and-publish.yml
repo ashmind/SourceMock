@@ -11,8 +11,8 @@ jobs:
       with:
           dotnet-version: 5.0.x
 
-    # https://github.com/actions/setup-dotnet/issues/155
-    - run: dotnet nuget locals all --clear
+    # https://github.com/actions/setup-dotnet/issues/155#issuecomment-815555954
+    - run: dotnet nuget add source https://api.nuget.org/v3/index.json -n nuget.org --configfile $env:APPDATA\NuGet\NuGet.Config
 
     - run: dotnet build --configuration Release
     - run: dotnet test --no-build --configuration Release
