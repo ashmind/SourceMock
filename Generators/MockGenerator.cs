@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Immutable;
+using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using Microsoft.CodeAnalysis;
@@ -8,49 +10,77 @@ using SourceMock.Generators.Internal;
 
 namespace SourceMock.Generators {
     [Generator]
-    internal class MockGenerator : ISourceGenerator {
+    internal class MockGenerator : ISourceGenerator, IDisposable {
         private static class DiagnosticDescriptors {
             #pragma warning disable RS2008 // Enable analyzer release tracking
-            public static readonly DiagnosticDescriptor SingleMockFailedToGenerate = new DiagnosticDescriptor(
+            public static readonly DiagnosticDescriptor SingleMockFailedToGenerate = new(
                 "SM0001", "Failed to generate a single mock", "Failed to generate mock for {0}: {1}",
                 "Generation", DiagnosticSeverity.Warning, isEnabledByDefault: true
             );
-            public static readonly DiagnosticDescriptor RegexPatternFailedToParse = new DiagnosticDescriptor(
+            public static readonly DiagnosticDescriptor RegexPatternFailedToParse = new(
                 "SM0011", "Regex pattern is not a valid regex", "Regex pattern \"{0}\" cannot be parsed: {1}",
                 "Generation", DiagnosticSeverity.Error, isEnabledByDefault: true
             );
             #pragma warning restore RS2008 // Enable analyzer release tracking
         }
 
+        private readonly GeneratorCache<(IAssemblySymbol assembly, string? excludePattern), ImmutableArray<(string name, SourceText source)>> _mockedAssemblyCache = new("MockedAssemblyCache");
+        private readonly GeneratorCache<INamedTypeSymbol, (string name, SourceText source)> _mockedTypeCache = new("MockedTypeCache", NamedTypeSymbolCacheKeyEqualityComparer.Default);
         private readonly MockClassGenerator _classGenerator = new();
+
+        public MockGenerator() {
+            GeneratorLog.Log("MockGenerator constructor");
+        }
 
         public void Initialize(GeneratorInitializationContext context) {
         }
 
         [PerformanceSensitive("")]
         public void Execute(GeneratorExecutionContext context) {
-            foreach (var attribute in context.Compilation.Assembly.GetAttributes()) {
-                if (attribute.AttributeClass is not { Name: KnownTypes.GenerateMocksForAssemblyOfAttribute.Name } attributeClass)
-                    continue;
+            GeneratorLog.Log("MockGenerator.Execute started");
+            try {
+                GeneratorLog.Log("Get attributes started");
+                var attributes = context.Compilation.Assembly.GetAttributes();
+                GeneratorLog.Log("Get attributes finished");
+                foreach (var attribute in attributes) {
+                    if (attribute.AttributeClass is not { Name: KnownTypes.GenerateMocksForAssemblyOfAttribute.Name } attributeClass)
+                        continue;
 
-                if (!KnownTypes.GenerateMocksForAssemblyOfAttribute.NamespaceMatches(attributeClass.ContainingNamespace))
-                    continue;
+                    if (!KnownTypes.GenerateMocksForAssemblyOfAttribute.NamespaceMatches(attributeClass.ContainingNamespace))
+                        continue;
 
-                GenerateMocksForAttributeTargetAssembly(attribute, context);
+                    GenerateMocksForAttributeTargetAssembly(attribute, context);
+                }
             }
+            catch (Exception ex) {
+                GeneratorLog.Log("MockGenerator.Execute failed: " + ex);
+                throw;
+            }
+            GeneratorLog.Log("MockGenerator.Execute finished");
         }
 
         [PerformanceSensitive("")]
         private void GenerateMocksForAttributeTargetAssembly(AttributeData attribute, in GeneratorExecutionContext context) {
             // intermediate code state? just in case
-            if (attribute.ConstructorArguments[0].Value is not INamedTypeSymbol anyTypeInAssembly)
+            if (attribute.ConstructorArguments.ElementAtOrDefault(0).Value is not INamedTypeSymbol anyTypeInAssembly)
                 return;
 
+            var targetAssembly = anyTypeInAssembly.ContainingAssembly;
             string? excludePattern = null;
             foreach (var named in attribute.NamedArguments) {
                 if (named.Key == KnownTypes.GenerateMocksForAssemblyOfAttribute.NamedParameters.ExcludeRegex)
                     excludePattern = named.Value.Value as string;
             }
+
+            if (_mockedAssemblyCache.TryGetValue((targetAssembly, excludePattern), out var sources)) {
+                GeneratorLog.Log("Using cached mocks for assembly " + targetAssembly.Name);
+                foreach (var (name, source) in sources) {
+                    context.AddSource(name, source);
+                }
+                return;
+            }
+
+            GeneratorLog.Log("Generating mocks for assembly " + targetAssembly.Name);
 
             Regex? excludeRegex;
             try {
@@ -70,28 +100,40 @@ namespace SourceMock.Generators {
                 return;
             }
 
-            GenerateMocksForNamespace(anyTypeInAssembly.ContainingAssembly.GlobalNamespace, excludeRegex, context);
+            var assemblyCacheBuilder = ImmutableArray.CreateBuilder<(string, SourceText)>();
+            GenerateMocksForNamespace(targetAssembly.GlobalNamespace, excludeRegex, assemblyCacheBuilder, context);
+            _mockedAssemblyCache.TryAdd((targetAssembly, excludePattern), assemblyCacheBuilder.ToImmutable());
         }
 
         [PerformanceSensitive("")]
-        private void GenerateMocksForNamespace(INamespaceSymbol parent, Regex? excludeRegex, in GeneratorExecutionContext context) {
+        private void GenerateMocksForNamespace(
+            INamespaceSymbol parent,
+            Regex? excludeRegex,
+            ImmutableArray<(string, SourceText)>.Builder assemblyCacheBuilder,
+            in GeneratorExecutionContext context
+        ) {
             #pragma warning disable HAA0401 // Possible allocation of reference type enumerator -- TODO to revisit later
             foreach (var member in parent.GetMembers()) {
             #pragma warning restore HAA0401
                 switch (member) {
                     case INamedTypeSymbol type:
-                        GenerateMockForTypeIfApplicable(type, excludeRegex, context);
+                        GenerateMockForTypeIfApplicable(type, excludeRegex, assemblyCacheBuilder, context);
                         break;
 
                     case INamespaceSymbol nested:
-                        GenerateMocksForNamespace(nested, excludeRegex, context);
+                        GenerateMocksForNamespace(nested, excludeRegex, assemblyCacheBuilder, context);
                         break;
                 }
             }
         }
 
         [PerformanceSensitive("")]
-        private void GenerateMockForTypeIfApplicable(INamedTypeSymbol type, Regex? excludeRegex, in GeneratorExecutionContext context) {
+        private void GenerateMockForTypeIfApplicable(
+            INamedTypeSymbol type,
+            Regex? excludeRegex,
+            ImmutableArray<(string, SourceText)>.Builder assemblyCacheBuilder,
+            in GeneratorExecutionContext context
+        ) {
             if (type.TypeKind != TypeKind.Interface)
                 return;
 
@@ -106,11 +148,23 @@ namespace SourceMock.Generators {
             if (excludeRegex != null && excludeRegex.IsMatch(fullName))
                 return;
 
-            GenerateMockForType(new MockTarget(type, fullName), context);
+            GenerateMockForType(new MockTarget(type, fullName), assemblyCacheBuilder, context);
         }
 
         [PerformanceSensitive("")]
-        private void GenerateMockForType(MockTarget target, in GeneratorExecutionContext context) {
+        private void GenerateMockForType(
+            MockTarget target,
+            ImmutableArray<(string, SourceText)>.Builder assemblyCacheBuilder,
+            in GeneratorExecutionContext context
+        ) {
+            if (_mockedTypeCache.TryGetValue(target.Type, out var cached)) {
+                GeneratorLog.Log("Using cached mock for type " + target.FullTypeName);
+                context.AddSource(cached.name, cached.source);
+                assemblyCacheBuilder.Add(cached);
+                return;
+            }
+
+            GeneratorLog.Log("Generating mock for type " + target.FullTypeName);
             string mockContent;
             try {
                 mockContent = _classGenerator.Generate(target);
@@ -125,8 +179,16 @@ namespace SourceMock.Generators {
                 return;
             }
 
-            var mockFileName = Regex.Replace(target.FullTypeName, @"[^\w\d]", "_");
-            context.AddSource(mockFileName + ".cs", SourceText.From(mockContent, Encoding.UTF8));
+            var mockFileName = Regex.Replace(target.FullTypeName, @"[^\w\d]", "_") + ".cs";
+            var mockSource = SourceText.From(mockContent, Encoding.UTF8);
+            context.AddSource(mockFileName, mockSource);
+            _mockedTypeCache.TryAdd(target.Type, (mockFileName, mockSource));
+            assemblyCacheBuilder.Add((mockFileName, mockSource));
+        }
+
+        public void Dispose() {
+            _mockedAssemblyCache.Dispose();
+            _mockedTypeCache.Dispose();
         }
     }
 }

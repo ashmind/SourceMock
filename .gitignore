@@ -1,4 +1,4 @@
 .vs/
 bin/
 obj/
-/Generators/generator.log
+/Generators/Logs/
