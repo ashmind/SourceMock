@@ -32,7 +32,6 @@ namespace SourceMock.Generators.Internal {
 
         [PerformanceSensitive("")]
         public override void VisitNamedType(INamedTypeSymbol symbol) {
-            GeneratorLog.Log("Visiting " + symbol.ToDisplayString());
             if (!symbol.IsGenericType)
                 return;
 
@@ -45,7 +44,6 @@ namespace SourceMock.Generators.Internal {
 
         [PerformanceSensitive("")]
         public override void VisitTypeParameter(ITypeParameterSymbol symbol) {
-            GeneratorLog.Log("Visiting " + symbol.ToDisplayString());
             if (_lastAnnotation != NullableAnnotation.Annotated)
                 return;
 
