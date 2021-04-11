@@ -20,8 +20,9 @@ namespace SourceMock {
         void Returns(T value);
 
         /// <summary>
-        /// TODO
+        /// Configures mocked method to execute the delegate and return the value
         /// </summary>
+        /// <param name="callback">The delegate that gets invoked when the getter is called</param>
         void Runs(Func<T> callback);
     }
 }
