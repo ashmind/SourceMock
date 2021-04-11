@@ -6,9 +6,13 @@ using Roslyn.Utilities;
 
 namespace SourceMock.Generators.Internal {
     internal class MockClassGenerator {
+        private static readonly SymbolDisplayFormat TargetTypeDisplayFormat = SymbolDisplayFormat.FullyQualifiedFormat
+            .WithMiscellaneousOptions(SymbolDisplayFormat.FullyQualifiedFormat.MiscellaneousOptions | SymbolDisplayMiscellaneousOptions.IncludeNullableReferenceTypeModifier);
         private static readonly SymbolDisplayFormat TargetTypeNamespaceDisplayFormat = SymbolDisplayFormat.FullyQualifiedFormat.WithGlobalNamespaceStyle(
             SymbolDisplayGlobalNamespaceStyle.OmittedAsContaining
         );
+
+        private readonly DefaultConstraintCandidateCollector _defaultConstraintCollector = new();
 
         [PerformanceSensitive("")]
         public string Generate(MockTarget target) {
@@ -212,10 +216,12 @@ namespace SourceMock.Generators.Internal {
 
         [PerformanceSensitive("")]
         private string GetFullTypeName(ITypeSymbol type, NullableAnnotation nullableAnnotation) {
-            var name = type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
-            if (nullableAnnotation == NullableAnnotation.Annotated && !type.IsValueType)
-                name += "?";
-            return name;
+            var nullableFlowState = nullableAnnotation switch {
+                NullableAnnotation.Annotated => NullableFlowState.MaybeNull,
+                NullableAnnotation.NotAnnotated => NullableFlowState.NotNull,
+                _ => NullableFlowState.None
+            };
+            return type.ToDisplayString(nullableFlowState, TargetTypeDisplayFormat);
         }
 
         [PerformanceSensitive("")]
@@ -278,6 +284,7 @@ namespace SourceMock.Generators.Internal {
                 writer.Write("(");
                 WriteSetupOrCallsMemberParameters(writer, member, appendDefaultValue: false);
                 writer.Write(")");
+                WriteExplicitImplementationDefaultConstraintsIfAny(writer, member);
             }
 
             writer.Write(" => ");
@@ -412,6 +419,7 @@ namespace SourceMock.Generators.Internal {
                 writer.Write("(");
                 WriteSetupOrCallsMemberParameters(writer, member, appendDefaultValue: false);
                 writer.Write(")");
+                WriteExplicitImplementationDefaultConstraintsIfAny(writer, member);
             }
             writer.Write(" => ", member.HandlerFieldName, ".Calls(");
             if (member.Symbol is IMethodSymbol) {
@@ -515,7 +523,7 @@ namespace SourceMock.Generators.Internal {
                         writer.Write(", ");
                     writer.Write("typeof(", parameter.Name, ")");
                 }
-                writer.Write("}");
+                writer.Write(" }");
             }
             else {
                 writer.Write("null");
@@ -529,7 +537,7 @@ namespace SourceMock.Generators.Internal {
                         writer.Write(", ");
                     writer.Write(parameter.Name);
                 }
-                writer.Write("}");
+                writer.Write(" }");
             }
             else {
                 writer.Write("null");
@@ -548,6 +556,23 @@ namespace SourceMock.Generators.Internal {
                 writer.Write(parameter.Name);
             }
             return writer.Write(">");
+        }
+
+        [PerformanceSensitive("")]
+        private CodeWriter WriteExplicitImplementationDefaultConstraintsIfAny(CodeWriter writer, in MockedMember member) {
+            if (member.GenericParameters.Length == 0)
+                return writer;
+
+            var parametersNeedingDefault = _defaultConstraintCollector.Collect(member.Symbol);
+            if (parametersNeedingDefault.Count == 0)
+                return writer;
+
+            #pragma warning disable HAA0401 // Possible allocation of reference type enumerator - TODO
+            foreach (var parameter in parametersNeedingDefault) {
+            #pragma warning restore HAA0401
+                writer.Write(" where ", parameter.Name, ": default");
+            }
+            return writer;
         }
 
         // Having this as a separate method removes need to suppress allocation warnings each time in exceptional situations
