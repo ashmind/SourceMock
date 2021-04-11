@@ -3,13 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 
 namespace SourceMock.Internal {
-    internal class MockMethodSetup<TCallback, TReturn> : IMockMethodSetup<TCallback, TReturn>, IMockMethodSetupInternal where TCallback : Delegate  {
+    internal class MockMethodSetup<TRun, TReturn> : IMockMethodSetup<TRun, TReturn>, IMockMethodSetupInternal where TRun : Delegate  {
         private readonly IReadOnlyList<Type> _genericArguments;
         private readonly IReadOnlyList<IMockArgumentMatcher> _arguments;
         private bool _hasReturnValue;
         private TReturn? _returnValue;
         private Exception? _exception;
-        private TCallback? _callback;
+        private TRun? _callback;
 
         public MockMethodSetup(IReadOnlyList<Type> genericArguments, IReadOnlyList<IMockArgumentMatcher> arguments) {
             _genericArguments = genericArguments;
@@ -30,7 +30,7 @@ namespace SourceMock.Internal {
             Throws(new TException());
         }
 
-        public void Callback(TCallback callback) {
+        public void Runs(TRun callback) {
             _callback = callback;
         }
 

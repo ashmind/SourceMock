@@ -291,9 +291,9 @@ namespace SourceMock.Generators.Internal {
 
             writer.Write(member.HandlerFieldName, ".Setup");
             if (member.Symbol is IMethodSymbol) {
-                var callbackType = GetCallbackType(member);
+                var runType = GetRunType(member);
 
-                writer.Write("<", callbackType + ", " + member.HandlerGenericParameterFullName, ">(");
+                writer.Write("<", runType + ", " + member.HandlerGenericParameterFullName, ">(");
                 WriteCommonMethodHandlerArguments(writer, member, KnownTypes.IMockArgumentMatcher.FullName);
                 writer.Write(")");
             }
@@ -314,18 +314,18 @@ namespace SourceMock.Generators.Internal {
                 var s => throw MemberNotSupported(s)
             };
 
-            var callbackType = GetCallbackType(member);
+            var runType = GetRunType(member);
 
             if (member.Symbol is IPropertySymbol)
                 return writer.WriteGeneric(setupTypeFullName, member.TypeFullName);
 
             if (member.IsVoidMethod)
-                return writer.WriteGeneric(setupTypeFullName, callbackType);
+                return writer.WriteGeneric(setupTypeFullName, runType);
 
-            return writer.WriteGeneric(setupTypeFullName, callbackType, member.TypeFullName);
+            return writer.WriteGeneric(setupTypeFullName, runType, member.TypeFullName);
         }
 
-        private string GetCallbackType(in MockedMember member) {
+        private string GetRunType(in MockedMember member) {
             if (member.IsVoidMethod) {
                 if (member.Parameters.Length > 0) {
                     return $"System.Action<{string.Join(",", member.Parameters.Select(x => x.TypeFullName))}>";
@@ -425,8 +425,8 @@ namespace SourceMock.Generators.Internal {
 
         [PerformanceSensitive("")]
         private CodeWriter WriteMemberImplementationHandlerCall(CodeWriter writer, in MockedMember member, ImmutableArray<Parameter>? parametersOverride = null) {
-            var callbackType = GetCallbackType(member);
-            writer.Write(".Call<", callbackType + ", " + member.HandlerGenericParameterFullName, ">(");
+            var runType = GetRunType(member);
+            writer.Write(".Call<", runType + ", " + member.HandlerGenericParameterFullName, ">(");
             WriteCommonMethodHandlerArguments(writer, member, "object?", parametersOverride);
             return writer.Write(")");
         }

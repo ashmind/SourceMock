@@ -16,6 +16,6 @@ namespace SourceMock.Internal {
 
         public void Returns(T value) => get.Returns(value);
 
-        public void Callback(Func<T> callback) => get.Callback(callback);
+        public void Runs(Func<T> callback) => get.Runs(callback);
     }
 }

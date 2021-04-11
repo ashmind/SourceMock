@@ -22,6 +22,6 @@ namespace SourceMock {
         /// <summary>
         /// TODO
         /// </summary>
-        void Callback(Func<T> callback);
+        void Runs(Func<T> callback);
     }
 }
