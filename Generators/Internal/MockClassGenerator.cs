@@ -358,7 +358,7 @@ namespace SourceMock.Generators.Internal {
                     foreach (var parameter in member.Parameters) {
                         if (parameter.Index > 0)
                             writer.Write(", ");
-                        if (GetRefModifier(parameter.RefKind) is { } modifier)
+                        if (GetRefModifier(parameter.RefKind) is {} modifier)
                             writer.Write(modifier, " ");
                         writer.Write(parameter.TypeFullName, " ", parameter.Name);
                         hasOutParameters = hasOutParameters || (parameter.RefKind == RefKind.Out);
