@@ -25,11 +25,6 @@ namespace SourceMock.Internal {
             _exception = exception;
         }
 
-        public void Throws<TException>()
-            where TException : Exception, new() {
-            Throws(new TException());
-        }
-
         public void Runs(TRun callback) {
             _callback = callback;
         }

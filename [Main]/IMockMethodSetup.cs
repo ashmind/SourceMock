@@ -10,13 +10,6 @@ namespace SourceMock {
         /// </summary>
         /// <param name="exception">The <see cref="Exception" /> to throw.</param>
         void Throws(Exception exception);
-
-        /// <summary>
-        /// Configures mocked method to throw the specified exception when called.
-        /// </summary>
-        /// <typeparam name="TException">The specific type of <see cref="Exception" /> to throw.</typeparam>
-        void Throws<TException>()
-            where TException: Exception, new();
     }
 
     /// <summary>

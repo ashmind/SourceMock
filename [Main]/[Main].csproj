@@ -3,10 +3,10 @@
     <TargetFrameworks>netstandard2.1; net471</TargetFrameworks>
     <AssemblyName>SourceMock</AssemblyName>
     <RootNamespace>SourceMock</RootNamespace>
-    <GenerateDocumentationFile>true</GenerateDocumentationFile>    
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
   <PropertyGroup>
-    <Version>0.9-preview-04</Version>
+    <Version>0.9-preview-05</Version>
     <Description>Mocking framework that uses Roslyn source generators for extra flexibility.</Description>
     <Authors>Andrey Shchekin</Authors>
     <PackageProjectUrl>https://github.com/ashmind/SourceMock</PackageProjectUrl>

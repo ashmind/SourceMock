@@ -1,3 +1,5 @@
+using System.Threading.Tasks;
+
 namespace SourceMock.Tests.Interfaces {
     public interface IMockable {
         int GetInt32();
@@ -5,6 +7,7 @@ namespace SourceMock.Tests.Interfaces {
         string GetString();
         string? GetStringNullable();
         IMockable2 GetMockable2();
+        Task<string> GetStringAsync();
 
         int ParseToInt32(string? value);
         bool TestInterface(IEmptyInterface value);

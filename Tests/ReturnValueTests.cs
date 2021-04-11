@@ -1,5 +1,6 @@
 using Xunit;
 using SourceMock.Tests.Interfaces.Mocks;
+using System.Threading.Tasks;
 
 namespace SourceMock.Tests {
     public class ReturnValueTests {
@@ -64,6 +65,15 @@ namespace SourceMock.Tests {
             mock.Setup.Get().Returns(5);
 
             Assert.Equal(5, mock.Get());
+        }
+
+        [Fact]
+        public async Task Task() {
+            var mock = new MockableMock();
+
+            mock.Setup.GetStringAsync().ReturnsAsync("a");
+
+            Assert.Equal("a", await mock.GetStringAsync());
         }
     }
 }
