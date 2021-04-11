@@ -145,11 +145,24 @@ namespace SourceMock.Generators.Internal {
         }
 
         [PerformanceSensitive("")]
-        public CodeWriter WriteGeneric(string genericTypeName, params string[] genericArgumentNames) {
+        public CodeWriter WriteGeneric(string genericTypeName, string genericArgumentName) {
             _builder
                 .Append(genericTypeName)
                 .Append("<")
-                .Append(string.Join(",", genericArgumentNames))
+                .Append(genericArgumentName)
+                .Append(">");
+
+            return this;
+        }
+
+        [PerformanceSensitive("")]
+        public CodeWriter WriteGeneric(string genericTypeName, string genericArgumentName1, string genericArgumentName2) {
+            _builder
+                .Append(genericTypeName)
+                .Append("<")
+                .Append(genericArgumentName1)
+                .Append(",")
+                .Append(genericArgumentName2)
                 .Append(">");
 
             return this;
