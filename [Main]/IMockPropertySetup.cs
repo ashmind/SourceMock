@@ -8,7 +8,7 @@ namespace SourceMock {
         /// <summary>
         /// Provides a way to to set up behavior for the mocked getter.
         /// </summary>
-        public IMockMethodSetup<Action<T>, T> get { get; }
+        public IMockMethodSetup<Func<T>, T> get { get; }
 
         /// <summary>
         /// Configures mocked getter to return the specified value when called.
@@ -18,5 +18,10 @@ namespace SourceMock {
         /// This is a shortcut for <code>get.Returns</code>.
         /// </remarks>
         void Returns(T value);
+
+        /// <summary>
+        /// TODO
+        /// </summary>
+        void Callback(Func<T> callback);
     }
 }

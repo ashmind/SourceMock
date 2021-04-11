@@ -38,7 +38,7 @@ namespace SourceMock.Internal {
 
         public TReturn? Execute(IReadOnlyList<object?>? arguments) {
             if (_callback != null)
-                _callback.DynamicInvoke(arguments.ToArray());
+                return (TReturn?)_callback.DynamicInvoke(arguments.ToArray());
 
             if (_exception != null)
                 throw _exception;

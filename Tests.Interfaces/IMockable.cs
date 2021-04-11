@@ -15,6 +15,7 @@ namespace SourceMock.Tests.Interfaces {
         int Sum(int value1, int value2, int value3);
 
         void Execute();
+        void Execute(IEmptyInterface value);
 
         int Count { get; }
         string Name { get; set; }

@@ -316,9 +316,6 @@ namespace SourceMock.Generators.Internal {
 
         [PerformanceSensitive("")]
         private CodeWriter WriteSetupMemberType(CodeWriter writer, in MockedMember member) {
-            if (member.IsVoidMethod)
-                return writer.Write(KnownTypes.IMockMethodSetup.FullName);
-
             var setupTypeFullName = member.Symbol switch {
                 IMethodSymbol => KnownTypes.IMockMethodSetup.FullName,
                 IPropertySymbol property => property.SetMethod != null
@@ -329,19 +326,38 @@ namespace SourceMock.Generators.Internal {
 
             var callbackType = GetCallbackType(member);
 
-            if (callbackType == null || member.Symbol is IPropertySymbol) {
+            if (member.Symbol is IPropertySymbol) {
                 return writer.WriteGeneric(setupTypeFullName, member.TypeFullName);
+            }
+
+            if (member.IsVoidMethod) {
+                return writer.WriteGeneric(setupTypeFullName, callbackType);
             }
 
             return writer.WriteGeneric(setupTypeFullName, callbackType, member.TypeFullName);
         }
 
-        private string? GetCallbackType(in MockedMember member) {
-            if (member.Parameters.Length > 0) {
-                return $"System.Action<{string.Join(",", member.Parameters.Select(x => x.TypeFullName).ToArray())}>";
+        private string GetCallbackType(in MockedMember member) {
+            if (member.IsVoidMethod) {
+                if(member.Parameters.Length > 0) {
+                    return $"System.Action<{string.Join(",", member.Parameters.Select(x => x.TypeFullName).ToArray())}>";
+                }
+                else {
+                    return $"System.Action";
+                }
             }
 
-            return "System.Action";
+            var returnType = member.Symbol switch {
+                IMethodSymbol method => method.ReturnType,
+                IPropertySymbol property => property.Type,
+                _ => throw MemberNotSupported(member.Symbol)
+            };
+
+            if (member.Parameters.Length > 0) {
+                return $"System.Func<{string.Join(",", member.Parameters.Select(x => x.TypeFullName).ToArray())},{returnType}>";
+            }
+
+            return $"System.Func<{returnType}>";
         }
 
         private CodeWriter WriteSetupCallbackDelegate(CodeWriter writer, in MockedMember member) {
