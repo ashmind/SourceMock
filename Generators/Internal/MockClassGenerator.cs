@@ -144,8 +144,7 @@ namespace SourceMock.Generators.Internal {
                 GetFullTypeName(method.ReturnType, method.ReturnNullableAnnotation),
                 ConvertGenericParametersFromSymbols(method.TypeParameters),
                 ConvertParametersFromSymbols(method.Parameters),
-                GetHandlerFieldName(method.Name, uniqueMemberId),
-                GetCallbackDelegateName(method.Name, uniqueMemberId)
+                GetHandlerFieldName(method.Name, uniqueMemberId)
             ),
 
             IPropertySymbol property => new(
@@ -155,8 +154,7 @@ namespace SourceMock.Generators.Internal {
                 property.SetMethod == null
                     ? ImmutableArray<Parameter>.Empty
                     : ConvertParametersFromSymbols(property.SetMethod.Parameters),
-                GetHandlerFieldName(property.Name, uniqueMemberId),
-                GetCallbackDelegateName(property.Name, uniqueMemberId)
+                GetHandlerFieldName(property.Name, uniqueMemberId)
             ),
 
             IMethodSymbol { MethodKind: not MethodKind.Ordinary } => null,
@@ -169,10 +167,6 @@ namespace SourceMock.Generators.Internal {
             #pragma warning disable HAA0601 // Boxing - unavoidable for now, will revisit later
             return $"_{char.ToLowerInvariant(memberName[0])}{memberName.Substring(1)}{uniqueMemberId}Handler";
             #pragma warning restore HAA0601
-        }
-
-        private string GetCallbackDelegateName(string memberName, int uniqueMemberId) {
-            return $"{memberName}{uniqueMemberId}Callback";
         }
 
         [PerformanceSensitive("")]
@@ -627,8 +621,7 @@ namespace SourceMock.Generators.Internal {
                 string typeFullName,
                 ImmutableArray<GenericParameter> genericParameters,
                 ImmutableArray<Parameter> parameters,
-                string handlerFieldName,
-                string callbackDelegateName
+                string handlerFieldName
             ) {
                 Symbol = symbol;
                 Name = name;
@@ -637,7 +630,6 @@ namespace SourceMock.Generators.Internal {
                 GenericParameters = genericParameters;
                 Parameters = parameters;
                 HandlerFieldName = handlerFieldName;
-                CallbackDelegateName = callbackDelegateName;
             }
 
             public ISymbol Symbol { get; }
@@ -647,7 +639,6 @@ namespace SourceMock.Generators.Internal {
             public ImmutableArray<GenericParameter> GenericParameters { get; }
             public ImmutableArray<Parameter> Parameters { get; }
             public string HandlerFieldName { get; }
-            public string CallbackDelegateName { get; }
             [PerformanceSensitive("")]
             public bool IsVoidMethod => Symbol is IMethodSymbol && Type.SpecialType == SpecialType.System_Void;
             [PerformanceSensitive("")]
