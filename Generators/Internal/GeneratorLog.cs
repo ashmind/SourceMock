@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace SourceMock.Generators.Internal {
     internal static class GeneratorLog {
-#if DEBUG
+        #if DEBUG
         private static readonly DateTime _start;
         private static readonly Stopwatch _stopwatch;
         
@@ -20,8 +20,12 @@ namespace SourceMock.Generators.Internal {
         private static readonly ConcurrentQueue<(DateTime date, string message)> _entries = new();
 
         static GeneratorLog() {
-            static string GetLogPath([CallerFilePath] string path = "")
-                => Path.Combine(Path.GetDirectoryName(path), "..", "Logs", $"{DateTime.Now.Ticks}.log");
+            static string GetLogPath([CallerFilePath] string path = "") {
+                using var process = Process.GetCurrentProcess();
+                var now = DateTime.Now;
+                var fileName = $"{Path.GetFileName(process.MainModule.FileName)} ({process.Id}) {now:HH_mm_ss.ffffff}.log";
+                return Path.Combine(Path.GetDirectoryName(path), "..", "Logs", $"{now:MMM dd}", fileName);
+            }
 
             // Note that the time will drift over time (https://nima-ara-blog.azurewebsites.net/high-resolution-clock-in-net/),
             // but for debug scenarios that's totally fine
@@ -29,6 +33,8 @@ namespace SourceMock.Generators.Internal {
             _stopwatch = Stopwatch.StartNew();
 
             var logPath = GetLogPath();
+            Directory.CreateDirectory(Path.GetDirectoryName(logPath));
+
             _logTaskCancellationSource = new CancellationTokenSource();
             _logTask = Task.Run(async () => {
                 while (!_logTaskCancellationSource.IsCancellationRequested) {
