@@ -22,10 +22,10 @@ namespace SourceMock {
     /// <summary>
     /// Provides a way to set up behavior for a mocked method that returns a value.
     /// </summary>
-    /// <typeparam name="TCallback"></typeparam>
+    /// <typeparam name="TCallback">The delegate that gets invoked when the method is called</typeparam>
     public interface IMockMethodSetup<TCallback> : IMockMethodSetup where TCallback : Delegate  {
         /// <summary>
-        /// TODO
+        /// Configures mocked method to execute the callback and return the value
         /// </summary>
         void Callback(TCallback callback);
     }
@@ -34,7 +34,7 @@ namespace SourceMock {
     /// Provides a way to set up behavior for a mocked method that returns a value.
     /// </summary>
     /// <typeparam name="TReturn">The method return type.</typeparam>
-    /// <typeparam name="TCallback"></typeparam>
+    /// <typeparam name="TCallback">The delegate that gets invoked when the method is called</typeparam>
     public interface IMockMethodSetup<TCallback, TReturn> : IMockMethodSetup<TCallback> where TCallback : Delegate  {
         /// <summary>
         /// Configures mocked method to return the specified value when called.

@@ -241,7 +241,6 @@ namespace SourceMock.Generators.Internal {
             in MockedMember member
         ) {
             WriteHandlerField(mockWriter, member).WriteLine();
-            WriteSetupCallbackDelegate(mockWriter, member).WriteLine();
             WriteSetupInterfaceMember(setupInterfaceWriter, member).WriteLine();
             WriteSetupMemberImplementation(mockWriter, setupInterfaceName, member).WriteLine();
             WriteMemberImplementation(mockWriter, member).WriteLine();
@@ -299,11 +298,8 @@ namespace SourceMock.Generators.Internal {
             writer.Write(member.HandlerFieldName, ".Setup");
             if (member.Symbol is IMethodSymbol) {
                 var callbackType = GetCallbackType(member);
-                var callGenericTypes = callbackType != null
-                    ? callbackType + ", " + member.HandlerGenericParameterFullName
-                    : member.HandlerGenericParameterFullName;
 
-                writer.Write("<", callGenericTypes, ">(");
+                writer.Write("<", callbackType + ", " + member.HandlerGenericParameterFullName, ">(");
                 WriteCommonMethodHandlerArguments(writer, member, KnownTypes.IMockArgumentMatcher.FullName);
                 writer.Write(")");
             }
@@ -326,25 +322,22 @@ namespace SourceMock.Generators.Internal {
 
             var callbackType = GetCallbackType(member);
 
-            if (member.Symbol is IPropertySymbol) {
+            if (member.Symbol is IPropertySymbol)
                 return writer.WriteGeneric(setupTypeFullName, member.TypeFullName);
-            }
 
-            if (member.IsVoidMethod) {
+            if (member.IsVoidMethod)
                 return writer.WriteGeneric(setupTypeFullName, callbackType);
-            }
 
             return writer.WriteGeneric(setupTypeFullName, callbackType, member.TypeFullName);
         }
 
         private string GetCallbackType(in MockedMember member) {
             if (member.IsVoidMethod) {
-                if(member.Parameters.Length > 0) {
-                    return $"System.Action<{string.Join(",", member.Parameters.Select(x => x.TypeFullName).ToArray())}>";
+                if (member.Parameters.Length > 0) {
+                    return $"System.Action<{string.Join(",", member.Parameters.Select(x => x.TypeFullName))}>";
                 }
-                else {
-                    return $"System.Action";
-                }
+
+                return "System.Action";
             }
 
             var returnType = member.Symbol switch {
@@ -353,18 +346,10 @@ namespace SourceMock.Generators.Internal {
                 _ => throw MemberNotSupported(member.Symbol)
             };
 
-            if (member.Parameters.Length > 0) {
-                return $"System.Func<{string.Join(",", member.Parameters.Select(x => x.TypeFullName).ToArray())},{returnType}>";
-            }
+            if (member.Parameters.Length > 0)
+                return $"System.Func<{string.Join(",", member.Parameters.Select(x => x.TypeFullName))},{returnType}>";
 
             return $"System.Func<{returnType}>";
-        }
-
-        private CodeWriter WriteSetupCallbackDelegate(CodeWriter writer, in MockedMember member) {
-            if (true)
-                return writer;
-
-            //return writer.Write($"delegate void {member.CallbackDelegateName}({string.Join(",", member.Parameters.Select(x => x.TypeFullName + " " + x.Name))});");
         }
 
         [PerformanceSensitive("")]
@@ -447,11 +432,7 @@ namespace SourceMock.Generators.Internal {
         [PerformanceSensitive("")]
         private CodeWriter WriteMemberImplementationHandlerCall(CodeWriter writer, in MockedMember member, ImmutableArray<Parameter>? parametersOverride = null) {
             var callbackType = GetCallbackType(member);
-            var callGenericTypes = callbackType != null
-                ? callbackType + ", " + member.HandlerGenericParameterFullName
-                : member.HandlerGenericParameterFullName;
-
-            writer.Write(".Call<", callGenericTypes, ">(");
+            writer.Write(".Call<", callbackType + ", " + member.HandlerGenericParameterFullName, ">(");
             WriteCommonMethodHandlerArguments(writer, member, "object?", parametersOverride);
             return writer.Write(")");
         }
