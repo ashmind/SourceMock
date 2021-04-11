@@ -5,13 +5,14 @@ namespace SourceMock.Tests.Interfaces.Mocks {
         public INeedsGenericsCalls<U> Calls => this;
 
         private readonly SourceMock.Internal.MockMethodHandler _get1Handler = new();
-        SourceMock.IMockMethodSetup<U> INeedsGenericsSetup<U>.Get() => _get1Handler.Setup<U>(null, null);
-        public U Get() => _get1Handler.Call<U>(null, null);
+
+        SourceMock.IMockMethodSetup<System.Action,U> INeedsGenericsSetup<U>.Get() => _get1Handler.Setup<System.Action, U>(null, null);
+        public U Get() => _get1Handler.Call<System.Action, U>(null, null);
         System.Collections.Generic.IReadOnlyList<SourceMock.NoArguments> INeedsGenericsCalls<U>.Get() => _get1Handler.Calls(null, null, _ => SourceMock.NoArguments.Value);
     }
 
     public interface INeedsGenericsSetup<U> {
-        SourceMock.IMockMethodSetup<U> Get();
+        SourceMock.IMockMethodSetup<System.Action,U> Get();
     }
 
     public interface INeedsGenericsCalls<U> {

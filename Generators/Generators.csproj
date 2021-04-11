@@ -5,6 +5,7 @@
     <IsPackable>false</IsPackable>
     <AssemblyName>SourceMock.Generators</AssemblyName>
     <RootNamespace>SourceMock.Generators</RootNamespace>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -19,5 +20,9 @@
     </PackageReference>
     <PackageReference Include="Microsoft.CodeAnalysis.Common" Version="3.9.0" />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="3.9.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Logs\" />
   </ItemGroup>
 </Project>

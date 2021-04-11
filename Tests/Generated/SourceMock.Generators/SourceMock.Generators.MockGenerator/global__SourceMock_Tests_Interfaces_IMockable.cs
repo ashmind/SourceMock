@@ -36,33 +36,33 @@ namespace SourceMock.Tests.Interfaces.Mocks {
 
         private readonly SourceMock.Internal.MockMethodHandler _parseToInt326Handler = new();
 
-        SourceMock.IMockMethodSetup<System.Action<string?>,int> IMockableSetup.ParseToInt32(SourceMock.Internal.MockArgumentMatcher<string?> value) => _parseToInt326Handler.Setup<System.Action<string?>, int>(null, new SourceMock.Internal.IMockArgumentMatcher[] { value});
-        public int ParseToInt32(string? value) => _parseToInt326Handler.Call<System.Action<string?>, int>(null, new object?[] { value});
-        System.Collections.Generic.IReadOnlyList<string?> IMockableCalls.ParseToInt32(SourceMock.Internal.MockArgumentMatcher<string?> value) => _parseToInt326Handler.Calls(null, new SourceMock.Internal.IMockArgumentMatcher[] { value}, args => ((string?)args[0]));
+        SourceMock.IMockMethodSetup<System.Action<string?>,int> IMockableSetup.ParseToInt32(SourceMock.Internal.MockArgumentMatcher<string?> value) => _parseToInt326Handler.Setup<System.Action<string?>, int>(null, new SourceMock.Internal.IMockArgumentMatcher[] { value });
+        public int ParseToInt32(string? value) => _parseToInt326Handler.Call<System.Action<string?>, int>(null, new object?[] { value });
+        System.Collections.Generic.IReadOnlyList<string?> IMockableCalls.ParseToInt32(SourceMock.Internal.MockArgumentMatcher<string?> value) => _parseToInt326Handler.Calls(null, new SourceMock.Internal.IMockArgumentMatcher[] { value }, args => ((string?)args[0]));
 
         private readonly SourceMock.Internal.MockMethodHandler _testInterface7Handler = new();
 
-        SourceMock.IMockMethodSetup<System.Action<global::SourceMock.Tests.Interfaces.IEmptyInterface>,bool> IMockableSetup.TestInterface(SourceMock.Internal.MockArgumentMatcher<global::SourceMock.Tests.Interfaces.IEmptyInterface> value) => _testInterface7Handler.Setup<System.Action<global::SourceMock.Tests.Interfaces.IEmptyInterface>, bool>(null, new SourceMock.Internal.IMockArgumentMatcher[] { value});
-        public bool TestInterface(global::SourceMock.Tests.Interfaces.IEmptyInterface value) => _testInterface7Handler.Call<System.Action<global::SourceMock.Tests.Interfaces.IEmptyInterface>, bool>(null, new object?[] { value});
-        System.Collections.Generic.IReadOnlyList<global::SourceMock.Tests.Interfaces.IEmptyInterface> IMockableCalls.TestInterface(SourceMock.Internal.MockArgumentMatcher<global::SourceMock.Tests.Interfaces.IEmptyInterface> value) => _testInterface7Handler.Calls(null, new SourceMock.Internal.IMockArgumentMatcher[] { value}, args => ((global::SourceMock.Tests.Interfaces.IEmptyInterface)args[0]!));
+        SourceMock.IMockMethodSetup<System.Action<global::SourceMock.Tests.Interfaces.IEmptyInterface>,bool> IMockableSetup.TestInterface(SourceMock.Internal.MockArgumentMatcher<global::SourceMock.Tests.Interfaces.IEmptyInterface> value) => _testInterface7Handler.Setup<System.Action<global::SourceMock.Tests.Interfaces.IEmptyInterface>, bool>(null, new SourceMock.Internal.IMockArgumentMatcher[] { value });
+        public bool TestInterface(global::SourceMock.Tests.Interfaces.IEmptyInterface value) => _testInterface7Handler.Call<System.Action<global::SourceMock.Tests.Interfaces.IEmptyInterface>, bool>(null, new object?[] { value });
+        System.Collections.Generic.IReadOnlyList<global::SourceMock.Tests.Interfaces.IEmptyInterface> IMockableCalls.TestInterface(SourceMock.Internal.MockArgumentMatcher<global::SourceMock.Tests.Interfaces.IEmptyInterface> value) => _testInterface7Handler.Calls(null, new SourceMock.Internal.IMockArgumentMatcher[] { value }, args => ((global::SourceMock.Tests.Interfaces.IEmptyInterface)args[0]!));
 
         private readonly SourceMock.Internal.MockMethodHandler _divide8Handler = new();
 
-        SourceMock.IMockMethodSetup<System.Action<double,double>,double> IMockableSetup.Divide(SourceMock.Internal.MockArgumentMatcher<double> value1, SourceMock.Internal.MockArgumentMatcher<double> value2) => _divide8Handler.Setup<System.Action<double,double>, double>(null, new SourceMock.Internal.IMockArgumentMatcher[] { value1, value2});
-        public double Divide(double value1, double value2) => _divide8Handler.Call<System.Action<double,double>, double>(null, new object?[] { value1, value2});
-        System.Collections.Generic.IReadOnlyList<(double value1, double value2)> IMockableCalls.Divide(SourceMock.Internal.MockArgumentMatcher<double> value1, SourceMock.Internal.MockArgumentMatcher<double> value2) => _divide8Handler.Calls(null, new SourceMock.Internal.IMockArgumentMatcher[] { value1, value2}, args => ((double)args[0]!, (double)args[1]!));
+        SourceMock.IMockMethodSetup<System.Action<double,double>,double> IMockableSetup.Divide(SourceMock.Internal.MockArgumentMatcher<double> value1, SourceMock.Internal.MockArgumentMatcher<double> value2) => _divide8Handler.Setup<System.Action<double,double>, double>(null, new SourceMock.Internal.IMockArgumentMatcher[] { value1, value2 });
+        public double Divide(double value1, double value2) => _divide8Handler.Call<System.Action<double,double>, double>(null, new object?[] { value1, value2 });
+        System.Collections.Generic.IReadOnlyList<(double value1, double value2)> IMockableCalls.Divide(SourceMock.Internal.MockArgumentMatcher<double> value1, SourceMock.Internal.MockArgumentMatcher<double> value2) => _divide8Handler.Calls(null, new SourceMock.Internal.IMockArgumentMatcher[] { value1, value2 }, args => ((double)args[0]!, (double)args[1]!));
 
         private readonly SourceMock.Internal.MockMethodHandler _sum9Handler = new();
 
-        SourceMock.IMockMethodSetup<System.Action<int,int>,int> IMockableSetup.Sum(SourceMock.Internal.MockArgumentMatcher<int> value1, SourceMock.Internal.MockArgumentMatcher<int> value2) => _sum9Handler.Setup<System.Action<int,int>, int>(null, new SourceMock.Internal.IMockArgumentMatcher[] { value1, value2});
-        public int Sum(int value1, int value2) => _sum9Handler.Call<System.Action<int,int>, int>(null, new object?[] { value1, value2});
-        System.Collections.Generic.IReadOnlyList<(int value1, int value2)> IMockableCalls.Sum(SourceMock.Internal.MockArgumentMatcher<int> value1, SourceMock.Internal.MockArgumentMatcher<int> value2) => _sum9Handler.Calls(null, new SourceMock.Internal.IMockArgumentMatcher[] { value1, value2}, args => ((int)args[0]!, (int)args[1]!));
+        SourceMock.IMockMethodSetup<System.Action<int,int>,int> IMockableSetup.Sum(SourceMock.Internal.MockArgumentMatcher<int> value1, SourceMock.Internal.MockArgumentMatcher<int> value2) => _sum9Handler.Setup<System.Action<int,int>, int>(null, new SourceMock.Internal.IMockArgumentMatcher[] { value1, value2 });
+        public int Sum(int value1, int value2) => _sum9Handler.Call<System.Action<int,int>, int>(null, new object?[] { value1, value2 });
+        System.Collections.Generic.IReadOnlyList<(int value1, int value2)> IMockableCalls.Sum(SourceMock.Internal.MockArgumentMatcher<int> value1, SourceMock.Internal.MockArgumentMatcher<int> value2) => _sum9Handler.Calls(null, new SourceMock.Internal.IMockArgumentMatcher[] { value1, value2 }, args => ((int)args[0]!, (int)args[1]!));
 
         private readonly SourceMock.Internal.MockMethodHandler _sum10Handler = new();
 
-        SourceMock.IMockMethodSetup<System.Action<int,int,int>,int> IMockableSetup.Sum(SourceMock.Internal.MockArgumentMatcher<int> value1, SourceMock.Internal.MockArgumentMatcher<int> value2, SourceMock.Internal.MockArgumentMatcher<int> value3) => _sum10Handler.Setup<System.Action<int,int,int>, int>(null, new SourceMock.Internal.IMockArgumentMatcher[] { value1, value2, value3});
-        public int Sum(int value1, int value2, int value3) => _sum10Handler.Call<System.Action<int,int,int>, int>(null, new object?[] { value1, value2, value3});
-        System.Collections.Generic.IReadOnlyList<(int value1, int value2, int value3)> IMockableCalls.Sum(SourceMock.Internal.MockArgumentMatcher<int> value1, SourceMock.Internal.MockArgumentMatcher<int> value2, SourceMock.Internal.MockArgumentMatcher<int> value3) => _sum10Handler.Calls(null, new SourceMock.Internal.IMockArgumentMatcher[] { value1, value2, value3}, args => ((int)args[0]!, (int)args[1]!, (int)args[2]!));
+        SourceMock.IMockMethodSetup<System.Action<int,int,int>,int> IMockableSetup.Sum(SourceMock.Internal.MockArgumentMatcher<int> value1, SourceMock.Internal.MockArgumentMatcher<int> value2, SourceMock.Internal.MockArgumentMatcher<int> value3) => _sum10Handler.Setup<System.Action<int,int,int>, int>(null, new SourceMock.Internal.IMockArgumentMatcher[] { value1, value2, value3 });
+        public int Sum(int value1, int value2, int value3) => _sum10Handler.Call<System.Action<int,int,int>, int>(null, new object?[] { value1, value2, value3 });
+        System.Collections.Generic.IReadOnlyList<(int value1, int value2, int value3)> IMockableCalls.Sum(SourceMock.Internal.MockArgumentMatcher<int> value1, SourceMock.Internal.MockArgumentMatcher<int> value2, SourceMock.Internal.MockArgumentMatcher<int> value3) => _sum10Handler.Calls(null, new SourceMock.Internal.IMockArgumentMatcher[] { value1, value2, value3 }, args => ((int)args[0]!, (int)args[1]!, (int)args[2]!));
 
         private readonly SourceMock.Internal.MockMethodHandler _execute11Handler = new();
 
@@ -81,7 +81,7 @@ namespace SourceMock.Tests.Interfaces.Mocks {
         SourceMock.IMockSettablePropertySetup<string> IMockableSetup.Name => _name13Handler.Setup();
         public string Name {
             get => _name13Handler.GetterHandler.Call<System.Action<string>, string>(null, null);
-            set => _name13Handler.SetterHandler.Call<System.Action<string>, string>(null, new object?[] { value});
+            set => _name13Handler.SetterHandler.Call<System.Action<string>, string>(null, new object?[] { value });
         }
         SourceMock.IMockSettablePropertyCalls<string> IMockableCalls.Name => _name13Handler.Calls();
     }
