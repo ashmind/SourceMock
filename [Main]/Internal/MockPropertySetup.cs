@@ -8,12 +8,14 @@ namespace SourceMock.Internal {
             _handler = handler;
         }
 
-        public IMockMethodSetup<T> get => _handler.GetterHandler.Setup<T>(null, null);
+        public IMockMethodSetup<Func<T>, T> get => _handler.GetterHandler.Setup<Func<T>, T>(null, null);
 
         public IMockMethodSetup set(MockArgumentMatcher<T> value = default) => (
             _handler.SetterHandler ?? throw new InvalidOperationException("Attempted to set up setter for property with no setter.")
-        ).Setup<VoidReturn>(null, new IMockArgumentMatcher[] { value });
+        ).Setup<Action, VoidReturn>(null, new IMockArgumentMatcher[] { value });
 
         public void Returns(T value) => get.Returns(value);
+
+        public void Runs(Func<T> callback) => get.Runs(callback);
     }
 }

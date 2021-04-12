@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Linq;
 using Microsoft.CodeAnalysis;
 using Roslyn.Utilities;
 
@@ -243,8 +244,7 @@ namespace SourceMock.Generators.Internal {
         }
 
         [PerformanceSensitive("")]
-        private CodeWriter WriteHandlerField(CodeWriter writer, in MockedMember member)
-        {
+        private CodeWriter WriteHandlerField(CodeWriter writer, in MockedMember member) {
             writer.Write(Indents.Member, "private readonly ");
             switch (member.Symbol) {
                 case IMethodSymbol:
@@ -291,7 +291,9 @@ namespace SourceMock.Generators.Internal {
 
             writer.Write(member.HandlerFieldName, ".Setup");
             if (member.Symbol is IMethodSymbol) {
-                writer.Write("<", member.HandlerGenericParameterFullName, ">(");
+                var runType = GetRunType(member);
+
+                writer.Write("<", runType + ", " + member.HandlerGenericParameterFullName, ">(");
                 WriteCommonMethodHandlerArguments(writer, member, KnownTypes.IMockArgumentMatcher.FullName);
                 writer.Write(")");
             }
@@ -304,9 +306,6 @@ namespace SourceMock.Generators.Internal {
 
         [PerformanceSensitive("")]
         private CodeWriter WriteSetupMemberType(CodeWriter writer, in MockedMember member) {
-            if (member.IsVoidMethod)
-                return writer.Write(KnownTypes.IMockMethodSetup.FullName);
-
             var setupTypeFullName = member.Symbol switch {
                 IMethodSymbol => KnownTypes.IMockMethodSetup.FullName,
                 IPropertySymbol property => property.SetMethod != null
@@ -314,7 +313,37 @@ namespace SourceMock.Generators.Internal {
                     : KnownTypes.IMockPropertySetup.FullName,
                 var s => throw MemberNotSupported(s)
             };
-            return writer.WriteGeneric(setupTypeFullName, member.TypeFullName);
+
+            var runType = GetRunType(member);
+
+            if (member.Symbol is IPropertySymbol)
+                return writer.WriteGeneric(setupTypeFullName, member.TypeFullName);
+
+            if (member.IsVoidMethod)
+                return writer.WriteGeneric(setupTypeFullName, runType);
+
+            return writer.WriteGeneric(setupTypeFullName, runType, member.TypeFullName);
+        }
+
+        private string GetRunType(in MockedMember member) {
+            if (member.IsVoidMethod) {
+                if (member.Parameters.Length > 0) {
+                    return $"System.Action<{string.Join(",", member.Parameters.Select(x => x.TypeFullName))}>";
+                }
+
+                return "System.Action";
+            }
+
+            var returnType = member.Symbol switch {
+                IMethodSymbol method => method.ReturnType,
+                IPropertySymbol property => property.Type,
+                _ => throw MemberNotSupported(member.Symbol)
+            };
+
+            if (member.Parameters.Length > 0)
+                return $"System.Func<{string.Join(",", member.Parameters.Select(x => x.TypeFullName))},{returnType}>";
+
+            return $"System.Func<{returnType}>";
         }
 
         [PerformanceSensitive("")]
@@ -396,17 +425,18 @@ namespace SourceMock.Generators.Internal {
 
         [PerformanceSensitive("")]
         private CodeWriter WriteMemberImplementationHandlerCall(CodeWriter writer, in MockedMember member, ImmutableArray<Parameter>? parametersOverride = null) {
-            writer.Write(".Call<", member.HandlerGenericParameterFullName, ">(");
+            var runType = GetRunType(member);
+            writer.Write(".Call<", runType + ", " + member.HandlerGenericParameterFullName, ">(");
             WriteCommonMethodHandlerArguments(writer, member, "object?", parametersOverride);
             return writer.Write(")");
         }
 
         [PerformanceSensitive("")]
         private CodeWriter WriteCallsInterfaceMember(CodeWriter writer, in MockedMember member) {
-            writer.Write(Indents.Member);            
+            writer.Write(Indents.Member);
             WriteCallsMemberType(writer, member);
             writer.Write(" ");
-            return WriteSetupOrCallsInterfaceMemberNameAndParameters(writer, member);            
+            return WriteSetupOrCallsInterfaceMemberNameAndParameters(writer, member);
         }
 
         [PerformanceSensitive("")]
@@ -582,8 +612,7 @@ namespace SourceMock.Generators.Internal {
             $"{symbol.Name} has an unsupported member symbol type ({symbol.GetType()})"
         );
 
-        private readonly struct MockedMember
-        {
+        private readonly struct MockedMember {
             [PerformanceSensitive("")]
             public MockedMember(
                 ISymbol symbol,

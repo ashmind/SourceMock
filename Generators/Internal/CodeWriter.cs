@@ -1,4 +1,3 @@
-using System;
 using System.Text;
 using Roslyn.Utilities;
 
@@ -152,6 +151,20 @@ namespace SourceMock.Generators.Internal {
                 .Append("<")
                 .Append(genericArgumentName)
                 .Append(">");
+
+            return this;
+        }
+
+        [PerformanceSensitive("")]
+        public CodeWriter WriteGeneric(string genericTypeName, string genericArgumentName1, string genericArgumentName2) {
+            _builder
+                .Append(genericTypeName)
+                .Append("<")
+                .Append(genericArgumentName1)
+                .Append(",")
+                .Append(genericArgumentName2)
+                .Append(">");
+
             return this;
         }
 
@@ -162,9 +175,5 @@ namespace SourceMock.Generators.Internal {
         }
 
         public override string ToString() => _builder.ToString();
-
-        internal void Write(object fullName, string v) {
-            throw new NotImplementedException();
-        }
     }
 }
