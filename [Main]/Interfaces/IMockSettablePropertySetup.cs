@@ -1,6 +1,7 @@
+using System;
 using SourceMock.Internal;
 
-namespace SourceMock {
+namespace SourceMock.Interfaces {
     /// <summary>
     /// Provides a way to set up behavior for a mocked property that has both getter and setter.
     /// </summary>
@@ -10,9 +11,9 @@ namespace SourceMock {
         /// </summary>
         /// <param name="value">The property value to set up behavior for.</param>
         /// <returns>
-        /// An <see cref="IMockMethodSetup" /> object to set up the setter behavior
+        /// An <see cref="IMockMethodSetup{T}" /> object to set up the setter behavior
         /// when assigned the given <paramref name="value"/>.
         /// </returns>
-        IMockMethodSetup set(MockArgumentMatcher<T> value = default);
+        IMockMethodSetup<Action<T>> set(MockArgumentMatcher<T> value = default);
     }
 }

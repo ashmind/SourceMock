@@ -1,5 +1,6 @@
 namespace SourceMock.Internal {
-    internal interface IMockMethodSetupInternal : IMockMethodSetup {
+    internal interface IMockCallMatcher
+    {
         bool Matches(MockCall call);
     }
 }

@@ -3,7 +3,7 @@ using SourceMock.Tests.Interfaces.Mocks;
 using SourceMock.Tests.Interfaces;
 
 namespace SourceMock.Tests {
-    public class RunsTests {
+    public class RunsCallbackTests {
         [Fact]
         public void MethodArgument_ReturnValue() {
             var mock = new MockableMock();
@@ -49,7 +49,7 @@ namespace SourceMock.Tests {
         [Fact]
         public void Property_ReturnValue() {
             var mock = new MockableMock();
-            mock.Setup.Count.Runs(() => 5);
+            mock.Setup.Count.get.Runs(() => 5);
 
             var result = mock.Count;
 

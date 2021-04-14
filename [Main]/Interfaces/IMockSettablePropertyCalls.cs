@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using SourceMock.Internal;
 
-namespace SourceMock {
+namespace SourceMock.Interfaces {
     /// <summary>
     /// Provides a way to retrieve calls made to a specific mocked property that has both getter and setter.
     /// </summary>

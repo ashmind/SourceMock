@@ -20,7 +20,7 @@ namespace SourceMock.Generators.Internal {
         }
 
         public static class IMockMethodSetup {
-            public const string FullName = "SourceMock.IMockMethodSetup";
+            public const string FullName = "SourceMock.Interfaces.IMockMethodSetup";
         }
 
         public static class IMockArgumentMatcher {
@@ -32,19 +32,19 @@ namespace SourceMock.Generators.Internal {
         }
 
         public static class IMockPropertySetup {
-            public const string FullName = "SourceMock.IMockPropertySetup";
+            public const string FullName = "SourceMock.Interfaces.IMockPropertySetup";
         }
 
         public static class IMockSettablePropertySetup {
-            public const string FullName = "SourceMock.IMockSettablePropertySetup";
+            public const string FullName = "SourceMock.Interfaces.IMockSettablePropertySetup";
         }
 
         public static class IMockPropertyCalls {
-            public const string FullName = "SourceMock.IMockPropertyCalls";
+            public const string FullName = "SourceMock.Interfaces.IMockPropertyCalls";
         }
 
         public static class IMockSettablePropertyCalls {
-            public const string FullName = "SourceMock.IMockSettablePropertyCalls";
+            public const string FullName = "SourceMock.Interfaces.IMockSettablePropertyCalls";
         }
 
         public static class MockPropertyHandler {

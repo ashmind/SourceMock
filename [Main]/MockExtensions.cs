@@ -1,6 +1,6 @@
 using System;
 using System.Threading.Tasks;
-using SourceMock;
+using SourceMock.Interfaces;
 
 /// <summary>
 /// Provides a set of extension methods for SourceMock interfaces.
@@ -11,7 +11,7 @@ public static class MockExtensions {
     /// </summary>
     /// <typeparam name="TException">The specific type of <see cref="Exception" /> to throw.</typeparam>
     /// <param name="setup">The method to configure.</param>
-    public static void Throws<TException>(this IMockMethodSetup setup)
+    public static void Throws<TException>(this IMockSetupThrows setup)
         where TException : Exception, new()
     {
         setup.Throws(new Exception());
@@ -22,7 +22,7 @@ public static class MockExtensions {
     /// </summary>
     /// <param name="setup">The method to configure.</param>
     /// <param name="value">The value to return.</param>
-    public static void ReturnsAsync<T>(this IMockMethodSetup<Task<T>> setup, T value) {
+    public static void ReturnsAsync<T>(this IMockSetupReturns<Task<T>> setup, T value) {
         setup.Returns(Task.FromResult(value));
     }
 }

@@ -1,11 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using SourceMock.Interfaces;
 
 namespace SourceMock.Internal {
     /// <summary>This type supports generated code and is not intended to be used directly.</summary>
     public class MockMethodHandler {
-        private readonly IList<IMockMethodSetupInternal> _setups = new List<IMockMethodSetupInternal>();
+        private readonly IList<IMockCallMatcher> _setups = new List<IMockCallMatcher>();
         private readonly IList<MockCall> _calls = new List<MockCall>();
 
         /// <summary>This method supports generated code and is not intended to be used directly.</summary>

@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using SourceMock.Interfaces;
 
 namespace SourceMock.Internal {
     internal class MockPropertyCalls<T> : IMockSettablePropertyCalls<T> {

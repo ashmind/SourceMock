@@ -1,9 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using SourceMock.Interfaces;
 
 namespace SourceMock.Internal {
-    internal class MockMethodSetup<TRun, TReturn> : IMockMethodSetup<TRun, TReturn>, IMockMethodSetupInternal where TRun : Delegate  {
+    internal class MockMethodSetup<TRun, TReturn> : IMockMethodSetup<TRun, TReturn>, IMockCallMatcher
+        where TRun : Delegate
+    {
         private readonly IReadOnlyList<Type> _genericArguments;
         private readonly IReadOnlyList<IMockArgumentMatcher> _arguments;
         private bool _hasReturnValue;
