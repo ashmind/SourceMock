@@ -5,8 +5,8 @@ namespace SourceMock.Tests.Interfaces.Mocks {
         public INeedsGenericsCalls Calls => this;
 
         private readonly SourceMock.Internal.MockMethodHandler _parse1Handler = new();
-        SourceMock.Interfaces.IMockMethodSetup<System.Func<string,T>,T> INeedsGenericsSetup.Parse<T>(SourceMock.Internal.MockArgumentMatcher<string> value) => _parse1Handler.Setup<System.Func<string,T>, T>(new[] { typeof(T) }, new SourceMock.Internal.IMockArgumentMatcher[] { value });
-        public T Parse<T>(string value) => _parse1Handler.Call<System.Func<string,T>, T>(new[] { typeof(T) }, new object?[] { value });
+        SourceMock.Interfaces.IMockMethodSetup<System.Func<string, T>,T> INeedsGenericsSetup.Parse<T>(SourceMock.Internal.MockArgumentMatcher<string> value) => _parse1Handler.Setup<System.Func<string, T>, T>(new[] { typeof(T) }, new SourceMock.Internal.IMockArgumentMatcher[] { value });
+        public T Parse<T>(string value) => _parse1Handler.Call<System.Func<string, T>, T>(new[] { typeof(T) }, new object?[] { value });
         System.Collections.Generic.IReadOnlyList<string> INeedsGenericsCalls.Parse<T>(SourceMock.Internal.MockArgumentMatcher<string> value) => _parse1Handler.Calls(new[] { typeof(T) }, new SourceMock.Internal.IMockArgumentMatcher[] { value }, args => ((string)args[0]!));
 
         private readonly SourceMock.Internal.MockMethodHandler _get2Handler = new();
@@ -26,7 +26,7 @@ namespace SourceMock.Tests.Interfaces.Mocks {
     }
 
     public interface INeedsGenericsSetup {
-        SourceMock.Interfaces.IMockMethodSetup<System.Func<string,T>,T> Parse<T>(SourceMock.Internal.MockArgumentMatcher<string> value = default);
+        SourceMock.Interfaces.IMockMethodSetup<System.Func<string, T>,T> Parse<T>(SourceMock.Internal.MockArgumentMatcher<string> value = default);
         SourceMock.Interfaces.IMockMethodSetup<System.Func<T>,T> Get<T>();
         SourceMock.Interfaces.IMockMethodSetup<System.Action<T?>> SetOptional<T>(SourceMock.Internal.MockArgumentMatcher<T?> value = default);
         SourceMock.Interfaces.IMockMethodSetup<System.Func<System.Collections.Generic.IEnumerable<T?>>,global::System.Collections.Generic.IEnumerable<T?>> GetAll<T>();

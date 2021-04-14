@@ -69,6 +69,16 @@ namespace SourceMock.Generators.Internal {
         }
 
         [PerformanceSensitive("")]
+        public CodeWriter Write((string part1, string part2, string part3, string part4) parts) {
+            _builder
+                .Append(parts.part1)
+                .Append(parts.part2)
+                .Append(parts.part3)
+                .Append(parts.part4);
+            return this;
+        }
+
+        [PerformanceSensitive("")]
         public CodeWriter WriteLine() {
             _builder.AppendLine();
             return this;

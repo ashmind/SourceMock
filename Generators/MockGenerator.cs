@@ -135,7 +135,7 @@ namespace SourceMock.Generators {
             ImmutableArray<(string, SourceText)>.Builder assemblyCacheBuilder,
             in GeneratorExecutionContext context
         ) {
-            if (type.TypeKind != TypeKind.Interface)
+            if (!ShouldGenerateMockForTypeKind(type, out var potentiallyLoadedMembers))
                 return;
 
             if (type.DeclaredAccessibility != Accessibility.Public) {
@@ -149,7 +149,27 @@ namespace SourceMock.Generators {
             if (excludeRegex != null && excludeRegex.IsMatch(fullName))
                 return;
 
-            GenerateMockForType(new MockTarget(type, fullName), assemblyCacheBuilder, context);
+            GenerateMockForType(new MockTarget(type, fullName, potentiallyLoadedMembers), assemblyCacheBuilder, context);
+        }
+
+        [PerformanceSensitive("")]
+        private bool ShouldGenerateMockForTypeKind(INamedTypeSymbol type, out ImmutableArray<ISymbol>? members) {
+            members = null;
+            if (type.TypeKind == TypeKind.Interface)
+                return true;
+
+            if (type.TypeKind == TypeKind.Class) {
+                if (type.IsSealed)
+                    return false;
+
+                members = type.GetMembers();
+                foreach (var member in members) {
+                    if (member.IsVirtual || member.IsAbstract)
+                        return true;
+                }
+            }
+
+            return false;
         }
 
         [PerformanceSensitive("")]

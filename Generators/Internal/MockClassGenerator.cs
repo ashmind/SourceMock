@@ -53,7 +53,7 @@ namespace SourceMock.Generators.Internal {
             #pragma warning disable HAA0401 // Possible allocation of reference type enumerator - TODO
             foreach (var memberSymbol in GetAllMembers(target)) {
             #pragma warning restore HAA0401
-                if (GetMockedMember(memberSymbol, memberId) is not {} member)
+                if (GetMockTargetMember(memberSymbol, memberId) is not {} member)
                     continue;
 
                 mainWriter.WriteLine();
@@ -91,7 +91,7 @@ namespace SourceMock.Generators.Internal {
             #pragma warning disable HAA0502 // Explicit allocation -- unavoidable for now, can be pooled later (or removed if we handle them differently)
             var seen = new HashSet<string>();
             #pragma warning restore HAA0502
-            foreach (var member in target.Type.GetMembers()) {
+            foreach (var member in target.PotentiallyLoadedMembers ?? target.Type.GetMembers()) {
                 seen.Add(member.Name);
                 yield return member;
             }
@@ -99,7 +99,7 @@ namespace SourceMock.Generators.Internal {
             foreach (var @interface in target.Type.AllInterfaces) {
                 foreach (var member in @interface.GetMembers()) {
                     if (!seen.Add(member.Name))
-                        throw NotSupported($"Interface member {@interface.Name}.{member.Name} is hidden or overloaded by another interface member. This is not yet supported.");
+                        throw NotSupported($"Type member {@interface.Name}.{member.Name} is hidden or overloaded by another type member. This is not yet supported.");
                     yield return member;
                 }
             }
@@ -139,14 +139,8 @@ namespace SourceMock.Generators.Internal {
         }
 
         [PerformanceSensitive("")]
-        private MockTargetMember? GetMockedMember(ISymbol member, int uniqueMemberId) => member switch {
-            IMethodSymbol { MethodKind: MethodKind.Ordinary } method => new(
-                method, method.Name, method.ReturnType,
-                GetFullTypeName(method.ReturnType, method.ReturnNullableAnnotation),
-                ValidateGenericParameters(method.TypeParameters),
-                ConvertParametersFromSymbols(method.Parameters),
-                GetHandlerFieldName(method.Name, uniqueMemberId)
-            ),
+        private MockTargetMember? GetMockTargetMember(ISymbol member, int uniqueMemberId) => member switch {
+            IMethodSymbol method => GetTargetMethod(method, uniqueMemberId),
 
             IPropertySymbol property => new(
                 property, property.Name, property.Type,
@@ -155,13 +149,31 @@ namespace SourceMock.Generators.Internal {
                 property.SetMethod == null
                     ? ImmutableArray<MockTargetParameter>.Empty
                     : ConvertParametersFromSymbols(property.SetMethod.Parameters),
-                GetHandlerFieldName(property.Name, uniqueMemberId)
+                GetHandlerFieldName(property.Name, uniqueMemberId),
+                methodRunDelegateTypeFullName: null
             ),
-
-            IMethodSymbol { MethodKind: not MethodKind.Ordinary } => null,
 
             _ => throw MemberNotSupported(member)
         };
+
+        private MockTargetMember? GetTargetMethod(IMethodSymbol method, int uniqueMemberId) {
+            if (method.MethodKind != MethodKind.Ordinary)
+                return null;
+
+            if (method.ContainingType.TypeKind != TypeKind.Interface && !method.IsAbstract && !method.IsVirtual)
+                return null;
+
+            var parameters = ConvertParametersFromSymbols(method.Parameters);
+
+            return new(
+                method, method.Name, method.ReturnType,
+                GetFullTypeName(method.ReturnType, method.ReturnNullableAnnotation),
+                ValidateGenericParameters(method.TypeParameters),
+                parameters,
+                GetHandlerFieldName(method.Name, uniqueMemberId),
+                GetRunDelegateFullTypeName(parameters, method.ReturnType)
+            );
+        }
 
         [PerformanceSensitive("")]
         private string GetHandlerFieldName(string memberName, int uniqueMemberId) {
@@ -224,25 +236,19 @@ namespace SourceMock.Generators.Internal {
             return type.ToDisplayString(nullableFlowState, TargetTypeDisplayFormat);
         }
 
-        private string GetRunDelegateFullTypeName(in MockTargetMember member) {
-            if (member.IsVoidMethod) {
-                if (member.Parameters.Length > 0) {
-                    return $"System.Action<{string.Join(",", member.Parameters.Select(x => x.TypeFullName))}>";
-                }
+        [PerformanceSensitive("")]
+        private string GetRunDelegateFullTypeName(ImmutableArray<MockTargetParameter> parameters, ITypeSymbol returnType) {
+            if (returnType.SpecialType == SpecialType.System_Void) {
+                if (!parameters.IsEmpty)
+                    return $"{KnownTypes.Action.FullName}<{string.Join(",", parameters.Select(x => x.TypeFullName))}>";
 
-                return "System.Action";
+                return KnownTypes.Action.FullName;
             }
 
-            var returnType = member.Symbol switch {
-                IMethodSymbol method => method.ReturnType,
-                IPropertySymbol property => property.Type,
-                _ => throw MemberNotSupported(member.Symbol)
-            };
+            if (!parameters.IsEmpty)
+                return $"{KnownTypes.Func.FullName}<{string.Join(",", parameters.Select(x => x.TypeFullName))}, {returnType}>";
 
-            if (member.Parameters.Length > 0)
-                return $"System.Func<{string.Join(",", member.Parameters.Select(x => x.TypeFullName))}, {returnType}>";
-
-            return $"System.Func<{returnType}>";
+            return $"{KnownTypes.Func.FullName}<{returnType}>";
         }
 
         // Having this as a separate method removes need to suppress allocation warnings each time in exceptional situations

@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Immutable;
-using System.Linq;
 using Microsoft.CodeAnalysis;
 using Roslyn.Utilities;
 using SourceMock.Generators.Internal.Models;
@@ -75,9 +74,7 @@ namespace SourceMock.Generators.Internal {
 
             writer.Write(member.HandlerFieldName, ".Setup");
             if (member.Symbol is IMethodSymbol) {
-                var runType = GetRunType(member);
-
-                writer.Write("<", runType + ", " + member.HandlerGenericParameterFullName, ">(");
+                writer.Write("<", member.MethodRunDelegateTypeFullName!, ", ", member.HandlerGenericParameterFullName, ">(");
                 WriteCommonMethodHandlerArguments(writer, member, KnownTypes.IMockArgumentMatcher.FullName);
                 writer.Write(")");
             }
@@ -98,41 +95,25 @@ namespace SourceMock.Generators.Internal {
                 var s => throw MemberNotSupported(s)
             };
 
-            var runType = GetRunType(member);
-
             if (member.Symbol is IPropertySymbol)
                 return writer.WriteGeneric(setupTypeFullName, member.TypeFullName);
 
             if (member.IsVoidMethod)
-                return writer.WriteGeneric(setupTypeFullName, runType);
+                return writer.WriteGeneric(setupTypeFullName, member.MethodRunDelegateTypeFullName!);
 
-            return writer.WriteGeneric(setupTypeFullName, runType, member.TypeFullName);
-        }
-
-        private string GetRunType(in MockTargetMember member) {
-            if (member.IsVoidMethod) {
-                if (member.Parameters.Length > 0) {
-                    return $"System.Action<{string.Join(",", member.Parameters.Select(x => x.TypeFullName))}>";
-                }
-
-                return "System.Action";
-            }
-
-            var returnType = member.Symbol switch {
-                IMethodSymbol method => method.ReturnType,
-                IPropertySymbol property => property.Type,
-                _ => throw MemberNotSupported(member.Symbol)
-            };
-
-            if (member.Parameters.Length > 0)
-                return $"System.Func<{string.Join(",", member.Parameters.Select(x => x.TypeFullName))},{returnType}>";
-
-            return $"System.Func<{returnType}>";
+            return writer.WriteGeneric(setupTypeFullName, member.MethodRunDelegateTypeFullName!, member.TypeFullName);
         }
 
         [PerformanceSensitive("")]
         private CodeWriter WriteMemberImplementation(CodeWriter writer, in MockTargetMember member) {
-            writer.Write(Indents.Member, "public ", member.TypeFullName, " ", member.Name);
+            writer.Write(Indents.Member);
+            if (member.Symbol.ContainingType.TypeKind == TypeKind.Interface) {
+                writer.Write("public ");
+            }
+            else {
+                writer.Write(GetAccessibility(member.Symbol.DeclaredAccessibility), " override ");
+            }
+            writer.Write(member.TypeFullName, " ", member.Name);
 
             switch (member.Symbol) {
                 case IMethodSymbol:
@@ -155,16 +136,26 @@ namespace SourceMock.Generators.Internal {
                     if (property.SetMethod != null) {
                         writer.WriteLine(" {");
                         writer.Write(Indents.MemberBody, "get => ", member.HandlerFieldName, ".GetterHandler");
-                        WriteMemberImplementationHandlerCall(writer, member, ImmutableArray<MockTargetParameter>.Empty);
+                        WriteMemberImplementationHandlerCall(
+                            writer, member,
+                            (KnownTypes.Func.FullName, "<", member.TypeFullName, ">"),
+                            ImmutableArray<MockTargetParameter>.Empty
+                        );
                         writer.WriteLine(";");
                         writer.Write(Indents.MemberBody, "set => ", member.HandlerFieldName, ".SetterHandler");
-                        WriteMemberImplementationHandlerCall(writer, member);
+                        WriteMemberImplementationHandlerCall(
+                            writer, member,
+                            (KnownTypes.Action.FullName, "<", member.TypeFullName, ">")
+                        );
                         writer.WriteLine(";");
                         writer.Write(Indents.Member, "}");
                     }
                     else {
                         writer.Write(" => ", member.HandlerFieldName, ".GetterHandler");
-                        WriteMemberImplementationHandlerCall(writer, member);
+                        WriteMemberImplementationHandlerCall(
+                            writer, member,
+                            (KnownTypes.Func.FullName, "<", member.TypeFullName, ">")
+                        );
                         writer.Write(";");
                     }
                     break;
@@ -175,6 +166,17 @@ namespace SourceMock.Generators.Internal {
 
             return writer;
         }
+
+        [PerformanceSensitive("")]
+        private string GetAccessibility(Accessibility accessibility) => accessibility switch {
+            Accessibility.Public => "public",
+            Accessibility.Protected => "protected",
+            Accessibility.ProtectedOrInternal => "protected internal",
+            Accessibility.ProtectedAndInternal => "private protected",
+            #pragma warning disable HAA0601 // Boxing -- OK in exceptional case
+            _ => throw NotSupported($"Unexpected accessibility: {accessibility}")
+            #pragma warning restore HAA0601
+        };
 
         [PerformanceSensitive("")]
         private string? GetRefModifier(RefKind refKind) => refKind switch {
@@ -197,21 +199,32 @@ namespace SourceMock.Generators.Internal {
                     writer.WriteLine(Indents.MemberBody, parameter.Name, " = default;");
                 }
                 writer.Write(Indents.MemberBody, "return ", member.HandlerFieldName);
-                WriteMemberImplementationHandlerCall(writer, member, member.Parameters);
+                WriteMemberImplementationHandlerCall(writer, member);
                 writer.WriteLine(";");
                 return writer.Write(Indents.Member, "}");
             }
 
             writer.Write("=> ", member.HandlerFieldName);
-            WriteMemberImplementationHandlerCall(writer, member, member.Parameters);
+            WriteMemberImplementationHandlerCall(writer, member);
             return writer.Write(";");
         }
 
         [PerformanceSensitive("")]
-        private CodeWriter WriteMemberImplementationHandlerCall(CodeWriter writer, in MockTargetMember member, ImmutableArray<MockTargetParameter>? parametersOverride = null) {
-            var runType = GetRunType(member);
-            writer.Write(".Call<", runType + ", " + member.HandlerGenericParameterFullName, ">(");
-            WriteCommonMethodHandlerArguments(writer, member, "object?", parametersOverride);
+        private CodeWriter WriteMemberImplementationHandlerCall(
+            CodeWriter writer,
+            in MockTargetMember member,
+            (string part1, string part2, string part3, string part4)? runDelegateFullNameOverride = null,
+            ImmutableArray<MockTargetParameter>? parametersOverride = null
+        ) {
+            writer.Write(".Call<");
+            if (runDelegateFullNameOverride != null) {
+                writer.Write(runDelegateFullNameOverride.Value);
+            }
+            else {
+                writer.Write(member.MethodRunDelegateTypeFullName!);
+            }
+            writer.Write(", ", member.HandlerGenericParameterFullName, ">(");
+            WriteCommonMethodHandlerArguments(writer, member, "object?", parametersOverride ?? member.Parameters);
             return writer.Write(")");
         }
 

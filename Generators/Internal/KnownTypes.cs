@@ -66,5 +66,13 @@ namespace SourceMock.Generators.Internal {
         public static class IReadOnlyList {
             public const string FullName = "System.Collections.Generic.IReadOnlyList";
         }
+
+        public static class Func {
+            public const string FullName = "System.Func";
+        }
+
+        public static class Action {
+            public const string FullName = "System.Action";
+        }
     }
 }
