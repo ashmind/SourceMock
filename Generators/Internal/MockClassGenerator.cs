@@ -4,6 +4,7 @@ using System.Collections.Immutable;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 using Roslyn.Utilities;
+using SourceMock.Generators.Internal.Models;
 
 namespace SourceMock.Generators.Internal {
     internal class MockClassGenerator {
@@ -13,7 +14,7 @@ namespace SourceMock.Generators.Internal {
             SymbolDisplayGlobalNamespaceStyle.OmittedAsContaining
         );
 
-        private readonly DefaultConstraintCandidateCollector _defaultConstraintCollector = new();
+        private readonly MockMemberGenerator _mockMemberGenerator = new();
 
         [PerformanceSensitive("")]
         public string Generate(MockTarget target) {
@@ -52,11 +53,11 @@ namespace SourceMock.Generators.Internal {
             #pragma warning disable HAA0401 // Possible allocation of reference type enumerator - TODO
             foreach (var memberSymbol in GetAllMembers(target)) {
             #pragma warning restore HAA0401
-                if (GetMockedMember(memberSymbol, memberId) is not { } member)
+                if (GetMockedMember(memberSymbol, memberId) is not {} member)
                     continue;
 
                 mainWriter.WriteLine();
-                WriteMemberMocks(
+                _mockMemberGenerator.WriteMemberMocks(
                     mainWriter,
                     setupInterfaceWriter,
                     setupInterfaceName,
@@ -138,11 +139,11 @@ namespace SourceMock.Generators.Internal {
         }
 
         [PerformanceSensitive("")]
-        private MockedMember? GetMockedMember(ISymbol member, int uniqueMemberId) => member switch {
+        private MockTargetMember? GetMockedMember(ISymbol member, int uniqueMemberId) => member switch {
             IMethodSymbol { MethodKind: MethodKind.Ordinary } method => new(
                 method, method.Name, method.ReturnType,
                 GetFullTypeName(method.ReturnType, method.ReturnNullableAnnotation),
-                ConvertGenericParametersFromSymbols(method.TypeParameters),
+                ValidateGenericParameters(method.TypeParameters),
                 ConvertParametersFromSymbols(method.Parameters),
                 GetHandlerFieldName(method.Name, uniqueMemberId)
             ),
@@ -150,9 +151,9 @@ namespace SourceMock.Generators.Internal {
             IPropertySymbol property => new(
                 property, property.Name, property.Type,
                 GetFullTypeName(property.Type, property.NullableAnnotation),
-                ImmutableArray<GenericParameter>.Empty,
+                ImmutableArray<ITypeParameterSymbol>.Empty,
                 property.SetMethod == null
-                    ? ImmutableArray<Parameter>.Empty
+                    ? ImmutableArray<MockTargetParameter>.Empty
                     : ConvertParametersFromSymbols(property.SetMethod.Parameters),
                 GetHandlerFieldName(property.Name, uniqueMemberId)
             ),
@@ -170,14 +171,14 @@ namespace SourceMock.Generators.Internal {
         }
 
         [PerformanceSensitive("")]
-        private ImmutableArray<Parameter> ConvertParametersFromSymbols(ImmutableArray<IParameterSymbol> parameters) {
+        private ImmutableArray<MockTargetParameter> ConvertParametersFromSymbols(ImmutableArray<IParameterSymbol> parameters) {
             if (parameters.Length == 0)
-                return ImmutableArray<Parameter>.Empty;
+                return ImmutableArray<MockTargetParameter>.Empty;
 
-            var builder = ImmutableArray.CreateBuilder<Parameter>(parameters.Length);
+            var builder = ImmutableArray.CreateBuilder<MockTargetParameter>(parameters.Length);
             for (var i = 0; i < parameters.Length; i++) {
                 var parameter = parameters[i];
-                builder.Add(new Parameter(
+                builder.Add(new MockTargetParameter(
                     parameter.Name, GetFullTypeName(parameter.Type, parameter.NullableAnnotation), parameter.RefKind, i
                 ));
             }
@@ -185,17 +186,15 @@ namespace SourceMock.Generators.Internal {
         }
 
         [PerformanceSensitive("")]
-        private ImmutableArray<GenericParameter> ConvertGenericParametersFromSymbols(ImmutableArray<ITypeParameterSymbol> typeParameters) {
-            if (typeParameters.Length == 0)
-                return ImmutableArray<GenericParameter>.Empty;
+        private ImmutableArray<ITypeParameterSymbol> ValidateGenericParameters(ImmutableArray<ITypeParameterSymbol> typeParameters) {
+            if (typeParameters.IsEmpty)
+                return typeParameters;
 
-            var builder = ImmutableArray.CreateBuilder<GenericParameter>(typeParameters.Length);
-            for (var i = 0; i < typeParameters.Length; i++) {
-                var typeParameter = typeParameters[i];
+            foreach (var typeParameter in typeParameters) {
                 EnsureNoUnsupportedConstraints(typeParameter);
-                builder.Add(new GenericParameter(typeParameter.Name, i));
             }
-            return builder.MoveToImmutable();
+
+            return typeParameters;
         }
 
         [PerformanceSensitive("")]
@@ -225,107 +224,7 @@ namespace SourceMock.Generators.Internal {
             return type.ToDisplayString(nullableFlowState, TargetTypeDisplayFormat);
         }
 
-        [PerformanceSensitive("")]
-        private CodeWriter WriteMemberMocks(
-            CodeWriter mockWriter,
-            CodeWriter setupInterfaceWriter,
-            string setupInterfaceName,
-            CodeWriter callsInterfaceWriter,
-            string callsInterfaceName,
-            in MockedMember member
-        ) {
-            WriteHandlerField(mockWriter, member).WriteLine();
-            WriteSetupInterfaceMember(setupInterfaceWriter, member).WriteLine();
-            WriteSetupMemberImplementation(mockWriter, setupInterfaceName, member).WriteLine();
-            WriteMemberImplementation(mockWriter, member).WriteLine();
-            WriteCallsInterfaceMember(callsInterfaceWriter, member).WriteLine();
-            WriteCallsMemberImplementation(mockWriter, callsInterfaceName, member);
-            return mockWriter;
-        }
-
-        [PerformanceSensitive("")]
-        private CodeWriter WriteHandlerField(CodeWriter writer, in MockedMember member) {
-            writer.Write(Indents.Member, "private readonly ");
-            switch (member.Symbol) {
-                case IMethodSymbol:
-                    writer.Write(KnownTypes.MockMethodHandler.FullName, " ", member.HandlerFieldName, " = new()");
-                    break;
-
-                case IPropertySymbol property:
-                    writer
-                        .WriteGeneric(KnownTypes.MockPropertyHandler.FullName, member.HandlerGenericParameterFullName)
-                        .Write(" ", member.HandlerFieldName)
-                        .Write(" = new(", property.SetMethod != null ? "true" : "false", ")");
-                    break;
-
-                default:
-                    throw MemberNotSupported(member.Symbol);
-            }
-            return writer.Write(";");
-        }
-
-        [PerformanceSensitive("")]
-        private CodeWriter WriteSetupInterfaceMember(CodeWriter writer, in MockedMember member) {
-            writer.Write(Indents.Member);
-            WriteSetupMemberType(writer, member);
-            writer.Write(" ");
-            WriteSetupOrCallsInterfaceMemberNameAndParameters(writer, member);
-            return writer;
-        }
-
-        [PerformanceSensitive("")]
-        private CodeWriter WriteSetupMemberImplementation(CodeWriter writer, string setupInterfaceName, in MockedMember member) {
-            writer.Write(Indents.Member);
-
-            WriteSetupMemberType(writer, member);
-            writer.Write(" ", setupInterfaceName, ".", member.Name);
-            if (member.Symbol is IMethodSymbol) {
-                WriteMemberGenericParametersIfAny(writer, member);
-                writer.Write("(");
-                WriteSetupOrCallsMemberParameters(writer, member, appendDefaultValue: false);
-                writer.Write(")");
-                WriteExplicitImplementationDefaultConstraintsIfAny(writer, member);
-            }
-
-            writer.Write(" => ");
-
-            writer.Write(member.HandlerFieldName, ".Setup");
-            if (member.Symbol is IMethodSymbol) {
-                var runType = GetRunType(member);
-
-                writer.Write("<", runType + ", " + member.HandlerGenericParameterFullName, ">(");
-                WriteCommonMethodHandlerArguments(writer, member, KnownTypes.IMockArgumentMatcher.FullName);
-                writer.Write(")");
-            }
-            else {
-                writer.Write("()");
-            }
-
-            return writer.Write(";");
-        }
-
-        [PerformanceSensitive("")]
-        private CodeWriter WriteSetupMemberType(CodeWriter writer, in MockedMember member) {
-            var setupTypeFullName = member.Symbol switch {
-                IMethodSymbol => KnownTypes.IMockMethodSetup.FullName,
-                IPropertySymbol property => property.SetMethod != null
-                    ? KnownTypes.IMockSettablePropertySetup.FullName
-                    : KnownTypes.IMockPropertySetup.FullName,
-                var s => throw MemberNotSupported(s)
-            };
-
-            var runType = GetRunType(member);
-
-            if (member.Symbol is IPropertySymbol)
-                return writer.WriteGeneric(setupTypeFullName, member.TypeFullName);
-
-            if (member.IsVoidMethod)
-                return writer.WriteGeneric(setupTypeFullName, runType);
-
-            return writer.WriteGeneric(setupTypeFullName, runType, member.TypeFullName);
-        }
-
-        private string GetRunType(in MockedMember member) {
+        private string GetRunDelegateFullTypeName(in MockTargetMember member) {
             if (member.IsVoidMethod) {
                 if (member.Parameters.Length > 0) {
                     return $"System.Action<{string.Join(",", member.Parameters.Select(x => x.TypeFullName))}>";
@@ -341,268 +240,9 @@ namespace SourceMock.Generators.Internal {
             };
 
             if (member.Parameters.Length > 0)
-                return $"System.Func<{string.Join(",", member.Parameters.Select(x => x.TypeFullName))},{returnType}>";
+                return $"System.Func<{string.Join(",", member.Parameters.Select(x => x.TypeFullName))}, {returnType}>";
 
             return $"System.Func<{returnType}>";
-        }
-
-        [PerformanceSensitive("")]
-        private CodeWriter WriteMemberImplementation(CodeWriter writer, in MockedMember member) {
-            writer.Write(Indents.Member, "public ", member.TypeFullName, " ", member.Name);
-
-            switch (member.Symbol) {
-                case IMethodSymbol:
-                    WriteMemberGenericParametersIfAny(writer, member);
-                    writer.Write("(");
-                    var hasOutParameters = false;
-                    foreach (var parameter in member.Parameters) {
-                        if (parameter.Index > 0)
-                            writer.Write(", ");
-                        if (GetRefModifier(parameter.RefKind) is {} modifier)
-                            writer.Write(modifier, " ");
-                        writer.Write(parameter.TypeFullName, " ", parameter.Name);
-                        hasOutParameters = hasOutParameters || (parameter.RefKind == RefKind.Out);
-                    }
-                    writer.Write(") ");
-                    WriteMethodImplementationBody(writer, hasOutParameters, member);
-                    break;
-
-                case IPropertySymbol property:
-                    if (property.SetMethod != null) {
-                        writer.WriteLine(" {");
-                        writer.Write(Indents.MemberBody, "get => ", member.HandlerFieldName, ".GetterHandler");
-                        WriteMemberImplementationHandlerCall(writer, member, ImmutableArray<Parameter>.Empty);
-                        writer.WriteLine(";");
-                        writer.Write(Indents.MemberBody, "set => ", member.HandlerFieldName, ".SetterHandler");
-                        WriteMemberImplementationHandlerCall(writer, member);
-                        writer.WriteLine(";");
-                        writer.Write(Indents.Member, "}");
-                    }
-                    else {
-                        writer.Write(" => ", member.HandlerFieldName, ".GetterHandler");
-                        WriteMemberImplementationHandlerCall(writer, member);
-                        writer.Write(";");
-                    }
-                    break;
-
-                default:
-                    throw MemberNotSupported(member.Symbol);
-            }
-
-            return writer;
-        }
-
-        [PerformanceSensitive("")]
-        private string? GetRefModifier(RefKind refKind) => refKind switch {
-            RefKind.None => null,
-            RefKind.Ref => "ref",
-            RefKind.In => "in",
-            RefKind.Out => "out",
-            #pragma warning disable HAA0601 // Boxing -- OK in exceptional case
-            _ => throw NotSupported($"Unsupported parameter ref kind: {refKind}")
-            #pragma warning restore HAA0601
-        };
-
-        [PerformanceSensitive("")]
-        private CodeWriter WriteMethodImplementationBody(CodeWriter writer, bool hasOutParameters, in MockedMember member) {
-            if (hasOutParameters) {
-                writer.WriteLine("{");
-                foreach (var parameter in member.Parameters) {
-                    if (parameter.RefKind != RefKind.Out)
-                        continue;
-                    writer.WriteLine(Indents.MemberBody, parameter.Name, " = default;");
-                }
-                writer.Write(Indents.MemberBody, "return ", member.HandlerFieldName);
-                WriteMemberImplementationHandlerCall(writer, member, member.Parameters);
-                writer.WriteLine(";");
-                return writer.Write(Indents.Member, "}");
-            }
-
-            writer.Write("=> ", member.HandlerFieldName);
-            WriteMemberImplementationHandlerCall(writer, member, member.Parameters);
-            return writer.Write(";");
-        }
-
-        [PerformanceSensitive("")]
-        private CodeWriter WriteMemberImplementationHandlerCall(CodeWriter writer, in MockedMember member, ImmutableArray<Parameter>? parametersOverride = null) {
-            var runType = GetRunType(member);
-            writer.Write(".Call<", runType + ", " + member.HandlerGenericParameterFullName, ">(");
-            WriteCommonMethodHandlerArguments(writer, member, "object?", parametersOverride);
-            return writer.Write(")");
-        }
-
-        [PerformanceSensitive("")]
-        private CodeWriter WriteCallsInterfaceMember(CodeWriter writer, in MockedMember member) {
-            writer.Write(Indents.Member);
-            WriteCallsMemberType(writer, member);
-            writer.Write(" ");
-            return WriteSetupOrCallsInterfaceMemberNameAndParameters(writer, member);
-        }
-
-        [PerformanceSensitive("")]
-        private CodeWriter WriteCallsMemberImplementation(CodeWriter writer, string callsInterfaceName, in MockedMember member) {
-            writer.Write(Indents.Member);
-            WriteCallsMemberType(writer, member);
-            writer.Write(" ", callsInterfaceName, ".", member.Name);
-            if (member.Symbol is IMethodSymbol) {
-                WriteMemberGenericParametersIfAny(writer, member);
-                writer.Write("(");
-                WriteSetupOrCallsMemberParameters(writer, member, appendDefaultValue: false);
-                writer.Write(")");
-                WriteExplicitImplementationDefaultConstraintsIfAny(writer, member);
-            }
-            writer.Write(" => ", member.HandlerFieldName, ".Calls(");
-            if (member.Symbol is IMethodSymbol) {
-                WriteCommonMethodHandlerArguments(writer, member, KnownTypes.IMockArgumentMatcher.FullName).Write(", ");
-                var parameters = member.Parameters;
-                if (!parameters.IsEmpty) {
-                    writer.Write("args => (");
-                    foreach (var parameter in parameters) {
-                        if (parameter.Index > 0)
-                            writer.Write(", ");
-                        writer.Write("(", parameter.TypeFullName, ")args[", parameter.Index.ToString(), "]");
-                        if (!parameter.TypeFullName.EndsWith("?"))
-                            writer.Write("!");
-                    }
-                    writer.Write(")");
-                }
-                else {
-                    writer.Write("_ => ", KnownTypes.NoArguments.FullName, ".Value");
-                }
-            }
-            return writer.Write(");");
-        }
-
-        [PerformanceSensitive("")]
-        private CodeWriter WriteCallsMemberType(CodeWriter writer, in MockedMember member) {
-            if (member.Symbol is IPropertySymbol property) {
-                var callsTypeFullName = property.SetMethod != null
-                    ? KnownTypes.IMockSettablePropertyCalls.FullName
-                    : KnownTypes.IMockPropertyCalls.FullName;
-                return writer.WriteGeneric(callsTypeFullName, member.TypeFullName);
-            }
-
-            writer.Write(KnownTypes.IReadOnlyList.FullName, "<");
-
-            var parameters = member.Parameters;
-            if (parameters.Length > 1) {
-                writer.Write("(");
-                foreach (var parameter in parameters) {
-                    if (parameter.Index > 0)
-                        writer.Write(", ");
-                    writer.Write(parameter.TypeFullName, " ", parameter.Name);
-                }
-                writer.Write(")");
-            }
-            else if (parameters.Length == 1) {
-                writer.Write(parameters[0].TypeFullName);
-            }
-            else {
-                writer.Write(KnownTypes.NoArguments.FullName);
-            }
-
-            return writer.Write(">");
-        }
-
-        [PerformanceSensitive("")]
-        private CodeWriter WriteSetupOrCallsInterfaceMemberNameAndParameters(CodeWriter writer, in MockedMember member) {
-            writer.Write(member.Name);
-            switch (member.Symbol) {
-                case IMethodSymbol:
-                    WriteMemberGenericParametersIfAny(writer, member);
-                    writer.Write("(");
-                    WriteSetupOrCallsMemberParameters(writer, member, appendDefaultValue: true);
-                    writer.Write(");");
-                    break;
-                case IPropertySymbol:
-                    writer.Write(" { get; }");
-                    break;
-                default:
-                    throw MemberNotSupported(member.Symbol);
-            }
-            return writer;
-        }
-
-        [PerformanceSensitive("")]
-        private CodeWriter WriteSetupOrCallsMemberParameters(CodeWriter writer, in MockedMember member, bool appendDefaultValue) {
-            foreach (var parameter in member.Parameters) {
-                if (parameter.Index > 0)
-                    writer.Write(", ");
-                writer
-                    .WriteGeneric(KnownTypes.MockArgumentMatcher.FullName, parameter.TypeFullName)
-                    .Write(" ", parameter.Name);
-                if (appendDefaultValue)
-                    writer.Write(" = default");
-            }
-            return writer;
-        }
-
-        [PerformanceSensitive("")]
-        private CodeWriter WriteCommonMethodHandlerArguments(
-            CodeWriter writer,
-            in MockedMember member,
-            string argumentTypeFullName,
-            ImmutableArray<Parameter>? parametersOverride = null
-        ) {
-            var parameters = parametersOverride ?? member.Parameters;
-
-            if (!member.GenericParameters.IsEmpty) {
-                writer.Write("new[] { ");
-                foreach (var parameter in member.GenericParameters) {
-                    if (parameter.Index > 0)
-                        writer.Write(", ");
-                    writer.Write("typeof(", parameter.Name, ")");
-                }
-                writer.Write(" }");
-            }
-            else {
-                writer.Write("null");
-            }
-            writer.Write(", ");
-
-            if (!parameters.IsEmpty) {
-                writer.Write("new ", argumentTypeFullName, "[] { ");
-                foreach (var parameter in parameters) {
-                    if (parameter.Index > 0)
-                        writer.Write(", ");
-                    writer.Write(parameter.Name);
-                }
-                writer.Write(" }");
-            }
-            else {
-                writer.Write("null");
-            }
-            return writer;
-        }
-
-        [PerformanceSensitive("")]
-        private CodeWriter WriteMemberGenericParametersIfAny(CodeWriter writer, in MockedMember member) {
-            if (member.GenericParameters.Length == 0)
-                return writer;
-            writer.Write("<");
-            foreach (var parameter in member.GenericParameters) {
-                if (parameter.Index > 0)
-                    writer.Write(", ");
-                writer.Write(parameter.Name);
-            }
-            return writer.Write(">");
-        }
-
-        [PerformanceSensitive("")]
-        private CodeWriter WriteExplicitImplementationDefaultConstraintsIfAny(CodeWriter writer, in MockedMember member) {
-            if (member.GenericParameters.Length == 0)
-                return writer;
-
-            var parametersNeedingDefault = _defaultConstraintCollector.Collect(member.Symbol);
-            if (parametersNeedingDefault.Count == 0)
-                return writer;
-
-            #pragma warning disable HAA0401 // Possible allocation of reference type enumerator - TODO
-            foreach (var parameter in parametersNeedingDefault) {
-            #pragma warning restore HAA0401
-                writer.Write(" where ", parameter.Name, ": default");
-            }
-            return writer;
         }
 
         // Having this as a separate method removes need to suppress allocation warnings each time in exceptional situations
@@ -611,62 +251,5 @@ namespace SourceMock.Generators.Internal {
         private NotSupportedException MemberNotSupported(ISymbol symbol) => NotSupported(
             $"{symbol.Name} has an unsupported member symbol type ({symbol.GetType()})"
         );
-
-        private readonly struct MockedMember {
-            [PerformanceSensitive("")]
-            public MockedMember(
-                ISymbol symbol,
-                string name,
-                ITypeSymbol type,
-                string typeFullName,
-                ImmutableArray<GenericParameter> genericParameters,
-                ImmutableArray<Parameter> parameters,
-                string handlerFieldName
-            ) {
-                Symbol = symbol;
-                Name = name;
-                Type = type;
-                TypeFullName = typeFullName;
-                GenericParameters = genericParameters;
-                Parameters = parameters;
-                HandlerFieldName = handlerFieldName;
-            }
-
-            public ISymbol Symbol { get; }
-            public string Name { get; }
-            public ITypeSymbol Type { get; }
-            public string TypeFullName { get; }
-            public ImmutableArray<GenericParameter> GenericParameters { get; }
-            public ImmutableArray<Parameter> Parameters { get; }
-            public string HandlerFieldName { get; }
-            [PerformanceSensitive("")]
-            public bool IsVoidMethod => Symbol is IMethodSymbol && Type.SpecialType == SpecialType.System_Void;
-            [PerformanceSensitive("")]
-            public string HandlerGenericParameterFullName => !IsVoidMethod ? TypeFullName : KnownTypes.VoidReturn.FullName;
-        }
-
-        private readonly struct GenericParameter {
-            public GenericParameter(string name, int index) {
-                Name = name;
-                Index = index;
-            }
-
-            public string Name { get; }
-            public int Index { get; }
-        }
-
-        private readonly struct Parameter {
-            public Parameter(string name, string typeFullName, RefKind refKind, int index) {
-                Name = name;
-                TypeFullName = typeFullName;
-                RefKind = refKind;
-                Index = index;
-            }
-
-            public string Name { get; }
-            public string TypeFullName { get; }
-            public RefKind RefKind { get; }
-            public int Index { get; }
-        }
     }
 }

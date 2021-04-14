@@ -1,7 +1,7 @@
 using Microsoft.CodeAnalysis;
 using Roslyn.Utilities;
 
-namespace SourceMock.Generators.Internal {
+namespace SourceMock.Generators.Internal.Models {
     internal readonly struct MockTarget {
         [PerformanceSensitive("")]
         public MockTarget(INamedTypeSymbol targetType, string targetTypeQualifiedName)

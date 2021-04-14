@@ -7,6 +7,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Text;
 using Roslyn.Utilities;
 using SourceMock.Generators.Internal;
+using SourceMock.Generators.Internal.Models;
 
 namespace SourceMock.Generators {
     [Generator]
