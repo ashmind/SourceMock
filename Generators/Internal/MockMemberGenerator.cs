@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Immutable;
 using Microsoft.CodeAnalysis;
 using Roslyn.Utilities;
@@ -42,7 +41,7 @@ namespace SourceMock.Generators.Internal {
                     break;
 
                 default:
-                    throw MemberNotSupported(member.Symbol);
+                    throw Exceptions.MemberNotSupported(member.Symbol);
             }
             return writer.Write(";");
         }
@@ -92,7 +91,7 @@ namespace SourceMock.Generators.Internal {
                 IPropertySymbol property => property.SetMethod != null
                     ? KnownTypes.IMockSettablePropertySetup.FullName
                     : KnownTypes.IMockPropertySetup.FullName,
-                var s => throw MemberNotSupported(s)
+                var s => throw Exceptions.MemberNotSupported(s)
             };
 
             if (member.Symbol is IPropertySymbol)
@@ -161,7 +160,7 @@ namespace SourceMock.Generators.Internal {
                     break;
 
                 default:
-                    throw MemberNotSupported(member.Symbol);
+                    throw Exceptions.MemberNotSupported(member.Symbol);
             }
 
             return writer;
@@ -174,7 +173,7 @@ namespace SourceMock.Generators.Internal {
             Accessibility.ProtectedOrInternal => "protected internal",
             Accessibility.ProtectedAndInternal => "private protected",
             #pragma warning disable HAA0601 // Boxing -- OK in exceptional case
-            _ => throw NotSupported($"Unexpected accessibility: {accessibility}")
+            _ => throw Exceptions.NotSupported($"Unexpected accessibility: {accessibility}")
             #pragma warning restore HAA0601
         };
 
@@ -185,7 +184,7 @@ namespace SourceMock.Generators.Internal {
             RefKind.In => "in",
             RefKind.Out => "out",
             #pragma warning disable HAA0601 // Boxing -- OK in exceptional case
-            _ => throw NotSupported($"Unsupported parameter ref kind: {refKind}")
+            _ => throw Exceptions.NotSupported($"Unsupported parameter ref kind: {refKind}")
             #pragma warning restore HAA0601
         };
 
@@ -315,7 +314,7 @@ namespace SourceMock.Generators.Internal {
                     writer.Write(" { get; }");
                     break;
                 default:
-                    throw MemberNotSupported(member.Symbol);
+                    throw Exceptions.MemberNotSupported(member.Symbol);
             }
             return writer;
         }
@@ -403,12 +402,5 @@ namespace SourceMock.Generators.Internal {
             }
             return writer;
         }
-
-        // Having this as a separate method removes need to suppress allocation warnings each time in exceptional situations
-        private NotSupportedException NotSupported(string message) => new(message);
-
-        private NotSupportedException MemberNotSupported(ISymbol symbol) => NotSupported(
-            $"{symbol.Name} has an unsupported member symbol type ({symbol.GetType()})"
-        );
     }
 }
