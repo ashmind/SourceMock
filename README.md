@@ -63,7 +63,7 @@ Instead, assert `.Calls` at the end of the test to confirm the expected calls.
 ## Not Yet
 
 These are not _intentionally_ excluded, just not yet supported:
-1. Abstract classes
+1. Custom constructors in abstract classes
 2. Generic constraints
 3. Custom default values
 4. Custom parameter matchers
