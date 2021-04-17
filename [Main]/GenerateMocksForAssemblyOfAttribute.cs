@@ -2,14 +2,17 @@ using System;
 using System.Text.RegularExpressions;
 
 namespace SourceMock {
-    /// <summary>Requests mock generation for a specific assembly.</summary>
+    /// <summary>
+    /// Requests mock generation for all interfaces in the specified assembly.
+    /// </summary>
     /// <remarks>
-    /// When this attribute is used in a test assembly, SourceMock will generate
-    /// mocks for all interfaces in the target assembly and include those into
-    /// the test assembly.
+    /// When this attribute is used in a test project, SourceMock will generate
+    /// mocks for all interfaces in the target assembly, and include those into
+    /// the test project.
     /// </remarks>
     [AttributeUsage(AttributeTargets.Assembly, AllowMultiple = true)]
-    public class GenerateMocksForAssemblyOfAttribute : Attribute {
+    public class GenerateMocksForAssemblyOfAttribute
+        : Attribute {
         /// <summary>
         /// Initializes a new instance of the <see cref="GenerateMocksForAssemblyOfAttribute" /> class.
         /// </summary>

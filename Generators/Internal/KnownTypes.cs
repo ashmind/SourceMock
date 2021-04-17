@@ -15,6 +15,15 @@ namespace SourceMock.Generators.Internal {
             }
         }
 
+        public static class GenerateMocksForTypesAttribute {
+            public const string Name = "GenerateMocksForTypesAttribute";
+            public const string NameWithoutAttribute = "GenerateMocksForTypes";
+
+            public static bool NamespaceMatches(INamespaceSymbol? @namespace) => @namespace is {
+                Name: "SourceMock", ContainingNamespace: { IsGlobalNamespace: true }
+            };
+        }
+
         public static class IMock {
             public const string FullName = "SourceMock.IMock";
         }

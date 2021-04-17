@@ -1,4 +1,3 @@
-using System.Collections.Immutable;
 using Microsoft.CodeAnalysis;
 using Roslyn.Utilities;
 
@@ -7,17 +6,14 @@ namespace SourceMock.Generators.Internal.Models {
         [PerformanceSensitive("")]
         public MockTarget(
             INamedTypeSymbol targetType,
-            string targetTypeQualifiedName,
-            ImmutableArray<ISymbol>? potentiallyLoadedMembers
+            string targetTypeQualifiedName
         )
         {
             Type = targetType;
             FullTypeName = targetTypeQualifiedName;
-            PotentiallyLoadedMembers = potentiallyLoadedMembers;
         }
 
         public INamedTypeSymbol Type { get; }
         public string FullTypeName { get; }
-        public ImmutableArray<ISymbol>? PotentiallyLoadedMembers { get; }
     }
 }

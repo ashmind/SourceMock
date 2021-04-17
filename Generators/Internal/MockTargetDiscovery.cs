@@ -17,7 +17,7 @@ namespace SourceMock.Generators.Internal {
             #pragma warning restore HAA0502
 
             var memberId = 1;
-            foreach (var member in target.PotentiallyLoadedMembers ?? target.Type.GetMembers()) {
+            foreach (var member in target.Type.GetMembers()) {
                 seen.Add(member.Name);
 
                 if (GetTargetMember(member, memberId) is not {} discovered)
