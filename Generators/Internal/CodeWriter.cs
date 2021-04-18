@@ -69,6 +69,19 @@ namespace SourceMock.Generators.Internal {
         }
 
         [PerformanceSensitive("")]
+        public CodeWriter Write(string part1, string part2, string part3, string part4, string part5, string part6, string part7) {
+            _builder
+                .Append(part1)
+                .Append(part2)
+                .Append(part3)
+                .Append(part4)
+                .Append(part5)
+                .Append(part6)
+                .Append(part7);
+            return this;
+        }
+
+        [PerformanceSensitive("")]
         public CodeWriter Write((string part1, string part2, string part3, string part4) parts) {
             _builder
                 .Append(parts.part1)
@@ -141,6 +154,19 @@ namespace SourceMock.Generators.Internal {
         }
 
         [PerformanceSensitive("")]
+        public CodeWriter WriteLine(string part1, string part2, string part3, string part4, string part5, string part6, string part7) {
+            _builder
+                .Append(part1)
+                .Append(part2)
+                .Append(part3)
+                .Append(part4)
+                .Append(part5)
+                .Append(part6)
+                .AppendLine(part7);
+            return this;
+        }
+
+        [PerformanceSensitive("")]
         public CodeWriter WriteLine(string part1, string part2, string part3, string part4, string part5, string part6, string part7, string part8) {
             _builder
                 .Append(part1)
@@ -171,7 +197,7 @@ namespace SourceMock.Generators.Internal {
                 .Append(genericTypeName)
                 .Append("<")
                 .Append(genericArgumentName1)
-                .Append(",")
+                .Append(", ")
                 .Append(genericArgumentName2)
                 .Append(">");
 
@@ -183,6 +209,8 @@ namespace SourceMock.Generators.Internal {
             _builder.Append(other._builder);
             return this;
         }
+
+        public int CurrentLength => _builder.Length;
 
         public override string ToString() => _builder.ToString();
     }

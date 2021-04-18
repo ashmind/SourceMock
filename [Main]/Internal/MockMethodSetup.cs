@@ -34,9 +34,9 @@ namespace SourceMock.Internal {
 
         public bool Matches(MockCall call) => call.Matches(_genericArguments, _arguments);
 
-        public TReturn? Execute(IReadOnlyList<object?>? arguments) {
+        public TReturn? Execute(object?[] arguments) {
             if (_callback != null)
-                return (TReturn?)_callback.DynamicInvoke(arguments.ToArray());
+                return (TReturn?)_callback.DynamicInvoke(arguments);
 
             if (_exception != null)
                 throw _exception;

@@ -8,13 +8,8 @@ namespace SourceMock.Tests {
         public void MethodArgument_ReturnValue() {
             var mock = new MockableMock();
 
-            mock.Setup.ParseToInt32("1").Runs((s) => {
-                if(s == "1") {
-                    return 1;
-                }
-
-                return default;
-            });
+            mock.Setup.ParseToInt32("1")
+                .Runs(s => s == "1" ? 1 : default);
 
             var result = mock.ParseToInt32("1");
 
@@ -37,13 +32,32 @@ namespace SourceMock.Tests {
             var argument = new EmptyClass();
 
             var mock = new MockableMock();
-            mock.Setup.Execute(default).Runs((argument) => {
-                runsArgument = argument;
-            });
+            mock.Setup.Execute(default)
+                .Runs(argument => runsArgument = argument);
 
             mock.Execute(argument);
 
             Assert.Equal(argument, runsArgument);
+        }
+
+        [Fact]
+        public void Method_Out() {
+            var mock = new NeedsParameterModifiersMock();
+            mock.Setup.TestOut().Runs((out int x) => x = 5);
+
+            mock.TestOut(out var result);
+
+            Assert.Equal(5, result);
+        }
+
+        [Fact]
+        public void Method_Generic() {
+            var mock = new NeedsGenericsMock<int>();
+            mock.Setup.Convert<string>().Runs(x => x.ToString());
+
+            var result = mock.Convert<string>(5);
+
+            Assert.Equal("5", result);
         }
 
         [Fact]

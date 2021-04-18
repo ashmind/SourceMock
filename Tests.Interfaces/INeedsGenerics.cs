@@ -10,5 +10,6 @@ namespace SourceMock.Tests.Interfaces {
 
     public interface INeedsGenerics<U> {
         U Get();
+        T Convert<T>(U value);
     }
 }
