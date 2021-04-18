@@ -8,8 +8,12 @@ namespace SourceMock.Generators.Internal {
             SymbolDisplayGlobalNamespaceStyle.OmittedAsContaining
         );
 
-        private readonly MockTargetDiscovery _mockTargetDiscovery = new();
+        private readonly MockTargetModelFactory _modelFactory;
         private readonly MockMemberGenerator _mockMemberGenerator = new();
+
+        public MockClassGenerator(MockTargetModelFactory modelFactory) {
+            _modelFactory = modelFactory;
+        }
 
         [PerformanceSensitive("")]
         public string Generate(MockTarget target) {
@@ -45,7 +49,7 @@ namespace SourceMock.Generators.Internal {
                 .WriteLine(Indents.Type, "public interface ", callsInterfaceName, " {");
 
             #pragma warning disable HAA0401 // Possible allocation of reference type enumerator - TODO
-            foreach (var member in _mockTargetDiscovery.GetMembersToMock(target)) {
+            foreach (var member in _modelFactory.GetMockTargetMembers(target)) {
             #pragma warning restore HAA0401
                 mainWriter.WriteLine();
                 _mockMemberGenerator.WriteMemberMocks(
@@ -99,7 +103,7 @@ namespace SourceMock.Generators.Internal {
             writer.Write("<");
             var index = 0;
             foreach (var parameter in parameters) {
-                _mockTargetDiscovery.EnsureNoUnsupportedConstraints(parameter);
+                _modelFactory.EnsureNoUnsupportedConstraints(parameter);
                 if (index > 0)
                     writer.Write(", ");
                 writer.Write(parameter.Name);

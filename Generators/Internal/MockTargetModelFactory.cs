@@ -6,12 +6,17 @@ using Roslyn.Utilities;
 using SourceMock.Generators.Internal.Models;
 
 namespace SourceMock.Generators.Internal {
-    internal class MockTargetDiscovery {
+    internal class MockTargetModelFactory {
         private static readonly SymbolDisplayFormat TargetTypeDisplayFormat = SymbolDisplayFormat.FullyQualifiedFormat
             .WithMiscellaneousOptions(SymbolDisplayFormat.FullyQualifiedFormat.MiscellaneousOptions | SymbolDisplayMiscellaneousOptions.IncludeNullableReferenceTypeModifier);
 
+        public MockTarget GetMockTarget(INamedTypeSymbol type) {
+            var fullName = GetFullTypeName(type, NullableAnnotation.None);
+            return new MockTarget(type, fullName);
+        }
+
         [PerformanceSensitive("")]
-        public IEnumerable<MockTargetMember> GetMembersToMock(MockTarget target) {
+        public IEnumerable<MockTargetMember> GetMockTargetMembers(MockTarget target) {
             #pragma warning disable HAA0502 // Explicit allocation -- unavoidable for now, can be pooled later (or removed if we handle them differently)
             var seen = new HashSet<string>();
             #pragma warning restore HAA0502
@@ -20,7 +25,7 @@ namespace SourceMock.Generators.Internal {
             foreach (var member in target.Type.GetMembers()) {
                 seen.Add(member.Name);
 
-                if (GetTargetMember(member, memberId) is not {} discovered)
+                if (GetMockTargetMember(member, memberId) is not {} discovered)
                     continue;
 
                 yield return discovered;
@@ -31,7 +36,7 @@ namespace SourceMock.Generators.Internal {
                 foreach (var member in @interface.GetMembers()) {
                     if (!seen.Add(member.Name))
                         throw Exceptions.NotSupported($"Type member {@interface.Name}.{member.Name} is hidden or overloaded by another type member. This is not yet supported.");
-                    if (GetTargetMember(member, memberId) is not { } discovered)
+                    if (GetMockTargetMember(member, memberId) is not { } discovered)
                         continue;
 
                     yield return discovered;
@@ -41,8 +46,8 @@ namespace SourceMock.Generators.Internal {
         }
 
         [PerformanceSensitive("")]
-        private MockTargetMember? GetTargetMember(ISymbol member, int uniqueMemberId) => member switch {
-            IMethodSymbol method => GetTargetMethod(method, uniqueMemberId),
+        private MockTargetMember? GetMockTargetMember(ISymbol member, int uniqueMemberId) => member switch {
+            IMethodSymbol method => GetMockTargetMethod(method, uniqueMemberId),
 
             IPropertySymbol property => new(
                 property, property.Name, property.Type,
@@ -58,7 +63,7 @@ namespace SourceMock.Generators.Internal {
             _ => throw Exceptions.MemberNotSupported(member)
         };
 
-        private MockTargetMember? GetTargetMethod(IMethodSymbol method, int uniqueMemberId) {
+        private MockTargetMember? GetMockTargetMethod(IMethodSymbol method, int uniqueMemberId) {
             if (method.MethodKind != MethodKind.Ordinary)
                 return null;
 

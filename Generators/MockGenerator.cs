@@ -27,10 +27,12 @@ namespace SourceMock.Generators {
 
         private readonly GeneratorCache<(IAssemblySymbol assembly, string? excludePattern), ImmutableArray<(string name, SourceText source)>> _mockedAssemblyCache = new("MockedAssemblyCache");
         private readonly GeneratorCache<INamedTypeSymbol, (string name, SourceText source)> _mockedTypeCache = new("MockedTypeCache", NamedTypeSymbolCacheKeyEqualityComparer.Default);
-        private readonly MockClassGenerator _classGenerator = new();
+        private readonly MockTargetModelFactory _modelFactory = new();
+        private readonly MockClassGenerator _classGenerator;
 
         public MockGenerator() {
             GeneratorLog.Log("MockGenerator constructor");
+            _classGenerator = new(_modelFactory);
         }
 
         public void Initialize(GeneratorInitializationContext context) {
@@ -62,47 +64,55 @@ namespace SourceMock.Generators {
                 case KnownTypes.GenerateMocksForAssemblyOfAttribute.Name:
                     if (!KnownTypes.GenerateMocksForAssemblyOfAttribute.NamespaceMatches(attributeClass.ContainingNamespace))
                         return;
-                    GenerateMocksForAttributeTargetAssembly(attribute, context);
+                    ProcessGenerateMocksForAssemblyAttribute(attribute, context);
                     break;
 
                 case KnownTypes.GenerateMocksForTypesAttribute.Name:
                     if (!KnownTypes.GenerateMocksForTypesAttribute.NamespaceMatches(attributeClass.ContainingNamespace))
                         return;
-
-                    if (attribute.ConstructorArguments.ElementAtOrDefault(0) is not { Kind: TypedConstantKind.Array, Values: var typeofConstants })
-                        return;
-
-                    foreach (var typeofConstant in typeofConstants) {
-                        if (typeofConstant is not { Value: INamedTypeSymbol type })
-                            continue;
-                        GenerateMockForType(new MockTarget(type, GetFullTypeName(type)), assemblyCacheBuilder: null, context);
-                    }
+                    ProcessGenerateMocksForTypesAttribute(attribute, context);
                     break;
             }
         }
 
         [PerformanceSensitive("")]
-        private void GenerateMocksForAttributeTargetAssembly(AttributeData attribute, in GeneratorExecutionContext context) {
+        private void ProcessGenerateMocksForAssemblyAttribute(AttributeData attribute, GeneratorExecutionContext context) {
             // intermediate code state? just in case
             if (attribute.ConstructorArguments.ElementAtOrDefault(0).Value is not INamedTypeSymbol anyTypeInAssembly)
                 return;
 
-            var targetAssembly = anyTypeInAssembly.ContainingAssembly;
             string? excludePattern = null;
             foreach (var named in attribute.NamedArguments) {
                 if (named.Key == KnownTypes.GenerateMocksForAssemblyOfAttribute.NamedParameters.ExcludeRegex)
                     excludePattern = named.Value.Value as string;
             }
 
-            if (_mockedAssemblyCache.TryGetValue((targetAssembly, excludePattern), out var sources)) {
-                GeneratorLog.Log("Using cached mocks for assembly " + targetAssembly.Name);
+            GenerateMocksForAssembly(anyTypeInAssembly.ContainingAssembly, excludePattern, attribute.ApplicationSyntaxReference, context);
+        }
+
+        [PerformanceSensitive("")]
+        private void ProcessGenerateMocksForTypesAttribute(AttributeData attribute, GeneratorExecutionContext context) {
+            if (attribute.ConstructorArguments.ElementAtOrDefault(0) is not { Kind: TypedConstantKind.Array, Values: var typeConstants })
+                return;
+
+            foreach (var typeConstant in typeConstants) {
+                if (typeConstant is not { Value: INamedTypeSymbol type })
+                    continue;
+                GenerateMockForType(_modelFactory.GetMockTarget(type), assemblyCacheBuilder: null, context);
+            }
+        }
+
+        [PerformanceSensitive("")]
+        private void GenerateMocksForAssembly(IAssemblySymbol assembly, string? excludePattern, SyntaxReference? errorSyntaxReference, in GeneratorExecutionContext context) {
+            if (_mockedAssemblyCache.TryGetValue((assembly, excludePattern), out var sources)) {
+                GeneratorLog.Log("Using cached mocks for assembly " + assembly.Name);
                 foreach (var (name, source) in sources) {
                     context.AddSource(name, source);
                 }
                 return;
             }
 
-            GeneratorLog.Log("Generating mocks for assembly " + targetAssembly.Name);
+            GeneratorLog.Log("Generating mocks for assembly " + assembly.Name);
 
             Regex? excludeRegex;
             try {
@@ -111,11 +121,10 @@ namespace SourceMock.Generators {
                 #pragma warning restore HAA0502
             }
             catch (ArgumentException ex) {
-                var attributeSyntax = attribute.ApplicationSyntaxReference;
                 #pragma warning disable HAA0101 // Array allocation for params parameter -- Exceptional case: OK to allocate
                 context.ReportDiagnostic(Diagnostic.Create(
                     DiagnosticDescriptors.RegexPatternFailedToParse,
-                    attributeSyntax?.SyntaxTree.GetLocation(attributeSyntax.Span),
+                    errorSyntaxReference?.SyntaxTree.GetLocation(errorSyntaxReference.Span),
                     excludePattern, ex.Message
                 ));
                 #pragma warning restore HAA0101 // Array allocation for params parameter
@@ -123,8 +132,8 @@ namespace SourceMock.Generators {
             }
 
             var assemblyCacheBuilder = ImmutableArray.CreateBuilder<(string, SourceText)>();
-            GenerateMocksForNamespace(targetAssembly.GlobalNamespace, excludeRegex, assemblyCacheBuilder, context);
-            _mockedAssemblyCache.TryAdd((targetAssembly, excludePattern), assemblyCacheBuilder.ToImmutable());
+            GenerateMocksForNamespace(assembly.GlobalNamespace, excludeRegex, assemblyCacheBuilder, context);
+            _mockedAssemblyCache.TryAdd((assembly, excludePattern), assemblyCacheBuilder.ToImmutable());
         }
 
         [PerformanceSensitive("")]
@@ -139,9 +148,10 @@ namespace SourceMock.Generators {
             #pragma warning restore HAA0401
                 switch (member) {
                     case INamedTypeSymbol type:
-                        if (!ShouldIncludeInMocksForAssembly(type, excludeRegex, out var fullName, context))
+                        var target = _modelFactory.GetMockTarget(type);
+                        if (!ShouldIncludeInMocksForAssembly(target, excludeRegex, context))
                             continue;
-                        GenerateMockForType(new MockTarget(type, fullName!), assemblyCacheBuilder, context);
+                        GenerateMockForType(target, assemblyCacheBuilder, context);
                         break;
 
                     case INamespaceSymbol nested:
@@ -152,13 +162,8 @@ namespace SourceMock.Generators {
         }
 
         [PerformanceSensitive("")]
-        private bool ShouldIncludeInMocksForAssembly(
-            INamedTypeSymbol type,
-            Regex? excludeRegex,
-            out string? fullName,
-            in GeneratorExecutionContext context
-        ) {
-            fullName = null;
+        private bool ShouldIncludeInMocksForAssembly(MockTarget target, Regex? excludeRegex, in GeneratorExecutionContext context) {
+            var type = target.Type;
             if (type.TypeKind != TypeKind.Interface)
                 return false;
 
@@ -169,16 +174,10 @@ namespace SourceMock.Generators {
                     return false;
             }
 
-            fullName = GetFullTypeName(type);
-            if (excludeRegex != null && excludeRegex.IsMatch(fullName))
+            if (excludeRegex != null && excludeRegex.IsMatch(target.FullTypeName))
                 return false;
 
             return true;
-        }
-
-        [PerformanceSensitive("")]
-        private static string GetFullTypeName(INamedTypeSymbol type) {
-            return type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
         }
 
         [PerformanceSensitive("")]
