@@ -23,6 +23,7 @@ namespace SourceMock.Generators.Internal {
             var mockClassName = mockBaseName + "Mock" + typeParameters;
             var setupInterfaceName = "I" + mockBaseName + "Setup" + typeParameters;
             var callsInterfaceName = "I" + mockBaseName + "Calls" + typeParameters;
+            var customDelegatesClassName = mockBaseName + "Delegates" + typeParameters;
 
             #pragma warning disable HAA0502 // Explicit allocation -- unavoidable for now, can be pooled later
             var mainWriter = new CodeWriter()
@@ -39,6 +40,12 @@ namespace SourceMock.Generators.Internal {
                 .WriteLine(Indents.Member, "public ", callsInterfaceName, " Calls => this;");
 
             #pragma warning disable HAA0502 // Explicit allocation -- unavoidable for now, can be pooled later
+            var customDelegatesClassWriter = new CodeWriter()
+            #pragma warning restore HAA0502
+                .WriteLine(Indents.Type, "public static class ", customDelegatesClassName, " {");
+            var customDelegatesEmptyLength = customDelegatesClassWriter.CurrentLength;
+
+            #pragma warning disable HAA0502 // Explicit allocation -- unavoidable for now, can be pooled later
             var setupInterfaceWriter = new CodeWriter()
             #pragma warning restore HAA0502
                 .WriteLine(Indents.Type, "public interface ", setupInterfaceName, " {");
@@ -49,11 +56,12 @@ namespace SourceMock.Generators.Internal {
                 .WriteLine(Indents.Type, "public interface ", callsInterfaceName, " {");
 
             #pragma warning disable HAA0401 // Possible allocation of reference type enumerator - TODO
-            foreach (var member in _modelFactory.GetMockTargetMembers(target)) {
+            foreach (var member in _modelFactory.GetMockTargetMembers(target, customDelegatesClassName)) {
             #pragma warning restore HAA0401
                 mainWriter.WriteLine();
                 _mockMemberGenerator.WriteMemberMocks(
                     mainWriter,
+                    customDelegatesClassWriter,
                     setupInterfaceWriter,
                     setupInterfaceName,
                     callsInterfaceWriter,
@@ -63,6 +71,14 @@ namespace SourceMock.Generators.Internal {
             }
 
             mainWriter.WriteLine(Indents.Type, "}");
+
+            if (customDelegatesClassWriter.CurrentLength != customDelegatesEmptyLength) {
+                customDelegatesClassWriter.Write(Indents.Type, "}");
+                mainWriter
+                    .WriteLine()
+                    .Append(customDelegatesClassWriter)
+                    .WriteLine();
+            }
 
             setupInterfaceWriter.Write(Indents.Type, "}");
             mainWriter

@@ -10,6 +10,7 @@ namespace SourceMock.Generators.Internal {
         [PerformanceSensitive("")]
         public CodeWriter WriteMemberMocks(
             CodeWriter mockWriter,
+            CodeWriter customDelegatesClassWriter,
             CodeWriter setupInterfaceWriter,
             string setupInterfaceName,
             CodeWriter callsInterfaceWriter,
@@ -17,6 +18,8 @@ namespace SourceMock.Generators.Internal {
             in MockTargetMember member
         ) {
             WriteHandlerField(mockWriter, member).WriteLine();
+            if (member.MethodRunDelegateType is { IsCustom: true } runDelegate)
+                WriteCustomRunDelegate(customDelegatesClassWriter, member, runDelegate).WriteLine();
             WriteSetupInterfaceMember(setupInterfaceWriter, member).WriteLine();
             WriteSetupMemberImplementation(mockWriter, setupInterfaceName, member).WriteLine();
             WriteMemberImplementation(mockWriter, member).WriteLine();
@@ -47,6 +50,13 @@ namespace SourceMock.Generators.Internal {
         }
 
         [PerformanceSensitive("")]
+        private CodeWriter WriteCustomRunDelegate(CodeWriter writer, in MockTargetMember member, MockTargetMethodRunDelegateType runDelegate) {
+            writer.Write(Indents.Member, "public delegate ", member.TypeFullName, " ", runDelegate.CustomNameWithGenericParameters!, "(");
+            WriteMethodImplementationParametersIfAny(writer, member, out _);
+            return writer.Write(");");
+        }
+
+        [PerformanceSensitive("")]
         private CodeWriter WriteSetupInterfaceMember(CodeWriter writer, in MockTargetMember member) {
             writer.Write(Indents.Member);
             WriteSetupMemberType(writer, member);
@@ -62,7 +72,7 @@ namespace SourceMock.Generators.Internal {
             WriteSetupMemberType(writer, member);
             writer.Write(" ", setupInterfaceName, ".", member.Name);
             if (member.Symbol is IMethodSymbol) {
-                WriteMemberGenericParametersIfAny(writer, member);
+                WriteMethodGenericParametersIfAny(writer, member);
                 writer.Write("(");
                 WriteSetupOrCallsMemberParameters(writer, member, appendDefaultValue: false);
                 writer.Write(")");
@@ -73,7 +83,7 @@ namespace SourceMock.Generators.Internal {
 
             writer.Write(member.HandlerFieldName, ".Setup");
             if (member.Symbol is IMethodSymbol) {
-                writer.Write("<", member.MethodRunDelegateTypeFullName!, ", ", member.HandlerGenericParameterFullName, ">(");
+                writer.Write("<", member.MethodRunDelegateType!.Value.FullName, ", ", member.HandlerGenericParameterFullName, ">(");
                 WriteCommonMethodHandlerArguments(writer, member, KnownTypes.IMockArgumentMatcher.FullName);
                 writer.Write(")");
             }
@@ -98,9 +108,9 @@ namespace SourceMock.Generators.Internal {
                 return writer.WriteGeneric(setupTypeFullName, member.TypeFullName);
 
             if (member.IsVoidMethod)
-                return writer.WriteGeneric(setupTypeFullName, member.MethodRunDelegateTypeFullName!);
+                return writer.WriteGeneric(setupTypeFullName, member.MethodRunDelegateType!.Value.FullName);
 
-            return writer.WriteGeneric(setupTypeFullName, member.MethodRunDelegateTypeFullName!, member.TypeFullName);
+            return writer.WriteGeneric(setupTypeFullName, member.MethodRunDelegateType!.Value.FullName, member.TypeFullName);
         }
 
         [PerformanceSensitive("")]
@@ -116,17 +126,9 @@ namespace SourceMock.Generators.Internal {
 
             switch (member.Symbol) {
                 case IMethodSymbol:
-                    WriteMemberGenericParametersIfAny(writer, member);
+                    WriteMethodGenericParametersIfAny(writer, member);
                     writer.Write("(");
-                    var hasOutParameters = false;
-                    foreach (var parameter in member.Parameters) {
-                        if (parameter.Index > 0)
-                            writer.Write(", ");
-                        if (GetRefModifier(parameter.RefKind) is {} modifier)
-                            writer.Write(modifier, " ");
-                        writer.Write(parameter.TypeFullName, " ", parameter.Name);
-                        hasOutParameters = hasOutParameters || (parameter.RefKind == RefKind.Out);
-                    }
+                    WriteMethodImplementationParametersIfAny(writer, member, out var hasOutParameters);
                     writer.Write(") ");
                     WriteMethodImplementationBody(writer, hasOutParameters, member);
                     break;
@@ -138,7 +140,7 @@ namespace SourceMock.Generators.Internal {
                         WriteMemberImplementationHandlerCall(
                             writer, member,
                             (KnownTypes.Func.FullName, "<", member.TypeFullName, ">"),
-                            ImmutableArray<MockTargetParameter>.Empty
+                            parametersOverride: ImmutableArray<MockTargetParameter>.Empty
                         );
                         writer.WriteLine(";");
                         writer.Write(Indents.MemberBody, "set => ", member.HandlerFieldName, ".SetterHandler");
@@ -178,6 +180,20 @@ namespace SourceMock.Generators.Internal {
         };
 
         [PerformanceSensitive("")]
+        private CodeWriter WriteMethodImplementationParametersIfAny(CodeWriter writer, MockTargetMember member, out bool hasOutParameters) {
+            hasOutParameters = false;
+            foreach (var parameter in member.Parameters) {
+                if (parameter.Index > 0)
+                    writer.Write(", ");
+                if (GetRefModifier(parameter.RefKind) is {} modifier)
+                    writer.Write(modifier, " ");
+                writer.Write(parameter.FullTypeName, " ", parameter.Name);
+                hasOutParameters = hasOutParameters || (parameter.RefKind == RefKind.Out);
+            }
+            return writer;
+        }
+
+        [PerformanceSensitive("")]
         private string? GetRefModifier(RefKind refKind) => refKind switch {
             RefKind.None => null,
             RefKind.Ref => "ref",
@@ -191,15 +207,23 @@ namespace SourceMock.Generators.Internal {
         [PerformanceSensitive("")]
         private CodeWriter WriteMethodImplementationBody(CodeWriter writer, bool hasOutParameters, in MockTargetMember member) {
             if (hasOutParameters) {
-                writer.WriteLine("{");
+                writer
+                    .WriteLine("{")
+                    .Write(Indents.MemberBody, "var arguments = ");
+                WriteCommonArgumentsArray(writer, "object?", member.Parameters).WriteLine(";");
+                writer
+                    .Write(Indents.MemberBody, "var result = ", member.HandlerFieldName);
+                WriteMemberImplementationHandlerCall(writer, member, argumentsArrayOverride: "arguments")
+                    .WriteLine(";");
                 foreach (var parameter in member.Parameters) {
-                    if (parameter.RefKind != RefKind.Out)
+                    if (parameter.RefKind is not RefKind.Out or RefKind.Ref)
                         continue;
-                    writer.WriteLine(Indents.MemberBody, parameter.Name, " = default;");
+                    writer.Write(Indents.MemberBody, parameter.Name, " = (", parameter.FullTypeName, ")arguments[", parameter.Index.ToString(), "]");
+                    if (!parameter.FullTypeName.EndsWith("?"))
+                        writer.Write("!");
+                    writer.WriteLine(";");
                 }
-                writer.Write(Indents.MemberBody, "return ", member.HandlerFieldName);
-                WriteMemberImplementationHandlerCall(writer, member);
-                writer.WriteLine(";");
+                writer.WriteLine(Indents.MemberBody, "return result;");
                 return writer.Write(Indents.Member, "}");
             }
 
@@ -213,6 +237,7 @@ namespace SourceMock.Generators.Internal {
             CodeWriter writer,
             in MockTargetMember member,
             (string part1, string part2, string part3, string part4)? runDelegateFullNameOverride = null,
+            string? argumentsArrayOverride = null,
             ImmutableArray<MockTargetParameter>? parametersOverride = null
         ) {
             writer.Write(".Call<");
@@ -220,10 +245,10 @@ namespace SourceMock.Generators.Internal {
                 writer.Write(runDelegateFullNameOverride.Value);
             }
             else {
-                writer.Write(member.MethodRunDelegateTypeFullName!);
+                writer.Write(member.MethodRunDelegateType!.Value.FullName);
             }
             writer.Write(", ", member.HandlerGenericParameterFullName, ">(");
-            WriteCommonMethodHandlerArguments(writer, member, "object?", parametersOverride ?? member.Parameters);
+            WriteCommonMethodHandlerArguments(writer, member, "object?", argumentsArrayOverride, parametersOverride ?? member.Parameters);
             return writer.Write(")");
         }
 
@@ -241,7 +266,7 @@ namespace SourceMock.Generators.Internal {
             WriteCallsMemberType(writer, member);
             writer.Write(" ", callsInterfaceName, ".", member.Name);
             if (member.Symbol is IMethodSymbol) {
-                WriteMemberGenericParametersIfAny(writer, member);
+                WriteMethodGenericParametersIfAny(writer, member);
                 writer.Write("(");
                 WriteSetupOrCallsMemberParameters(writer, member, appendDefaultValue: false);
                 writer.Write(")");
@@ -256,8 +281,8 @@ namespace SourceMock.Generators.Internal {
                     foreach (var parameter in parameters) {
                         if (parameter.Index > 0)
                             writer.Write(", ");
-                        writer.Write("(", parameter.TypeFullName, ")args[", parameter.Index.ToString(), "]");
-                        if (!parameter.TypeFullName.EndsWith("?"))
+                        writer.Write("(", parameter.FullTypeName, ")args[", parameter.Index.ToString(), "]");
+                        if (!parameter.FullTypeName.EndsWith("?"))
                             writer.Write("!");
                     }
                     writer.Write(")");
@@ -286,12 +311,12 @@ namespace SourceMock.Generators.Internal {
                 foreach (var parameter in parameters) {
                     if (parameter.Index > 0)
                         writer.Write(", ");
-                    writer.Write(parameter.TypeFullName, " ", parameter.Name);
+                    writer.Write(parameter.FullTypeName, " ", parameter.Name);
                 }
                 writer.Write(")");
             }
             else if (parameters.Length == 1) {
-                writer.Write(parameters[0].TypeFullName);
+                writer.Write(parameters[0].FullTypeName);
             }
             else {
                 writer.Write(KnownTypes.NoArguments.FullName);
@@ -305,7 +330,7 @@ namespace SourceMock.Generators.Internal {
             writer.Write(member.Name);
             switch (member.Symbol) {
                 case IMethodSymbol:
-                    WriteMemberGenericParametersIfAny(writer, member);
+                    WriteMethodGenericParametersIfAny(writer, member);
                     writer.Write("(");
                     WriteSetupOrCallsMemberParameters(writer, member, appendDefaultValue: true);
                     writer.Write(");");
@@ -325,7 +350,7 @@ namespace SourceMock.Generators.Internal {
                 if (parameter.Index > 0)
                     writer.Write(", ");
                 writer
-                    .WriteGeneric(KnownTypes.MockArgumentMatcher.FullName, parameter.TypeFullName)
+                    .WriteGeneric(KnownTypes.MockArgumentMatcher.FullName, parameter.FullTypeName)
                     .Write(" ", parameter.Name);
                 if (appendDefaultValue)
                     writer.Write(" = default");
@@ -338,6 +363,7 @@ namespace SourceMock.Generators.Internal {
             CodeWriter writer,
             in MockTargetMember member,
             string argumentTypeFullName,
+            string? argumentsArrayOverride = null,
             ImmutableArray<MockTargetParameter>? parametersOverride = null
         ) {
             var parameters = parametersOverride ?? member.Parameters;
@@ -357,23 +383,34 @@ namespace SourceMock.Generators.Internal {
             }
             writer.Write(", ");
 
-            if (!parameters.IsEmpty) {
-                writer.Write("new ", argumentTypeFullName, "[] { ");
-                foreach (var parameter in parameters) {
-                    if (parameter.Index > 0)
-                        writer.Write(", ");
-                    writer.Write(parameter.Name);
-                }
-                writer.Write(" }");
-            }
-            else {
-                writer.Write("null");
-            }
-            return writer;
+            if (argumentsArrayOverride != null)
+                return writer.Write(argumentsArrayOverride);
+
+            return WriteCommonArgumentsArray(writer, argumentTypeFullName, parameters);
         }
 
         [PerformanceSensitive("")]
-        private CodeWriter WriteMemberGenericParametersIfAny(CodeWriter writer, in MockTargetMember member) {
+        private CodeWriter WriteCommonArgumentsArray(CodeWriter writer, string argumentTypeFullName, ImmutableArray<MockTargetParameter> parameters) {
+            if (parameters.IsEmpty)
+                return writer.Write("null");
+
+            writer.Write("new ", argumentTypeFullName, "[] { ");
+            foreach (var parameter in parameters) {
+                if (parameter.Index > 0)
+                    writer.Write(", ");
+
+                if (parameter.RefKind == RefKind.Out && argumentTypeFullName == "object?") {
+                    writer.Write("default(", parameter.FullTypeName, ")");
+                    continue;
+                }
+
+                writer.Write(parameter.Name);
+            }
+            return writer.Write(" }");
+        }
+
+        [PerformanceSensitive("")]
+        private CodeWriter WriteMethodGenericParametersIfAny(CodeWriter writer, in MockTargetMember member) {
             var genericParameters = member.GenericParameters;
             if (genericParameters.IsEmpty)
                 return writer;

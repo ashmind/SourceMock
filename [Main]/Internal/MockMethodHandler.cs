@@ -20,7 +20,8 @@ namespace SourceMock.Internal {
         }
 
         /// <summary>This method supports generated code and is not intended to be used directly.</summary>
-        public TReturn Call<TRun, TReturn>(IReadOnlyList<Type>? genericArguments, IReadOnlyList<object?>? arguments) where TRun : Delegate  {
+        // Important: arguments must be an array here to ensure that DynamicInvoke in setup.Execute returns out arguments in the same array
+        public TReturn Call<TRun, TReturn>(IReadOnlyList<Type>? genericArguments, object?[]? arguments) where TRun : Delegate  {
             genericArguments ??= Array.Empty<Type>();
             arguments ??= Array.Empty<object?>();
             var call = new MockCall(genericArguments, arguments);

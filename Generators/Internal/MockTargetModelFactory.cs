@@ -16,38 +16,40 @@ namespace SourceMock.Generators.Internal {
         }
 
         [PerformanceSensitive("")]
-        public IEnumerable<MockTargetMember> GetMockTargetMembers(MockTarget target) {
+        public IEnumerable<MockTargetMember> GetMockTargetMembers(MockTarget target, string customDelegatesClassName) {
             #pragma warning disable HAA0502 // Explicit allocation -- unavoidable for now, can be pooled later (or removed if we handle them differently)
-            var seen = new HashSet<string>();
+            var lastOverloadIds = new Dictionary<string, int>();
             #pragma warning restore HAA0502
 
-            var memberId = 1;
             foreach (var member in target.Type.GetMembers()) {
-                seen.Add(member.Name);
+                if (!lastOverloadIds.TryGetValue(member.Name, out var lastOverloadId))
+                    lastOverloadId = 0;
 
-                if (GetMockTargetMember(member, memberId) is not {} discovered)
+                var overloadId = lastOverloadId + 1;
+                if (GetMockTargetMember(member, overloadId, customDelegatesClassName) is not {} discovered)
                     continue;
 
+                lastOverloadIds[member.Name] = overloadId;
                 yield return discovered;
-                memberId += 1;
             }
 
             foreach (var @interface in target.Type.AllInterfaces) {
                 foreach (var member in @interface.GetMembers()) {
-                    if (!seen.Add(member.Name))
+                    if (lastOverloadIds.ContainsKey(member.Name))
                         throw Exceptions.NotSupported($"Type member {@interface.Name}.{member.Name} is hidden or overloaded by another type member. This is not yet supported.");
-                    if (GetMockTargetMember(member, memberId) is not { } discovered)
+
+                    if (GetMockTargetMember(member, 1, customDelegatesClassName) is not {} discovered)
                         continue;
 
+                    lastOverloadIds[member.Name] = 1;
                     yield return discovered;
-                    memberId += 1;
                 }
             }
         }
 
         [PerformanceSensitive("")]
-        private MockTargetMember? GetMockTargetMember(ISymbol member, int uniqueMemberId) => member switch {
-            IMethodSymbol method => GetMockTargetMethod(method, uniqueMemberId),
+        private MockTargetMember? GetMockTargetMember(ISymbol member, int overloadId, string customDelegatesClassName) => member switch {
+            IMethodSymbol method => GetMockTargetMethod(method, overloadId, customDelegatesClassName),
 
             IPropertySymbol property => new(
                 property, property.Name, property.Type,
@@ -56,14 +58,14 @@ namespace SourceMock.Generators.Internal {
                 property.SetMethod == null
                     ? ImmutableArray<MockTargetParameter>.Empty
                     : ConvertParametersFromSymbols(property.SetMethod.Parameters),
-                GetHandlerFieldName(property.Name, uniqueMemberId),
-                methodRunDelegateTypeFullName: null
+                GetHandlerFieldName(property.Name, overloadId),
+                methodRunDelegateType: null
             ),
 
             _ => throw Exceptions.MemberNotSupported(member)
         };
 
-        private MockTargetMember? GetMockTargetMethod(IMethodSymbol method, int uniqueMemberId) {
+        private MockTargetMember? GetMockTargetMethod(IMethodSymbol method, int overloadId, string customDelegatesClassName) {
             if (method.MethodKind != MethodKind.Ordinary)
                 return null;
 
@@ -71,14 +73,15 @@ namespace SourceMock.Generators.Internal {
                 return null;
 
             var parameters = ConvertParametersFromSymbols(method.Parameters);
+            var returnTypeFullName = GetFullTypeName(method.ReturnType, method.ReturnNullableAnnotation);
 
             return new(
                 method, method.Name, method.ReturnType,
-                GetFullTypeName(method.ReturnType, method.ReturnNullableAnnotation),
+                returnTypeFullName,
                 ValidateGenericParameters(method.TypeParameters),
                 parameters,
-                GetHandlerFieldName(method.Name, uniqueMemberId),
-                GetRunDelegateFullTypeName(parameters, method.ReturnType)
+                GetHandlerFieldName(method.Name, overloadId),
+                GetRunDelegateType(method, parameters, returnTypeFullName, overloadId, customDelegatesClassName)
             );
         }
 
@@ -134,25 +137,43 @@ namespace SourceMock.Generators.Internal {
         }
 
         [PerformanceSensitive("")]
-        private string GetHandlerFieldName(string memberName, int uniqueMemberId) {
+        private string GetHandlerFieldName(string memberName, int overloadId) {
             #pragma warning disable HAA0601 // Boxing - unavoidable for now, will revisit later
-            return $"_{char.ToLowerInvariant(memberName[0])}{memberName.Substring(1)}{uniqueMemberId}Handler";
+            return $"_{char.ToLowerInvariant(memberName[0])}{memberName.Substring(1)}{(overloadId > 1 ? overloadId.ToString() : "")}Handler";
             #pragma warning restore HAA0601
         }
 
         [PerformanceSensitive("")]
-        private string GetRunDelegateFullTypeName(ImmutableArray<MockTargetParameter> parameters, ITypeSymbol returnType) {
-            if (returnType.SpecialType == SpecialType.System_Void) {
-                if (!parameters.IsEmpty)
-                    return $"{KnownTypes.Action.FullName}<{string.Join(",", parameters.Select(x => x.TypeFullName))}>";
+        private MockTargetMethodRunDelegateType GetRunDelegateType(
+            IMethodSymbol method,
+            ImmutableArray<MockTargetParameter> parameters,
+            string returnTypeFullName,
+            int overloadId,
+            string customDelegatesClassName
+        ) {
+            var needsCustomDelegate = method.IsGenericMethod
+                                   || parameters.Length > 16
+                                   || parameters.Any(static p => p.RefKind is not RefKind.None or RefKind.In);
+            if (needsCustomDelegate) {
+                var suffix = method.ReturnsVoid ? "Action" : "Func";
+                var nameWithGenericParameters = method.Name + (overloadId > 1 ? overloadId.ToString() : "") + suffix;
+                if (method.IsGenericMethod)
+                    nameWithGenericParameters += "<" + string.Join(", ", method.TypeParameters.Select(static t => t.Name)) + ">";
 
-                return KnownTypes.Action.FullName;
+                return MockTargetMethodRunDelegateType.Custom(nameWithGenericParameters, customDelegatesClassName + "." + nameWithGenericParameters);
+            }
+
+            if (method.ReturnsVoid) {
+                if (!parameters.IsEmpty)
+                    return new($"{KnownTypes.Action.FullName}<{string.Join(",", parameters.Select(static x => x.FullTypeName))}>");
+
+                return new(KnownTypes.Action.FullName);
             }
 
             if (!parameters.IsEmpty)
-                return $"{KnownTypes.Func.FullName}<{string.Join(",", parameters.Select(x => x.TypeFullName))}, {returnType}>";
+                return new($"{KnownTypes.Func.FullName}<{string.Join(",", parameters.Select(static x => x.FullTypeName))}, {returnTypeFullName}>");
 
-            return $"{KnownTypes.Func.FullName}<{returnType}>";
+            return new($"{KnownTypes.Func.FullName}<{returnTypeFullName}>");
         }
     }
 }

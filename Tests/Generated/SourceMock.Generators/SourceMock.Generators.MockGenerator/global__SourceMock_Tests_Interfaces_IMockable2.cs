@@ -4,14 +4,14 @@ namespace SourceMock.Tests.Interfaces.Mocks {
         public IMockable2Setup Setup => this;
         public IMockable2Calls Calls => this;
 
-        private readonly SourceMock.Internal.MockMethodHandler _getString1Handler = new();
-        SourceMock.Interfaces.IMockMethodSetup<System.Func<string>,string> IMockable2Setup.GetString() => _getString1Handler.Setup<System.Func<string>, string>(null, null);
-        public string GetString() => _getString1Handler.Call<System.Func<string>, string>(null, null);
-        System.Collections.Generic.IReadOnlyList<SourceMock.NoArguments> IMockable2Calls.GetString() => _getString1Handler.Calls(null, null, _ => SourceMock.NoArguments.Value);
+        private readonly SourceMock.Internal.MockMethodHandler _getStringHandler = new();
+        SourceMock.Interfaces.IMockMethodSetup<System.Func<string>, string> IMockable2Setup.GetString() => _getStringHandler.Setup<System.Func<string>, string>(null, null);
+        public string GetString() => _getStringHandler.Call<System.Func<string>, string>(null, null);
+        System.Collections.Generic.IReadOnlyList<SourceMock.NoArguments> IMockable2Calls.GetString() => _getStringHandler.Calls(null, null, _ => SourceMock.NoArguments.Value);
     }
 
     public interface IMockable2Setup {
-        SourceMock.Interfaces.IMockMethodSetup<System.Func<string>,string> GetString();
+        SourceMock.Interfaces.IMockMethodSetup<System.Func<string>, string> GetString();
     }
 
     public interface IMockable2Calls {
