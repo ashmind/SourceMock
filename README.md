@@ -11,7 +11,7 @@ instead of
 mock.Setup(x => x.Parse(It.IsAny<string>())).Return(3)
 ```
 
-# Getting started
+# Cookbook
 
 All examples assume the following interface:
 ```csharp
@@ -49,6 +49,20 @@ parser.Parse("2");
 Assert.Equal(new[] { "1", "2" }, parser.Calls.Parse());
 ```
 
+## Set up a callback
+
+```csharp
+[assembly: GenerateMocksForAssemblyOf(typeof(IParser))]
+
+using Parsing.Mocks;
+
+var parser = new ParserMock();
+
+parser.Setup.Parse().Runs(s => int.Parse(s));
+
+Assert.Equal(1, parser.Parse("1"));
+```
+
 # Limitations
 
 ## By Design
@@ -63,14 +77,13 @@ Instead, assert `.Calls` at the end of the test to confirm the expected calls.
 ## Not Yet
 
 These are not _intentionally_ excluded, just not yet supported:
-1. Custom constructors in abstract classes
+1. Class mocks: custom constructors, calling base methods
 2. Generic constraints
 3. Custom default values
 4. Custom parameter matchers
-5. Custom mock callbacks
-6. Setting up output values for ref and out parameters
-7. Chained setups
-8. Anything more advanced than the above
+5. Setting up output values for ref and out parameters
+6. Chained setups
+7. Anything more advanced than the above
 
 # Kudos
 
