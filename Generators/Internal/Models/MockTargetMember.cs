@@ -10,7 +10,7 @@ namespace SourceMock.Generators.Internal.Models {
             string name,
             ITypeSymbol type,
             string typeFullName,
-            ImmutableArray<ITypeParameterSymbol> genericParameters,
+            ImmutableArray<MockTargetGenericParameter> genericParameters,
             ImmutableArray<MockTargetParameter> parameters,
             string handlerFieldName,
             MockTargetMethodRunDelegateType? methodRunDelegateType
@@ -29,7 +29,7 @@ namespace SourceMock.Generators.Internal.Models {
         public string Name { get; }
         public ITypeSymbol Type { get; }
         public string TypeFullName { get; }
-        public ImmutableArray<ITypeParameterSymbol> GenericParameters { get; }
+        public ImmutableArray<MockTargetGenericParameter> GenericParameters { get; }
         public ImmutableArray<MockTargetParameter> Parameters { get; }
         public string HandlerFieldName { get; }
         public MockTargetMethodRunDelegateType? MethodRunDelegateType { get; }

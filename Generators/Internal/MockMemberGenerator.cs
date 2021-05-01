@@ -129,7 +129,9 @@ namespace SourceMock.Generators.Internal {
                     WriteMethodGenericParametersIfAny(writer, member);
                     writer.Write("(");
                     WriteMethodImplementationParametersIfAny(writer, member, out var hasOutParameters);
-                    writer.Write(") ");
+                    writer.Write(")");
+                    WriteMethodGenericConstraintsIfAny(writer, member);
+                    writer.Write(" ");
                     WriteMethodImplementationBody(writer, hasOutParameters, member);
                     break;
 
@@ -333,7 +335,9 @@ namespace SourceMock.Generators.Internal {
                     WriteMethodGenericParametersIfAny(writer, member);
                     writer.Write("(");
                     WriteSetupOrCallsMemberParameters(writer, member, appendDefaultValue: true);
-                    writer.Write(");");
+                    writer.Write(")");
+                    WriteMethodGenericConstraintsIfAny(writer, member);
+                    writer.Write(";");
                     break;
                 case IPropertySymbol:
                     writer.Write(" { get; }");
@@ -421,6 +425,21 @@ namespace SourceMock.Generators.Internal {
                 writer.Write(genericParameters[i].Name);
             }
             return writer.Write(">");
+        }
+
+        [PerformanceSensitive("")]
+        private CodeWriter WriteMethodGenericConstraintsIfAny(CodeWriter writer, in MockTargetMember member) {
+            if (member.GenericParameters.Length == 0)
+                return writer;
+
+            foreach (var parameter in member.GenericParameters) {
+                if (parameter.ConstraintsCode == null)
+                    continue;
+                writer
+                    .WriteLine()
+                    .Write(Indents.MemberBody, parameter.ConstraintsCode);
+            }
+            return writer;
         }
 
         [PerformanceSensitive("")]

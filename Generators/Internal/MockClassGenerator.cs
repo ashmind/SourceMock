@@ -119,7 +119,6 @@ namespace SourceMock.Generators.Internal {
             writer.Write("<");
             var index = 0;
             foreach (var parameter in parameters) {
-                _modelFactory.EnsureNoUnsupportedConstraints(parameter);
                 if (index > 0)
                     writer.Write(", ");
                 writer.Write(parameter.Name);

@@ -54,7 +54,7 @@ namespace SourceMock.Generators.Internal {
             IPropertySymbol property => new(
                 property, property.Name, property.Type,
                 GetFullTypeName(property.Type, property.NullableAnnotation),
-                ImmutableArray<ITypeParameterSymbol>.Empty,
+                ImmutableArray<MockTargetGenericParameter>.Empty,
                 property.SetMethod == null
                     ? ImmutableArray<MockTargetParameter>.Empty
                     : ConvertParametersFromSymbols(property.SetMethod.Parameters),
@@ -78,7 +78,7 @@ namespace SourceMock.Generators.Internal {
             return new(
                 method, method.Name, method.ReturnType,
                 returnTypeFullName,
-                ValidateGenericParameters(method.TypeParameters),
+                ConvertGenericParametersFromSymbols(method.TypeParameters),
                 parameters,
                 GetHandlerFieldName(method.Name, overloadId),
                 GetRunDelegateType(method, parameters, returnTypeFullName, overloadId, customDelegatesClassName)
@@ -111,29 +111,16 @@ namespace SourceMock.Generators.Internal {
         }
 
         [PerformanceSensitive("")]
-        private ImmutableArray<ITypeParameterSymbol> ValidateGenericParameters(ImmutableArray<ITypeParameterSymbol> typeParameters) {
-            if (typeParameters.IsEmpty)
-                return typeParameters;
+        private ImmutableArray<MockTargetGenericParameter> ConvertGenericParametersFromSymbols(ImmutableArray<ITypeParameterSymbol> genericParameters) {
+            if (genericParameters.Length == 0)
+                return ImmutableArray<MockTargetGenericParameter>.Empty;
 
-            foreach (var typeParameter in typeParameters) {
-                EnsureNoUnsupportedConstraints(typeParameter);
+            var builder = ImmutableArray.CreateBuilder<MockTargetGenericParameter>(genericParameters.Length);
+            for (var i = 0; i < genericParameters.Length; i++) {
+                var parameter = genericParameters[i];
+                builder.Add(new MockTargetGenericParameter(parameter.Name, GetGenericConstraintsCode(parameter)));
             }
-
-            return typeParameters;
-        }
-
-        [PerformanceSensitive("")]
-        public void EnsureNoUnsupportedConstraints(ITypeParameterSymbol parameter) {
-            var hasConstraints = parameter.HasConstructorConstraint
-                              || parameter.HasReferenceTypeConstraint
-                              || parameter.HasValueTypeConstraint
-                              || parameter.HasConstructorConstraint
-                              || parameter.HasNotNullConstraint
-                              || parameter.HasUnmanagedTypeConstraint
-                              || parameter.ConstraintTypes.Length > 0;
-
-            if (hasConstraints)
-                throw Exceptions.NotSupported("Generic constraints are not yet supported.");
+            return builder.MoveToImmutable();
         }
 
         [PerformanceSensitive("")]
@@ -174,6 +161,46 @@ namespace SourceMock.Generators.Internal {
                 return new($"{KnownTypes.Func.FullName}<{string.Join(",", parameters.Select(static x => x.FullTypeName))}, {returnTypeFullName}>");
 
             return new($"{KnownTypes.Func.FullName}<{returnTypeFullName}>");
+        }
+
+        [PerformanceSensitive("")]
+        private string? GetGenericConstraintsCode(ITypeParameterSymbol parameter) {
+            var writer = (CodeWriter?)null;
+            void WriteConstraint(string constraint) {
+                if (writer == null) {
+                    #pragma warning disable HAA0502 // Explicit new reference type allocation - currently unavoidable
+                    writer = new CodeWriter();
+                    #pragma warning restore HAA0502 // Explicit new reference type allocation
+                    writer.Write("where ", parameter.Name, ": ");
+                }
+                else {
+                    writer.Write(", ");
+                }
+                writer.Write(constraint);
+            }
+
+            if (parameter.HasReferenceTypeConstraint) {
+                WriteConstraint("class");
+                if (parameter.ReferenceTypeConstraintNullableAnnotation == NullableAnnotation.Annotated)
+                    writer!.Write("?");
+            }
+            // seems like unmanaged adds implict struct constraint
+            if (parameter.HasValueTypeConstraint && !parameter.HasUnmanagedTypeConstraint)
+                WriteConstraint("struct");
+            if (parameter.HasNotNullConstraint)
+                WriteConstraint("notnull");
+            if (parameter.HasUnmanagedTypeConstraint)
+                WriteConstraint("unmanaged");
+
+            for (var i = 0; i < parameter.ConstraintTypes.Length; i++) {
+                var fullTypeName = GetFullTypeName(parameter.ConstraintTypes[i], parameter.ConstraintNullableAnnotations[i]);
+                WriteConstraint(fullTypeName);
+            }
+
+            if (parameter.HasConstructorConstraint)
+                WriteConstraint("new()");
+
+            return writer?.ToString();
         }
     }
 }
