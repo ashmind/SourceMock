@@ -1,6 +1,6 @@
 # Changelog
 
-## [1.0.0] - TODO
+## [0.9.0] - 2021-05-03
 
 ### Added
 - Initial version
