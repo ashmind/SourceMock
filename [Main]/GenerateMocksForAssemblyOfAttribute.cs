@@ -11,8 +11,7 @@ namespace SourceMock {
     /// the test project.
     /// </remarks>
     [AttributeUsage(AttributeTargets.Assembly, AllowMultiple = true)]
-    public class GenerateMocksForAssemblyOfAttribute
-        : Attribute {
+    public class GenerateMocksForAssemblyOfAttribute : Attribute {
         /// <summary>
         /// Initializes a new instance of the <see cref="GenerateMocksForAssemblyOfAttribute" /> class.
         /// </summary>
@@ -29,7 +28,7 @@ namespace SourceMock {
         /// Pattern of type names to exclude from mock generation.
         /// </summary>
         /// <remarks>
-        /// PAttern is based on <see cref="Regex"/> syntax.
+        /// Pattern is based on <see cref="Regex"/> syntax.
         /// </remarks>
         public string? ExcludeRegex { get; set; }
     }
