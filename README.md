@@ -1,5 +1,7 @@
 # Overview
 
+<a href="https://www.nuget.org/packages/SourceMock/">![](https://img.shields.io/nuget/v/SourceMock?style=for-the-badge)</a>
+
 SourceMock is a C# mocking framework based on source generators.  
 
 This allows for a nicer interface than reflection based frameworks, for example:
