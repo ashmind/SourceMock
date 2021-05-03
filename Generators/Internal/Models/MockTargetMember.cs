@@ -10,7 +10,8 @@ namespace SourceMock.Generators.Internal.Models {
             string name,
             ITypeSymbol type,
             string typeFullName,
-            ImmutableArray<MockTargetGenericParameter> genericParameters,
+            ImmutableArray<ITypeParameterSymbol> genericParameters,
+            string? genericParameterConstraints,
             ImmutableArray<MockTargetParameter> parameters,
             string handlerFieldName,
             MockTargetMethodRunDelegateType? methodRunDelegateType
@@ -20,6 +21,7 @@ namespace SourceMock.Generators.Internal.Models {
             Type = type;
             TypeFullName = typeFullName;
             GenericParameters = genericParameters;
+            GenericParameterConstraints = genericParameterConstraints;
             Parameters = parameters;
             HandlerFieldName = handlerFieldName;
             MethodRunDelegateType = methodRunDelegateType;
@@ -29,10 +31,12 @@ namespace SourceMock.Generators.Internal.Models {
         public string Name { get; }
         public ITypeSymbol Type { get; }
         public string TypeFullName { get; }
-        public ImmutableArray<MockTargetGenericParameter> GenericParameters { get; }
+        public ImmutableArray<ITypeParameterSymbol> GenericParameters { get; }
+        public string? GenericParameterConstraints { get; }
         public ImmutableArray<MockTargetParameter> Parameters { get; }
         public string HandlerFieldName { get; }
         public MockTargetMethodRunDelegateType? MethodRunDelegateType { get; }
+
         [PerformanceSensitive("")]
         public bool IsVoidMethod => Symbol is IMethodSymbol && Type.SpecialType == SpecialType.System_Void;
         [PerformanceSensitive("")]

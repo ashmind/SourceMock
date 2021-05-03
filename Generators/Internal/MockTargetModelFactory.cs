@@ -12,7 +12,7 @@ namespace SourceMock.Generators.Internal {
 
         public MockTarget GetMockTarget(INamedTypeSymbol type) {
             var fullName = GetFullTypeName(type, NullableAnnotation.None);
-            return new MockTarget(type, fullName);
+            return new MockTarget(type, fullName, GetGenericConstraintsAsCode(Indents.Member, type.TypeParameters));
         }
 
         [PerformanceSensitive("")]
@@ -54,7 +54,8 @@ namespace SourceMock.Generators.Internal {
             IPropertySymbol property => new(
                 property, property.Name, property.Type,
                 GetFullTypeName(property.Type, property.NullableAnnotation),
-                ImmutableArray<MockTargetGenericParameter>.Empty,
+                ImmutableArray<ITypeParameterSymbol>.Empty,
+                genericParameterConstraints: null,
                 property.SetMethod == null
                     ? ImmutableArray<MockTargetParameter>.Empty
                     : ConvertParametersFromSymbols(property.SetMethod.Parameters),
@@ -78,7 +79,8 @@ namespace SourceMock.Generators.Internal {
             return new(
                 method, method.Name, method.ReturnType,
                 returnTypeFullName,
-                ConvertGenericParametersFromSymbols(method.TypeParameters),
+                method.TypeParameters,
+                GetGenericConstraintsAsCode(Indents.MemberBody, method.TypeParameters),
                 parameters,
                 GetHandlerFieldName(method.Name, overloadId),
                 GetRunDelegateType(method, parameters, returnTypeFullName, overloadId, customDelegatesClassName)
@@ -106,19 +108,6 @@ namespace SourceMock.Generators.Internal {
                 builder.Add(new MockTargetParameter(
                     parameter.Name, GetFullTypeName(parameter.Type, parameter.NullableAnnotation), parameter.RefKind, i
                 ));
-            }
-            return builder.MoveToImmutable();
-        }
-
-        [PerformanceSensitive("")]
-        private ImmutableArray<MockTargetGenericParameter> ConvertGenericParametersFromSymbols(ImmutableArray<ITypeParameterSymbol> genericParameters) {
-            if (genericParameters.Length == 0)
-                return ImmutableArray<MockTargetGenericParameter>.Empty;
-
-            var builder = ImmutableArray.CreateBuilder<MockTargetGenericParameter>(genericParameters.Length);
-            for (var i = 0; i < genericParameters.Length; i++) {
-                var parameter = genericParameters[i];
-                builder.Add(new MockTargetGenericParameter(parameter.Name, GetGenericConstraintsCode(parameter)));
             }
             return builder.MoveToImmutable();
         }
@@ -163,18 +152,31 @@ namespace SourceMock.Generators.Internal {
             return new($"{KnownTypes.Func.FullName}<{returnTypeFullName}>");
         }
 
+
         [PerformanceSensitive("")]
-        private string? GetGenericConstraintsCode(ITypeParameterSymbol parameter) {
+        private string? GetGenericConstraintsAsCode(string indent, ImmutableArray<ITypeParameterSymbol> parameters) {
             var writer = (CodeWriter?)null;
+            foreach (var parameter in parameters) {
+                writer = WriteGenericConstraints(writer, indent, parameter);
+            }
+            return writer?.ToString();
+        }
+
+        [PerformanceSensitive("")]
+        private CodeWriter? WriteGenericConstraints(CodeWriter? writer, string indent, ITypeParameterSymbol parameter) {
+            var parameterStarted = false;
             void WriteConstraint(string constraint) {
-                if (writer == null) {
+                if (!parameterStarted) {
                     #pragma warning disable HAA0502 // Explicit new reference type allocation - currently unavoidable
-                    writer = new CodeWriter();
+                    writer ??= new CodeWriter();
                     #pragma warning restore HAA0502 // Explicit new reference type allocation
-                    writer.Write("where ", parameter.Name, ": ");
+                    writer
+                        .WriteLine()
+                        .Write(indent, "where ", parameter.Name, ": ");
+                    parameterStarted = true;
                 }
                 else {
-                    writer.Write(", ");
+                    writer!.Write(", ");
                 }
                 writer.Write(constraint);
             }
@@ -200,7 +202,7 @@ namespace SourceMock.Generators.Internal {
             if (parameter.HasConstructorConstraint)
                 WriteConstraint("new()");
 
-            return writer?.ToString();
+            return writer;
         }
     }
 }

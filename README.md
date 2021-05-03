@@ -77,13 +77,12 @@ Instead, assert `.Calls` at the end of the test to confirm the expected calls.
 ## Not Yet
 
 These are not _intentionally_ excluded, just not yet supported:
-1. Class mocks: custom constructors, calling base methods
-2. Generic constraints
-3. Custom default values
-4. Custom parameter matchers
-5. Setting up output values for ref and out parameters
-6. Chained setups
-7. Anything more advanced than the above
+1. Class mocks: custom constructors, calling base methods, mocking protected members
+2. Custom default values
+3. Custom parameter matchers
+4. Setting up output values for ref and out parameters
+5. Chained setups
+6. Anything more advanced than the above
 
 # Kudos
 

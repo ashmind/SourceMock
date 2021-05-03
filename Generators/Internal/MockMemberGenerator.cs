@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Immutable;
 using Microsoft.CodeAnalysis;
 using Roslyn.Utilities;
@@ -130,8 +131,7 @@ namespace SourceMock.Generators.Internal {
                     writer.Write("(");
                     WriteMethodImplementationParametersIfAny(writer, member, out var hasOutParameters);
                     writer.Write(")");
-                    WriteMethodGenericConstraintsIfAny(writer, member);
-                    writer.Write(" ");
+                    writer.WriteIfNotNull(member.GenericParameterConstraints, (Environment.NewLine, Indents.Member), " ");
                     WriteMethodImplementationBody(writer, hasOutParameters, member);
                     break;
 
@@ -336,7 +336,7 @@ namespace SourceMock.Generators.Internal {
                     writer.Write("(");
                     WriteSetupOrCallsMemberParameters(writer, member, appendDefaultValue: true);
                     writer.Write(")");
-                    WriteMethodGenericConstraintsIfAny(writer, member);
+                    writer.WriteIfNotNull(member.GenericParameterConstraints);
                     writer.Write(";");
                     break;
                 case IPropertySymbol:
@@ -425,21 +425,6 @@ namespace SourceMock.Generators.Internal {
                 writer.Write(genericParameters[i].Name);
             }
             return writer.Write(">");
-        }
-
-        [PerformanceSensitive("")]
-        private CodeWriter WriteMethodGenericConstraintsIfAny(CodeWriter writer, in MockTargetMember member) {
-            if (member.GenericParameters.Length == 0)
-                return writer;
-
-            foreach (var parameter in member.GenericParameters) {
-                if (parameter.ConstraintsCode == null)
-                    continue;
-                writer
-                    .WriteLine()
-                    .Write(Indents.MemberBody, parameter.ConstraintsCode);
-            }
-            return writer;
         }
 
         [PerformanceSensitive("")]

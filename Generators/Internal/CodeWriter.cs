@@ -204,6 +204,40 @@ namespace SourceMock.Generators.Internal {
             return this;
         }
 
+        public CodeWriter WriteIfNotNull(string? value) {
+            _builder.Append(value);
+            return this;
+        }
+
+        public CodeWriter WriteIfNotNull(string? value, (string part1, string part2) ifNotNull, string ifNull) {
+            if (value != null) {
+                _builder
+                    .Append(value)
+                    .Append(ifNotNull.part1)
+                    .Append(ifNotNull.part2);
+            }
+            else {
+                _builder.Append(ifNull);
+            }
+
+            return this;
+        }
+
+        public CodeWriter WriteIfNotNull(string? value, (string part1, string part2, string part3) ifNotNull, string ifNull) {
+            if (value != null) {
+                _builder
+                    .Append(value)
+                    .Append(ifNotNull.part1)
+                    .Append(ifNotNull.part2)
+                    .Append(ifNotNull.part3);
+            }
+            else {
+                _builder.Append(ifNull);
+            }
+
+            return this;
+        }
+
         [PerformanceSensitive("")]
         public CodeWriter Append(CodeWriter other) {
             _builder.Append(other._builder);

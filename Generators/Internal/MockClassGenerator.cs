@@ -1,3 +1,4 @@
+using System;
 using Microsoft.CodeAnalysis;
 using Roslyn.Utilities;
 using SourceMock.Generators.Internal.Models;
@@ -35,7 +36,8 @@ namespace SourceMock.Generators.Internal {
                 .Write(Indents.Type, "public class ", mockClassName, " : ")
                     .Write(target.FullTypeName, ", ", setupInterfaceName, ", ", callsInterfaceName, ", ")
                     .WriteGeneric(KnownTypes.IMock.FullName, target.FullTypeName)
-                    .WriteLine(" {")
+                    .WriteIfNotNull(target.GenericParameterConstraints, (Environment.NewLine, Indents.Type, "{"), " {")
+                    .WriteLine()
                 .WriteLine(Indents.Member, "public ", setupInterfaceName, " Setup => this;")
                 .WriteLine(Indents.Member, "public ", callsInterfaceName, " Calls => this;");
 
@@ -110,7 +112,8 @@ namespace SourceMock.Generators.Internal {
 
         [PerformanceSensitive("")]
         private string GenerateTypeParametersAsString(MockTarget target) {
-            if (target.Type.TypeParameters is not { Length: > 0 } parameters)
+            var parameters = target.Type.TypeParameters;
+            if (parameters.IsEmpty)
                 return "";
 
             #pragma warning disable HAA0502 // Explicit allocation -- unavoidable for now, can be pooled later

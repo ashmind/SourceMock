@@ -6,14 +6,17 @@ namespace SourceMock.Generators.Internal.Models {
         [PerformanceSensitive("")]
         public MockTarget(
             INamedTypeSymbol targetType,
-            string targetTypeQualifiedName
+            string targetTypeQualifiedName,
+            string? genericParameterConstraints
         )
         {
             Type = targetType;
             FullTypeName = targetTypeQualifiedName;
+            GenericParameterConstraints = genericParameterConstraints;
         }
 
         public INamedTypeSymbol Type { get; }
         public string FullTypeName { get; }
+        public string? GenericParameterConstraints { get; }
     }
 }

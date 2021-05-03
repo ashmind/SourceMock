@@ -13,12 +13,5 @@ namespace SourceMock.Tests.Interfaces {
         T Convert<T>(U value);
         T Cast<T>(U value)
             where T: U;
-
-        void AllConstraints<TNotNull, TClass, TNullableClass, TStruct, TUnmanaged>()
-            where TNotNull: notnull, IMockable, new()
-            where TClass : class, IMockable, new()
-            where TNullableClass : class?, IMockable, new()
-            where TStruct : struct, IMockable
-            where TUnmanaged : unmanaged, IMockable;
     }
 }
