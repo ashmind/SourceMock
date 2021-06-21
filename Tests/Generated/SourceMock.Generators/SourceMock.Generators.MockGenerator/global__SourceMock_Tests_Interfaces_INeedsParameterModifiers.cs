@@ -1,6 +1,6 @@
 ﻿#nullable enable
 namespace SourceMock.Tests.Interfaces.Mocks {
-    public class NeedsParameterModifiersMock : global::SourceMock.Tests.Interfaces.INeedsParameterModifiers, INeedsParameterModifiersSetup, INeedsParameterModifiersCalls, SourceMock.IMock<global::SourceMock.Tests.Interfaces.INeedsParameterModifiers> {
+    internal class NeedsParameterModifiersMock : global::SourceMock.Tests.Interfaces.INeedsParameterModifiers, INeedsParameterModifiersSetup, INeedsParameterModifiersCalls, SourceMock.IMock<global::SourceMock.Tests.Interfaces.INeedsParameterModifiers> {
         public INeedsParameterModifiersSetup Setup => this;
         public INeedsParameterModifiersCalls Calls => this;
 
@@ -25,19 +25,19 @@ namespace SourceMock.Tests.Interfaces.Mocks {
         System.Collections.Generic.IReadOnlyList<int> INeedsParameterModifiersCalls.TestOut(SourceMock.Internal.MockArgumentMatcher<int> value) => _testOutHandler.Calls(null, new SourceMock.Internal.IMockArgumentMatcher[] { value }, args => ((int)args[0]!));
     }
 
-    public static class NeedsParameterModifiersDelegates {
+    internal static class NeedsParameterModifiersDelegates {
         public delegate int TestInFunc(in int value);
         public delegate int TestRefFunc(ref int value);
         public delegate int TestOutFunc(out int value);
     }
 
-    public interface INeedsParameterModifiersSetup {
+    internal interface INeedsParameterModifiersSetup {
         SourceMock.Interfaces.IMockMethodSetup<NeedsParameterModifiersDelegates.TestInFunc, int> TestIn(SourceMock.Internal.MockArgumentMatcher<int> value = default);
         SourceMock.Interfaces.IMockMethodSetup<NeedsParameterModifiersDelegates.TestRefFunc, int> TestRef(SourceMock.Internal.MockArgumentMatcher<int> value = default);
         SourceMock.Interfaces.IMockMethodSetup<NeedsParameterModifiersDelegates.TestOutFunc, int> TestOut(SourceMock.Internal.MockArgumentMatcher<int> value = default);
     }
 
-    public interface INeedsParameterModifiersCalls {
+    internal interface INeedsParameterModifiersCalls {
         System.Collections.Generic.IReadOnlyList<int> TestIn(SourceMock.Internal.MockArgumentMatcher<int> value = default);
         System.Collections.Generic.IReadOnlyList<int> TestRef(SourceMock.Internal.MockArgumentMatcher<int> value = default);
         System.Collections.Generic.IReadOnlyList<int> TestOut(SourceMock.Internal.MockArgumentMatcher<int> value = default);

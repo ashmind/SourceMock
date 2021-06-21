@@ -1,6 +1,6 @@
 ﻿#nullable enable
 namespace SourceMock.Tests.Interfaces.Mocks {
-    public class NeedsGenericsMock<U> : global::SourceMock.Tests.Interfaces.INeedsGenerics<U>, INeedsGenericsSetup<U>, INeedsGenericsCalls<U>, SourceMock.IMock<global::SourceMock.Tests.Interfaces.INeedsGenerics<U>> {
+    internal class NeedsGenericsMock<U> : global::SourceMock.Tests.Interfaces.INeedsGenerics<U>, INeedsGenericsSetup<U>, INeedsGenericsCalls<U>, SourceMock.IMock<global::SourceMock.Tests.Interfaces.INeedsGenerics<U>> {
         public INeedsGenericsSetup<U> Setup => this;
         public INeedsGenericsCalls<U> Calls => this;
 
@@ -22,19 +22,19 @@ namespace SourceMock.Tests.Interfaces.Mocks {
         System.Collections.Generic.IReadOnlyList<U> INeedsGenericsCalls<U>.Cast<T>(SourceMock.Internal.MockArgumentMatcher<U> value) => _castHandler.Calls(new[] { typeof(T) }, new SourceMock.Internal.IMockArgumentMatcher[] { value }, args => ((U)args[0]!));
     }
 
-    public static class NeedsGenericsDelegates<U> {
+    internal static class NeedsGenericsDelegates<U> {
         public delegate T ConvertFunc<T>(U value);
         public delegate T CastFunc<T>(U value);
     }
 
-    public interface INeedsGenericsSetup<U> {
+    internal interface INeedsGenericsSetup<U> {
         SourceMock.Interfaces.IMockMethodSetup<System.Func<U>, U> Get();
         SourceMock.Interfaces.IMockMethodSetup<NeedsGenericsDelegates<U>.ConvertFunc<T>, T> Convert<T>(SourceMock.Internal.MockArgumentMatcher<U> value = default);
         SourceMock.Interfaces.IMockMethodSetup<NeedsGenericsDelegates<U>.CastFunc<T>, T> Cast<T>(SourceMock.Internal.MockArgumentMatcher<U> value = default)
             where T: U;
     }
 
-    public interface INeedsGenericsCalls<U> {
+    internal interface INeedsGenericsCalls<U> {
         System.Collections.Generic.IReadOnlyList<SourceMock.NoArguments> Get();
         System.Collections.Generic.IReadOnlyList<U> Convert<T>(SourceMock.Internal.MockArgumentMatcher<U> value = default);
         System.Collections.Generic.IReadOnlyList<U> Cast<T>(SourceMock.Internal.MockArgumentMatcher<U> value = default)

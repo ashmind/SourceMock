@@ -1,6 +1,6 @@
 ﻿#nullable enable
 namespace SourceMock.Tests.Interfaces.Mocks {
-    public class NeedsCollectionDefaultsMock : global::SourceMock.Tests.Interfaces.INeedsCollectionDefaults, INeedsCollectionDefaultsSetup, INeedsCollectionDefaultsCalls, SourceMock.IMock<global::SourceMock.Tests.Interfaces.INeedsCollectionDefaults> {
+    internal class NeedsCollectionDefaultsMock : global::SourceMock.Tests.Interfaces.INeedsCollectionDefaults, INeedsCollectionDefaultsSetup, INeedsCollectionDefaultsCalls, SourceMock.IMock<global::SourceMock.Tests.Interfaces.INeedsCollectionDefaults> {
         public INeedsCollectionDefaultsSetup Setup => this;
         public INeedsCollectionDefaultsCalls Calls => this;
 
@@ -105,7 +105,7 @@ namespace SourceMock.Tests.Interfaces.Mocks {
         System.Collections.Generic.IReadOnlyList<SourceMock.NoArguments> INeedsCollectionDefaultsCalls.GetIImmutableSet() => _getIImmutableSetHandler.Calls(null, null, _ => SourceMock.NoArguments.Value);
     }
 
-    public interface INeedsCollectionDefaultsSetup {
+    internal interface INeedsCollectionDefaultsSetup {
         SourceMock.Interfaces.IMockMethodSetup<System.Func<int[]>, int[]> GetArray();
         SourceMock.Interfaces.IMockMethodSetup<System.Func<global::System.Collections.Generic.List<int>>, global::System.Collections.Generic.List<int>> GetList();
         SourceMock.Interfaces.IMockMethodSetup<System.Func<global::System.Collections.Immutable.ImmutableList<int>>, global::System.Collections.Immutable.ImmutableList<int>> GetImmutableList();
@@ -128,7 +128,7 @@ namespace SourceMock.Tests.Interfaces.Mocks {
         SourceMock.Interfaces.IMockMethodSetup<System.Func<global::System.Collections.Immutable.IImmutableSet<string>>, global::System.Collections.Immutable.IImmutableSet<string>> GetIImmutableSet();
     }
 
-    public interface INeedsCollectionDefaultsCalls {
+    internal interface INeedsCollectionDefaultsCalls {
         System.Collections.Generic.IReadOnlyList<SourceMock.NoArguments> GetArray();
         System.Collections.Generic.IReadOnlyList<SourceMock.NoArguments> GetList();
         System.Collections.Generic.IReadOnlyList<SourceMock.NoArguments> GetImmutableList();

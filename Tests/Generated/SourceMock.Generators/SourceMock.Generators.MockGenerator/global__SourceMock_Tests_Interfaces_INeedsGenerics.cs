@@ -1,6 +1,6 @@
 ﻿#nullable enable
 namespace SourceMock.Tests.Interfaces.Mocks {
-    public class NeedsGenericsMock : global::SourceMock.Tests.Interfaces.INeedsGenerics, INeedsGenericsSetup, INeedsGenericsCalls, SourceMock.IMock<global::SourceMock.Tests.Interfaces.INeedsGenerics> {
+    internal class NeedsGenericsMock : global::SourceMock.Tests.Interfaces.INeedsGenerics, INeedsGenericsSetup, INeedsGenericsCalls, SourceMock.IMock<global::SourceMock.Tests.Interfaces.INeedsGenerics> {
         public INeedsGenericsSetup Setup => this;
         public INeedsGenericsCalls Calls => this;
 
@@ -25,21 +25,21 @@ namespace SourceMock.Tests.Interfaces.Mocks {
         System.Collections.Generic.IReadOnlyList<SourceMock.NoArguments> INeedsGenericsCalls.GetAll<T>() where T: default => _getAllHandler.Calls(new[] { typeof(T) }, null, _ => SourceMock.NoArguments.Value);
     }
 
-    public static class NeedsGenericsDelegates {
+    internal static class NeedsGenericsDelegates {
         public delegate T ParseFunc<T>(string value);
         public delegate T GetFunc<T>();
         public delegate void SetOptionalAction<T>(T? value);
         public delegate global::System.Collections.Generic.IEnumerable<T?> GetAllFunc<T>();
     }
 
-    public interface INeedsGenericsSetup {
+    internal interface INeedsGenericsSetup {
         SourceMock.Interfaces.IMockMethodSetup<NeedsGenericsDelegates.ParseFunc<T>, T> Parse<T>(SourceMock.Internal.MockArgumentMatcher<string> value = default);
         SourceMock.Interfaces.IMockMethodSetup<NeedsGenericsDelegates.GetFunc<T>, T> Get<T>();
         SourceMock.Interfaces.IMockMethodSetup<NeedsGenericsDelegates.SetOptionalAction<T>> SetOptional<T>(SourceMock.Internal.MockArgumentMatcher<T?> value = default);
         SourceMock.Interfaces.IMockMethodSetup<NeedsGenericsDelegates.GetAllFunc<T>, global::System.Collections.Generic.IEnumerable<T?>> GetAll<T>();
     }
 
-    public interface INeedsGenericsCalls {
+    internal interface INeedsGenericsCalls {
         System.Collections.Generic.IReadOnlyList<string> Parse<T>(SourceMock.Internal.MockArgumentMatcher<string> value = default);
         System.Collections.Generic.IReadOnlyList<SourceMock.NoArguments> Get<T>();
         System.Collections.Generic.IReadOnlyList<T?> SetOptional<T>(SourceMock.Internal.MockArgumentMatcher<T?> value = default);

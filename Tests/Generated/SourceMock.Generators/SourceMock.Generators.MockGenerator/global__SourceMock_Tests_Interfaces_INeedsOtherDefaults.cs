@@ -1,6 +1,6 @@
 ﻿#nullable enable
 namespace SourceMock.Tests.Interfaces.Mocks {
-    public class NeedsOtherDefaultsMock : global::SourceMock.Tests.Interfaces.INeedsOtherDefaults, INeedsOtherDefaultsSetup, INeedsOtherDefaultsCalls, SourceMock.IMock<global::SourceMock.Tests.Interfaces.INeedsOtherDefaults> {
+    internal class NeedsOtherDefaultsMock : global::SourceMock.Tests.Interfaces.INeedsOtherDefaults, INeedsOtherDefaultsSetup, INeedsOtherDefaultsCalls, SourceMock.IMock<global::SourceMock.Tests.Interfaces.INeedsOtherDefaults> {
         public INeedsOtherDefaultsSetup Setup => this;
         public INeedsOtherDefaultsCalls Calls => this;
 
@@ -20,13 +20,13 @@ namespace SourceMock.Tests.Interfaces.Mocks {
         System.Collections.Generic.IReadOnlyList<SourceMock.NoArguments> INeedsOtherDefaultsCalls.GetListAsync() => _getListAsyncHandler.Calls(null, null, _ => SourceMock.NoArguments.Value);
     }
 
-    public interface INeedsOtherDefaultsSetup {
+    internal interface INeedsOtherDefaultsSetup {
         SourceMock.Interfaces.IMockMethodSetup<System.Func<global::System.Threading.Tasks.Task>, global::System.Threading.Tasks.Task> ExecuteAsync();
         SourceMock.Interfaces.IMockMethodSetup<System.Func<global::System.Threading.Tasks.Task<object>>, global::System.Threading.Tasks.Task<object>> GetStringAsync();
         SourceMock.Interfaces.IMockMethodSetup<System.Func<global::System.Threading.Tasks.Task<global::System.Collections.Generic.IList<int>>>, global::System.Threading.Tasks.Task<global::System.Collections.Generic.IList<int>>> GetListAsync();
     }
 
-    public interface INeedsOtherDefaultsCalls {
+    internal interface INeedsOtherDefaultsCalls {
         System.Collections.Generic.IReadOnlyList<SourceMock.NoArguments> ExecuteAsync();
         System.Collections.Generic.IReadOnlyList<SourceMock.NoArguments> GetStringAsync();
         System.Collections.Generic.IReadOnlyList<SourceMock.NoArguments> GetListAsync();

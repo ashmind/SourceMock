@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.10.0] - 2021-06-21
+
+### Changed
+- All generated mocks are now internal
+
 ## [0.9.1] - 2021-06-21
 
 ### Fixed

@@ -1,6 +1,6 @@
 ﻿#nullable enable
 namespace SourceMock.Tests.Interfaces.Mocks {
-    public class NeedsGenericConstraintsMock : global::SourceMock.Tests.Interfaces.INeedsGenericConstraints, INeedsGenericConstraintsSetup, INeedsGenericConstraintsCalls, SourceMock.IMock<global::SourceMock.Tests.Interfaces.INeedsGenericConstraints> {
+    internal class NeedsGenericConstraintsMock : global::SourceMock.Tests.Interfaces.INeedsGenericConstraints, INeedsGenericConstraintsSetup, INeedsGenericConstraintsCalls, SourceMock.IMock<global::SourceMock.Tests.Interfaces.INeedsGenericConstraints> {
         public INeedsGenericConstraintsSetup Setup => this;
         public INeedsGenericConstraintsCalls Calls => this;
 
@@ -16,11 +16,11 @@ namespace SourceMock.Tests.Interfaces.Mocks {
         System.Collections.Generic.IReadOnlyList<SourceMock.NoArguments> INeedsGenericConstraintsCalls.Method<TNotNull, TClassNotNull, TNullableClass, TStruct, TUnmanaged>() => _methodHandler.Calls(new[] { typeof(TNotNull), typeof(TClassNotNull), typeof(TNullableClass), typeof(TStruct), typeof(TUnmanaged) }, null, _ => SourceMock.NoArguments.Value);
     }
 
-    public static class NeedsGenericConstraintsDelegates {
+    internal static class NeedsGenericConstraintsDelegates {
         public delegate void MethodAction<TNotNull, TClassNotNull, TNullableClass, TStruct, TUnmanaged>();
     }
 
-    public interface INeedsGenericConstraintsSetup {
+    internal interface INeedsGenericConstraintsSetup {
         SourceMock.Interfaces.IMockMethodSetup<NeedsGenericConstraintsDelegates.MethodAction<TNotNull, TClassNotNull, TNullableClass, TStruct, TUnmanaged>> Method<TNotNull, TClassNotNull, TNullableClass, TStruct, TUnmanaged>()
             where TNotNull: notnull, global::SourceMock.Tests.Interfaces.IMockable, new()
             where TClassNotNull: class, global::SourceMock.Tests.Interfaces.IMockable, new()
@@ -29,7 +29,7 @@ namespace SourceMock.Tests.Interfaces.Mocks {
             where TUnmanaged: unmanaged, global::SourceMock.Tests.Interfaces.IMockable;
     }
 
-    public interface INeedsGenericConstraintsCalls {
+    internal interface INeedsGenericConstraintsCalls {
         System.Collections.Generic.IReadOnlyList<SourceMock.NoArguments> Method<TNotNull, TClassNotNull, TNullableClass, TStruct, TUnmanaged>()
             where TNotNull: notnull, global::SourceMock.Tests.Interfaces.IMockable, new()
             where TClassNotNull: class, global::SourceMock.Tests.Interfaces.IMockable, new()

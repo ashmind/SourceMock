@@ -1,6 +1,6 @@
 ﻿#nullable enable
 namespace SourceMock.Tests.Interfaces.Mocks {
-    public class AbstractClassMock : global::SourceMock.Tests.Interfaces.AbstractClass, IAbstractClassSetup, IAbstractClassCalls, SourceMock.IMock<global::SourceMock.Tests.Interfaces.AbstractClass> {
+    internal class AbstractClassMock : global::SourceMock.Tests.Interfaces.AbstractClass, IAbstractClassSetup, IAbstractClassCalls, SourceMock.IMock<global::SourceMock.Tests.Interfaces.AbstractClass> {
         public IAbstractClassSetup Setup => this;
         public IAbstractClassCalls Calls => this;
 
@@ -35,7 +35,7 @@ namespace SourceMock.Tests.Interfaces.Mocks {
         SourceMock.Interfaces.IMockPropertyCalls<int> IAbstractClassCalls.VirtualProperty => _virtualPropertyHandler.Calls();
     }
 
-    public interface IAbstractClassSetup {
+    internal interface IAbstractClassSetup {
         SourceMock.Interfaces.IMockMethodSetup<System.Action> Protected();
         SourceMock.Interfaces.IMockMethodSetup<System.Action> ProtectedInternal();
         SourceMock.Interfaces.IMockMethodSetup<System.Action> PrivateProtected();
@@ -44,7 +44,7 @@ namespace SourceMock.Tests.Interfaces.Mocks {
         SourceMock.Interfaces.IMockPropertySetup<int> VirtualProperty { get; }
     }
 
-    public interface IAbstractClassCalls {
+    internal interface IAbstractClassCalls {
         System.Collections.Generic.IReadOnlyList<SourceMock.NoArguments> Protected();
         System.Collections.Generic.IReadOnlyList<SourceMock.NoArguments> ProtectedInternal();
         System.Collections.Generic.IReadOnlyList<SourceMock.NoArguments> PrivateProtected();

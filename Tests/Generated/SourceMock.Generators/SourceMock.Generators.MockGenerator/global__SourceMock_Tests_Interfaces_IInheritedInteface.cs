@@ -1,6 +1,6 @@
 ﻿#nullable enable
 namespace SourceMock.Tests.Interfaces.Mocks {
-    public class InheritedIntefaceMock : global::SourceMock.Tests.Interfaces.IInheritedInteface, IInheritedIntefaceSetup, IInheritedIntefaceCalls, SourceMock.IMock<global::SourceMock.Tests.Interfaces.IInheritedInteface> {
+    internal class InheritedIntefaceMock : global::SourceMock.Tests.Interfaces.IInheritedInteface, IInheritedIntefaceSetup, IInheritedIntefaceCalls, SourceMock.IMock<global::SourceMock.Tests.Interfaces.IInheritedInteface> {
         public IInheritedIntefaceSetup Setup => this;
         public IInheritedIntefaceCalls Calls => this;
 
@@ -15,12 +15,12 @@ namespace SourceMock.Tests.Interfaces.Mocks {
         System.Collections.Generic.IReadOnlyList<SourceMock.NoArguments> IInheritedIntefaceCalls.GetString() => _getStringHandler.Calls(null, null, _ => SourceMock.NoArguments.Value);
     }
 
-    public interface IInheritedIntefaceSetup {
+    internal interface IInheritedIntefaceSetup {
         SourceMock.Interfaces.IMockMethodSetup<System.Action> Method();
         SourceMock.Interfaces.IMockMethodSetup<System.Func<string>, string> GetString();
     }
 
-    public interface IInheritedIntefaceCalls {
+    internal interface IInheritedIntefaceCalls {
         System.Collections.Generic.IReadOnlyList<SourceMock.NoArguments> Method();
         System.Collections.Generic.IReadOnlyList<SourceMock.NoArguments> GetString();
     }

@@ -33,7 +33,7 @@ namespace SourceMock.Generators.Internal {
                 .WriteLine("namespace ", targetTypeNamespace, ".Mocks {");
 
             mainWriter
-                .Write(Indents.Type, "public class ", mockClassName, " : ")
+                .Write(Indents.Type, "internal class ", mockClassName, " : ")
                     .Write(target.FullTypeName, ", ", setupInterfaceName, ", ", callsInterfaceName, ", ")
                     .WriteGeneric(KnownTypes.IMock.FullName, target.FullTypeName)
                     .WriteIfNotNull(target.GenericParameterConstraints, (Environment.NewLine, Indents.Type, "{"), " {")
@@ -44,18 +44,18 @@ namespace SourceMock.Generators.Internal {
             #pragma warning disable HAA0502 // Explicit allocation -- unavoidable for now, can be pooled later
             var customDelegatesClassWriter = new CodeWriter()
             #pragma warning restore HAA0502
-                .WriteLine(Indents.Type, "public static class ", customDelegatesClassName, " {");
+                .WriteLine(Indents.Type, "internal static class ", customDelegatesClassName, " {");
             var customDelegatesEmptyLength = customDelegatesClassWriter.CurrentLength;
 
             #pragma warning disable HAA0502 // Explicit allocation -- unavoidable for now, can be pooled later
             var setupInterfaceWriter = new CodeWriter()
             #pragma warning restore HAA0502
-                .WriteLine(Indents.Type, "public interface ", setupInterfaceName, " {");
+                .WriteLine(Indents.Type, "internal interface ", setupInterfaceName, " {");
 
             #pragma warning disable HAA0502 // Explicit allocation -- unavoidable for now, can be pooled later
             var callsInterfaceWriter = new CodeWriter()
             #pragma warning restore HAA0502
-                .WriteLine(Indents.Type, "public interface ", callsInterfaceName, " {");
+                .WriteLine(Indents.Type, "internal interface ", callsInterfaceName, " {");
 
             #pragma warning disable HAA0401 // Possible allocation of reference type enumerator - TODO
             foreach (var member in _modelFactory.GetMockTargetMembers(target, customDelegatesClassName)) {

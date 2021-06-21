@@ -1,6 +1,6 @@
 ﻿#nullable enable
 namespace SourceMock.Tests.Interfaces.Mocks {
-    public class Mockable2Mock : global::SourceMock.Tests.Interfaces.IMockable2, IMockable2Setup, IMockable2Calls, SourceMock.IMock<global::SourceMock.Tests.Interfaces.IMockable2> {
+    internal class Mockable2Mock : global::SourceMock.Tests.Interfaces.IMockable2, IMockable2Setup, IMockable2Calls, SourceMock.IMock<global::SourceMock.Tests.Interfaces.IMockable2> {
         public IMockable2Setup Setup => this;
         public IMockable2Calls Calls => this;
 
@@ -10,11 +10,11 @@ namespace SourceMock.Tests.Interfaces.Mocks {
         System.Collections.Generic.IReadOnlyList<SourceMock.NoArguments> IMockable2Calls.GetString() => _getStringHandler.Calls(null, null, _ => SourceMock.NoArguments.Value);
     }
 
-    public interface IMockable2Setup {
+    internal interface IMockable2Setup {
         SourceMock.Interfaces.IMockMethodSetup<System.Func<string>, string> GetString();
     }
 
-    public interface IMockable2Calls {
+    internal interface IMockable2Calls {
         System.Collections.Generic.IReadOnlyList<SourceMock.NoArguments> GetString();
     }
 }

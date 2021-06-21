@@ -1,6 +1,6 @@
 ﻿#nullable enable
 namespace SourceMock.Tests.Interfaces.Mocks {
-    public class MockableMock : global::SourceMock.Tests.Interfaces.IMockable, IMockableSetup, IMockableCalls, SourceMock.IMock<global::SourceMock.Tests.Interfaces.IMockable> {
+    internal class MockableMock : global::SourceMock.Tests.Interfaces.IMockable, IMockableSetup, IMockableCalls, SourceMock.IMock<global::SourceMock.Tests.Interfaces.IMockable> {
         public IMockableSetup Setup => this;
         public IMockableCalls Calls => this;
 
@@ -83,7 +83,7 @@ namespace SourceMock.Tests.Interfaces.Mocks {
         SourceMock.Interfaces.IMockSettablePropertyCalls<string> IMockableCalls.Name => _nameHandler.Calls();
     }
 
-    public interface IMockableSetup {
+    internal interface IMockableSetup {
         SourceMock.Interfaces.IMockMethodSetup<System.Func<int>, int> GetInt32();
         SourceMock.Interfaces.IMockMethodSetup<System.Func<int?>, int?> GetInt32Nullable();
         SourceMock.Interfaces.IMockMethodSetup<System.Func<string>, string> GetString();
@@ -101,7 +101,7 @@ namespace SourceMock.Tests.Interfaces.Mocks {
         SourceMock.Interfaces.IMockSettablePropertySetup<string> Name { get; }
     }
 
-    public interface IMockableCalls {
+    internal interface IMockableCalls {
         System.Collections.Generic.IReadOnlyList<SourceMock.NoArguments> GetInt32();
         System.Collections.Generic.IReadOnlyList<SourceMock.NoArguments> GetInt32Nullable();
         System.Collections.Generic.IReadOnlyList<SourceMock.NoArguments> GetString();

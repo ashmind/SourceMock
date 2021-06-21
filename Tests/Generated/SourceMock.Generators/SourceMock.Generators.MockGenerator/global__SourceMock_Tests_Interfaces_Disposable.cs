@@ -1,6 +1,6 @@
 ﻿#nullable enable
 namespace SourceMock.Tests.Interfaces.Mocks {
-    public class DisposableMock : global::SourceMock.Tests.Interfaces.Disposable, IDisposableSetup, IDisposableCalls, SourceMock.IMock<global::SourceMock.Tests.Interfaces.Disposable> {
+    internal class DisposableMock : global::SourceMock.Tests.Interfaces.Disposable, IDisposableSetup, IDisposableCalls, SourceMock.IMock<global::SourceMock.Tests.Interfaces.Disposable> {
         public IDisposableSetup Setup => this;
         public IDisposableCalls Calls => this;
 
@@ -10,11 +10,11 @@ namespace SourceMock.Tests.Interfaces.Mocks {
         System.Collections.Generic.IReadOnlyList<SourceMock.NoArguments> IDisposableCalls.Dispose() => _disposeHandler.Calls(null, null, _ => SourceMock.NoArguments.Value);
     }
 
-    public interface IDisposableSetup {
+    internal interface IDisposableSetup {
         SourceMock.Interfaces.IMockMethodSetup<System.Action> Dispose();
     }
 
-    public interface IDisposableCalls {
+    internal interface IDisposableCalls {
         System.Collections.Generic.IReadOnlyList<SourceMock.NoArguments> Dispose();
     }
 }

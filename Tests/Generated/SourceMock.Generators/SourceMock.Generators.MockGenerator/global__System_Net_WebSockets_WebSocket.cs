@@ -1,6 +1,6 @@
 ﻿#nullable enable
 namespace System.Net.WebSockets.Mocks {
-    public class WebSocketMock : global::System.Net.WebSockets.WebSocket, IWebSocketSetup, IWebSocketCalls, SourceMock.IMock<global::System.Net.WebSockets.WebSocket> {
+    internal class WebSocketMock : global::System.Net.WebSockets.WebSocket, IWebSocketSetup, IWebSocketCalls, SourceMock.IMock<global::System.Net.WebSockets.WebSocket> {
         public IWebSocketSetup Setup => this;
         public IWebSocketCalls Calls => this;
 
@@ -65,7 +65,7 @@ namespace System.Net.WebSockets.Mocks {
         SourceMock.Interfaces.IMockPropertyCalls<string?> IWebSocketCalls.SubProtocol => _subProtocolHandler.Calls();
     }
 
-    public interface IWebSocketSetup {
+    internal interface IWebSocketSetup {
         SourceMock.Interfaces.IMockMethodSetup<System.Action> Abort();
         SourceMock.Interfaces.IMockMethodSetup<System.Func<global::System.Net.WebSockets.WebSocketCloseStatus,string?,global::System.Threading.CancellationToken, global::System.Threading.Tasks.Task>, global::System.Threading.Tasks.Task> CloseAsync(SourceMock.Internal.MockArgumentMatcher<global::System.Net.WebSockets.WebSocketCloseStatus> closeStatus = default, SourceMock.Internal.MockArgumentMatcher<string?> statusDescription = default, SourceMock.Internal.MockArgumentMatcher<global::System.Threading.CancellationToken> cancellationToken = default);
         SourceMock.Interfaces.IMockMethodSetup<System.Func<global::System.Net.WebSockets.WebSocketCloseStatus,string?,global::System.Threading.CancellationToken, global::System.Threading.Tasks.Task>, global::System.Threading.Tasks.Task> CloseOutputAsync(SourceMock.Internal.MockArgumentMatcher<global::System.Net.WebSockets.WebSocketCloseStatus> closeStatus = default, SourceMock.Internal.MockArgumentMatcher<string?> statusDescription = default, SourceMock.Internal.MockArgumentMatcher<global::System.Threading.CancellationToken> cancellationToken = default);
@@ -80,7 +80,7 @@ namespace System.Net.WebSockets.Mocks {
         SourceMock.Interfaces.IMockPropertySetup<string?> SubProtocol { get; }
     }
 
-    public interface IWebSocketCalls {
+    internal interface IWebSocketCalls {
         System.Collections.Generic.IReadOnlyList<SourceMock.NoArguments> Abort();
         System.Collections.Generic.IReadOnlyList<(global::System.Net.WebSockets.WebSocketCloseStatus closeStatus, string? statusDescription, global::System.Threading.CancellationToken cancellationToken)> CloseAsync(SourceMock.Internal.MockArgumentMatcher<global::System.Net.WebSockets.WebSocketCloseStatus> closeStatus = default, SourceMock.Internal.MockArgumentMatcher<string?> statusDescription = default, SourceMock.Internal.MockArgumentMatcher<global::System.Threading.CancellationToken> cancellationToken = default);
         System.Collections.Generic.IReadOnlyList<(global::System.Net.WebSockets.WebSocketCloseStatus closeStatus, string? statusDescription, global::System.Threading.CancellationToken cancellationToken)> CloseOutputAsync(SourceMock.Internal.MockArgumentMatcher<global::System.Net.WebSockets.WebSocketCloseStatus> closeStatus = default, SourceMock.Internal.MockArgumentMatcher<string?> statusDescription = default, SourceMock.Internal.MockArgumentMatcher<global::System.Threading.CancellationToken> cancellationToken = default);
