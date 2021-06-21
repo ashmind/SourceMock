@@ -17,5 +17,8 @@ namespace SourceMock.Tests.Interfaces {
 
         public abstract int Get();
         public virtual string? GetString() => _getStringDefault;
+
+        public virtual int VirtualProperty => 1;
+        public int NonVirtualProperty => 1;
     }
 }

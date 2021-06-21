@@ -28,6 +28,11 @@ namespace SourceMock.Tests.Interfaces.Mocks {
         SourceMock.Interfaces.IMockMethodSetup<System.Func<string?>, string?> IAbstractClassSetup.GetString() => _getStringHandler.Setup<System.Func<string?>, string?>(null, null);
         public override string? GetString() => _getStringHandler.Call<System.Func<string?>, string?>(null, null);
         System.Collections.Generic.IReadOnlyList<SourceMock.NoArguments> IAbstractClassCalls.GetString() => _getStringHandler.Calls(null, null, _ => SourceMock.NoArguments.Value);
+
+        private readonly SourceMock.Internal.MockPropertyHandler<int> _virtualPropertyHandler = new(false);
+        SourceMock.Interfaces.IMockPropertySetup<int> IAbstractClassSetup.VirtualProperty => _virtualPropertyHandler.Setup();
+        public override int VirtualProperty => _virtualPropertyHandler.GetterHandler.Call<System.Func<int>, int>(null, null);
+        SourceMock.Interfaces.IMockPropertyCalls<int> IAbstractClassCalls.VirtualProperty => _virtualPropertyHandler.Calls();
     }
 
     public interface IAbstractClassSetup {
@@ -36,6 +41,7 @@ namespace SourceMock.Tests.Interfaces.Mocks {
         SourceMock.Interfaces.IMockMethodSetup<System.Action> PrivateProtected();
         SourceMock.Interfaces.IMockMethodSetup<System.Func<int>, int> Get();
         SourceMock.Interfaces.IMockMethodSetup<System.Func<string?>, string?> GetString();
+        SourceMock.Interfaces.IMockPropertySetup<int> VirtualProperty { get; }
     }
 
     public interface IAbstractClassCalls {
@@ -44,5 +50,6 @@ namespace SourceMock.Tests.Interfaces.Mocks {
         System.Collections.Generic.IReadOnlyList<SourceMock.NoArguments> PrivateProtected();
         System.Collections.Generic.IReadOnlyList<SourceMock.NoArguments> Get();
         System.Collections.Generic.IReadOnlyList<SourceMock.NoArguments> GetString();
+        SourceMock.Interfaces.IMockPropertyCalls<int> VirtualProperty { get; }
     }
 }

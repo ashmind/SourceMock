@@ -68,6 +68,15 @@ namespace SourceMock.Tests {
         }
 
         [Fact]
+        public void Property_Get_Virtual() {
+            var mock = new AbstractClassMock();
+
+            var _ = mock.VirtualProperty;
+
+            Assert.Single(mock.Calls.VirtualProperty.get);
+        }
+
+        [Fact]
         public void InArgument() {
             var mock = new NeedsParameterModifiersMock();
 
@@ -84,6 +93,15 @@ namespace SourceMock.Tests {
             mock.TestRef(ref x);
 
             Assert.Equal(new[] { 5 }, mock.Calls.TestRef());
+        }
+
+        [Fact]
+        public void ImplicitInterfaceImplementation() {
+            var mock = new DisposableMock();
+
+            mock.Dispose();
+
+            Assert.Equal(1, mock.Calls.Dispose().Count);
         }
     }
 }

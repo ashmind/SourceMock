@@ -33,6 +33,9 @@ namespace SourceMock.Generators.Internal {
                 yield return discovered;
             }
 
+            if (target.Type.TypeKind != TypeKind.Interface)
+                yield break;
+
             foreach (var @interface in target.Type.AllInterfaces) {
                 foreach (var member in @interface.GetMembers()) {
                     if (lastOverloadIds.ContainsKey(member.Name))
@@ -50,27 +53,16 @@ namespace SourceMock.Generators.Internal {
         [PerformanceSensitive("")]
         private MockTargetMember? GetMockTargetMember(ISymbol member, int overloadId, string customDelegatesClassName) => member switch {
             IMethodSymbol method => GetMockTargetMethod(method, overloadId, customDelegatesClassName),
-
-            IPropertySymbol property => new(
-                property, property.Name, property.Type,
-                GetFullTypeName(property.Type, property.NullableAnnotation),
-                ImmutableArray<ITypeParameterSymbol>.Empty,
-                genericParameterConstraints: null,
-                property.SetMethod == null
-                    ? ImmutableArray<MockTargetParameter>.Empty
-                    : ConvertParametersFromSymbols(property.SetMethod.Parameters),
-                GetHandlerFieldName(property.Name, overloadId),
-                methodRunDelegateType: null
-            ),
-
+            IPropertySymbol property => GetMockTargetProperty(property, overloadId),
             _ => throw Exceptions.MemberNotSupported(member)
         };
 
+        [PerformanceSensitive("")]
         private MockTargetMember? GetMockTargetMethod(IMethodSymbol method, int overloadId, string customDelegatesClassName) {
             if (method.MethodKind != MethodKind.Ordinary)
                 return null;
 
-            if (method.ContainingType.TypeKind != TypeKind.Interface && !method.IsAbstract && !method.IsVirtual)
+            if (!IsVirtual(method))
                 return null;
 
             var parameters = ConvertParametersFromSymbols(method.Parameters);
@@ -85,6 +77,31 @@ namespace SourceMock.Generators.Internal {
                 GetHandlerFieldName(method.Name, overloadId),
                 GetRunDelegateType(method, parameters, returnTypeFullName, overloadId, customDelegatesClassName)
             );
+        }
+
+        [PerformanceSensitive("")]
+        private MockTargetMember? GetMockTargetProperty(IPropertySymbol property, int overloadId) {
+            if (!IsVirtual(property))
+                return null;
+
+            return new(
+                property, property.Name, property.Type,
+                GetFullTypeName(property.Type, property.NullableAnnotation),
+                ImmutableArray<ITypeParameterSymbol>.Empty,
+                genericParameterConstraints: null,
+                property.SetMethod == null
+                    ? ImmutableArray<MockTargetParameter>.Empty
+                    : ConvertParametersFromSymbols(property.SetMethod.Parameters),
+                GetHandlerFieldName(property.Name, overloadId),
+                methodRunDelegateType: null
+            );
+        }
+
+        [PerformanceSensitive("")]
+        private bool IsVirtual(ISymbol symbol) {
+            return symbol.ContainingType.TypeKind == TypeKind.Interface
+                || symbol.IsAbstract
+                || symbol.IsVirtual;
         }
 
         [PerformanceSensitive("")]
