@@ -13,6 +13,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <InternalsVisibleTo Include="SourceMock.Generators.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="IgnoresAccessChecksToGenerator" Version="0.5.0" />
     <PackageReference Include="Microsoft.CodeAnalysis.PerformanceSensitiveAnalyzers" Version="3.3.1">
       <PrivateAssets>all</PrivateAssets>

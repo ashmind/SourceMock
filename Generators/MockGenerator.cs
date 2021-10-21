@@ -98,6 +98,9 @@ namespace SourceMock.Generators {
             foreach (var typeConstant in typeConstants) {
                 if (typeConstant is not { Value: INamedTypeSymbol type })
                     continue;
+                if (type.IsUnboundGenericType)
+                    type = type.ConstructedFrom;
+
                 GenerateMockForType(_modelFactory.GetMockTarget(type), assemblyCacheBuilder: null, context);
             }
         }

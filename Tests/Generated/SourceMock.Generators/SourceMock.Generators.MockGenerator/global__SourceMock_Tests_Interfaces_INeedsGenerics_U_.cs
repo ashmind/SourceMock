@@ -1,4 +1,4 @@
-﻿#nullable enable
+#nullable enable
 namespace SourceMock.Tests.Interfaces.Mocks {
     internal class NeedsGenericsMock<U> : global::SourceMock.Tests.Interfaces.INeedsGenerics<U>, INeedsGenericsSetup<U>, INeedsGenericsCalls<U>, SourceMock.IMock<global::SourceMock.Tests.Interfaces.INeedsGenerics<U>> {
         public INeedsGenericsSetup<U> Setup => this;

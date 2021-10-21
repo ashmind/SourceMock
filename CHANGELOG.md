@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.11.0] - 2021-10-21
+
+### Fixed
+- Fix mock generation bug in generic types referenced through GenerateMocksForTypes
+
 ## [0.10.0] - 2021-06-21
 
 ### Changed
