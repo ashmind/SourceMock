@@ -1,4 +1,4 @@
-#nullable enable
+﻿#nullable enable
 namespace SourceMock.Tests.Interfaces.Mocks {
     internal class Mockable2Mock : global::SourceMock.Tests.Interfaces.IMockable2, IMockable2Setup, IMockable2Calls, SourceMock.IMock<global::SourceMock.Tests.Interfaces.IMockable2> {
         public IMockable2Setup Setup => this;

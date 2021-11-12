@@ -4,11 +4,6 @@ namespace SourceMock.Tests.Interfaces.Mocks {
         public IAbstractClassSetup Setup => this;
         public IAbstractClassCalls Calls => this;
 
-        private readonly SourceMock.Internal.MockMethodHandler _protectedHandler = new();
-        SourceMock.Interfaces.IMockMethodSetup<System.Action> IAbstractClassSetup.Protected() => _protectedHandler.Setup<System.Action, SourceMock.Internal.VoidReturn>(null, null);
-        protected override void Protected() => _protectedHandler.Call<System.Action, SourceMock.Internal.VoidReturn>(null, null);
-        System.Collections.Generic.IReadOnlyList<SourceMock.NoArguments> IAbstractClassCalls.Protected() => _protectedHandler.Calls(null, null, _ => SourceMock.NoArguments.Value);
-
         private readonly SourceMock.Internal.MockMethodHandler _protectedInternalHandler = new();
         SourceMock.Interfaces.IMockMethodSetup<System.Action> IAbstractClassSetup.ProtectedInternal() => _protectedInternalHandler.Setup<System.Action, SourceMock.Internal.VoidReturn>(null, null);
         protected internal override void ProtectedInternal() => _protectedInternalHandler.Call<System.Action, SourceMock.Internal.VoidReturn>(null, null);
@@ -36,7 +31,6 @@ namespace SourceMock.Tests.Interfaces.Mocks {
     }
 
     internal interface IAbstractClassSetup {
-        SourceMock.Interfaces.IMockMethodSetup<System.Action> Protected();
         SourceMock.Interfaces.IMockMethodSetup<System.Action> ProtectedInternal();
         SourceMock.Interfaces.IMockMethodSetup<System.Action> PrivateProtected();
         SourceMock.Interfaces.IMockMethodSetup<System.Func<int>, int> Get();
@@ -45,7 +39,6 @@ namespace SourceMock.Tests.Interfaces.Mocks {
     }
 
     internal interface IAbstractClassCalls {
-        System.Collections.Generic.IReadOnlyList<SourceMock.NoArguments> Protected();
         System.Collections.Generic.IReadOnlyList<SourceMock.NoArguments> ProtectedInternal();
         System.Collections.Generic.IReadOnlyList<SourceMock.NoArguments> PrivateProtected();
         System.Collections.Generic.IReadOnlyList<SourceMock.NoArguments> Get();

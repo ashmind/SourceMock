@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.12.0] - 2021-11-13
+
+### Fixed
+- Fix class mock generation failure when base class has any fields
+- Fix class mock generation failure when base class has internal members but no InternalsVisibleTo
+
 ## [0.11.0] - 2021-10-21
 
 ### Fixed

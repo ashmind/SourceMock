@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using Azure.Storage.Blobs;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.Extensions.Logging;
@@ -19,6 +20,7 @@ namespace SourceMock.Generators.Tests {
 
         [Theory]
         [InlineData(typeof(ILogger<>), "LoggerMock.cs")]
+        [InlineData(typeof(BlobContainerClient), "BlobContainerClientMock.cs")]
         public void Generator_GeneratesExpectedMock(Type targetType, string expectedTextFileName) {
             // Arrange
             var targetTypeFullName = targetType.IsGenericType

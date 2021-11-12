@@ -16,7 +16,7 @@ namespace SourceMock.Generators.Internal {
         }
 
         [PerformanceSensitive("")]
-        public IEnumerable<MockTargetMember> GetMockTargetMembers(MockTarget target, string customDelegatesClassName) {
+        public IEnumerable<MockTargetMember> GetMockTargetMembers(MockTarget target, string customDelegatesClassName, IAssemblySymbol currentAssembly) {
             #pragma warning disable HAA0502 // Explicit allocation -- unavoidable for now, can be pooled later (or removed if we handle them differently)
             var lastOverloadIds = new Dictionary<string, int>();
             #pragma warning restore HAA0502
@@ -26,7 +26,7 @@ namespace SourceMock.Generators.Internal {
                     lastOverloadId = 0;
 
                 var overloadId = lastOverloadId + 1;
-                if (GetMockTargetMember(member, overloadId, customDelegatesClassName) is not {} discovered)
+                if (GetMockTargetMember(member, overloadId, customDelegatesClassName, currentAssembly) is not {} discovered)
                     continue;
 
                 lastOverloadIds[member.Name] = overloadId;
@@ -41,7 +41,7 @@ namespace SourceMock.Generators.Internal {
                     if (lastOverloadIds.ContainsKey(member.Name))
                         throw Exceptions.NotSupported($"Type member {@interface.Name}.{member.Name} is hidden or overloaded by another type member. This is not yet supported.");
 
-                    if (GetMockTargetMember(member, 1, customDelegatesClassName) is not {} discovered)
+                    if (GetMockTargetMember(member, 1, customDelegatesClassName, currentAssembly) is not {} discovered)
                         continue;
 
                     lastOverloadIds[member.Name] = 1;
@@ -51,18 +51,23 @@ namespace SourceMock.Generators.Internal {
         }
 
         [PerformanceSensitive("")]
-        private MockTargetMember? GetMockTargetMember(ISymbol member, int overloadId, string customDelegatesClassName) => member switch {
-            IMethodSymbol method => GetMockTargetMethod(method, overloadId, customDelegatesClassName),
-            IPropertySymbol property => GetMockTargetProperty(property, overloadId),
+        private MockTargetMember? GetMockTargetMember(ISymbol member, int overloadId, string customDelegatesClassName, IAssemblySymbol currentAssembly) => member switch {
+            IMethodSymbol method => GetMockTargetMethod(method, overloadId, customDelegatesClassName, currentAssembly),
+            IPropertySymbol property => GetMockTargetProperty(property, overloadId, currentAssembly),
+            IFieldSymbol => null,
+            ITypeSymbol => null,
             _ => throw Exceptions.MemberNotSupported(member)
         };
 
         [PerformanceSensitive("")]
-        private MockTargetMember? GetMockTargetMethod(IMethodSymbol method, int overloadId, string customDelegatesClassName) {
+        private MockTargetMember? GetMockTargetMethod(IMethodSymbol method, int overloadId, string customDelegatesClassName, IAssemblySymbol currentAssembly) {
             if (method.MethodKind != MethodKind.Ordinary)
                 return null;
 
             if (!IsVirtual(method))
+                return null;
+
+            if (!IsVisible(method, currentAssembly))
                 return null;
 
             var parameters = ConvertParametersFromSymbols(method.Parameters);
@@ -80,8 +85,11 @@ namespace SourceMock.Generators.Internal {
         }
 
         [PerformanceSensitive("")]
-        private MockTargetMember? GetMockTargetProperty(IPropertySymbol property, int overloadId) {
+        private MockTargetMember? GetMockTargetProperty(IPropertySymbol property, int overloadId, IAssemblySymbol currentAssembly) {
             if (!IsVirtual(property))
+                return null;
+
+            if (!IsVisible(property, currentAssembly))
                 return null;
 
             return new(
@@ -98,11 +106,16 @@ namespace SourceMock.Generators.Internal {
         }
 
         [PerformanceSensitive("")]
-        private bool IsVirtual(ISymbol symbol) {
-            return symbol.ContainingType.TypeKind == TypeKind.Interface
-                || symbol.IsAbstract
-                || symbol.IsVirtual;
-        }
+        private bool IsVirtual(ISymbol symbol)
+            => symbol.ContainingType.TypeKind == TypeKind.Interface
+            || symbol.IsAbstract
+            || symbol.IsVirtual;
+
+        [PerformanceSensitive("")]
+        private bool IsVisible(ISymbol symbol, IAssemblySymbol currentAssembly)
+            => symbol.ContainingType.TypeKind == TypeKind.Interface
+            || symbol.DeclaredAccessibility is Accessibility.Public or Accessibility.ProtectedOrInternal
+            || symbol.ContainingAssembly.GivesAccessTo(currentAssembly) && (symbol.DeclaredAccessibility is Accessibility.Internal or Accessibility.ProtectedAndInternal);
 
         [PerformanceSensitive("")]
         private string GetFullTypeName(ITypeSymbol type, NullableAnnotation nullableAnnotation) {

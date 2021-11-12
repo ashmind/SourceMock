@@ -17,7 +17,7 @@ namespace SourceMock.Generators.Internal {
         }
 
         [PerformanceSensitive("")]
-        public string Generate(MockTarget target) {
+        public string Generate(MockTarget target, IAssemblySymbol currentAssembly) {
             var targetTypeNamespace = target.Type.ContainingNamespace.ToDisplayString(TargetTypeNamespaceDisplayFormat);
             var mockBaseName = GenerateMockBaseName(target.Type.Name);
             var typeParameters = GenerateTypeParametersAsString(target);
@@ -58,7 +58,7 @@ namespace SourceMock.Generators.Internal {
                 .WriteLine(Indents.Type, "internal interface ", callsInterfaceName, " {");
 
             #pragma warning disable HAA0401 // Possible allocation of reference type enumerator - TODO
-            foreach (var member in _modelFactory.GetMockTargetMembers(target, customDelegatesClassName)) {
+            foreach (var member in _modelFactory.GetMockTargetMembers(target, customDelegatesClassName, currentAssembly)) {
             #pragma warning restore HAA0401
                 mainWriter.WriteLine();
                 _mockMemberGenerator.WriteMemberMocks(
@@ -68,7 +68,8 @@ namespace SourceMock.Generators.Internal {
                     setupInterfaceName,
                     callsInterfaceWriter,
                     callsInterfaceName,
-                    member
+                    member,
+                    currentAssembly
                 ).WriteLine();
             }
 

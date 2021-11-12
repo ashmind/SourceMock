@@ -16,14 +16,15 @@ namespace SourceMock.Generators.Internal {
             string setupInterfaceName,
             CodeWriter callsInterfaceWriter,
             string callsInterfaceName,
-            in MockTargetMember member
+            in MockTargetMember member,
+            IAssemblySymbol currentAssembly
         ) {
             WriteHandlerField(mockWriter, member).WriteLine();
             if (member.MethodRunDelegateType is { IsCustom: true } runDelegate)
                 WriteCustomRunDelegate(customDelegatesClassWriter, member, runDelegate).WriteLine();
             WriteSetupInterfaceMember(setupInterfaceWriter, member).WriteLine();
             WriteSetupMemberImplementation(mockWriter, setupInterfaceName, member).WriteLine();
-            WriteMemberImplementation(mockWriter, member).WriteLine();
+            WriteMemberImplementation(mockWriter, member, currentAssembly).WriteLine();
             WriteCallsInterfaceMember(callsInterfaceWriter, member).WriteLine();
             WriteCallsMemberImplementation(mockWriter, callsInterfaceName, member);
             return mockWriter;
@@ -115,13 +116,14 @@ namespace SourceMock.Generators.Internal {
         }
 
         [PerformanceSensitive("")]
-        private CodeWriter WriteMemberImplementation(CodeWriter writer, in MockTargetMember member) {
+        private CodeWriter WriteMemberImplementation(CodeWriter writer, in MockTargetMember member, IAssemblySymbol currentAssembly) {
             writer.Write(Indents.Member);
             if (member.Symbol.ContainingType.TypeKind == TypeKind.Interface) {
                 writer.Write("public ");
             }
             else {
-                writer.Write(GetAccessibility(member.Symbol.DeclaredAccessibility), " override ");
+                var currentAssemblyHasInternalAccess = member.Symbol.ContainingAssembly.GivesAccessTo(currentAssembly);
+                writer.Write(GetAccessibility(member.Symbol.DeclaredAccessibility, currentAssemblyHasInternalAccess), " override ");
             }
             writer.Write(member.TypeFullName, " ", member.Name);
 
@@ -171,10 +173,10 @@ namespace SourceMock.Generators.Internal {
         }
 
         [PerformanceSensitive("")]
-        private string GetAccessibility(Accessibility accessibility) => accessibility switch {
+        private string GetAccessibility(Accessibility accessibility, bool currentAssemblylHasInternalAccess) => accessibility switch {
             Accessibility.Public => "public",
             Accessibility.Protected => "protected",
-            Accessibility.ProtectedOrInternal => "protected internal",
+            Accessibility.ProtectedOrInternal => currentAssemblylHasInternalAccess ? "protected internal" : "protected",
             Accessibility.ProtectedAndInternal => "private protected",
             #pragma warning disable HAA0601 // Boxing -- OK in exceptional case
             _ => throw Exceptions.NotSupported($"Unexpected accessibility: {accessibility}")

@@ -1,4 +1,5 @@
 using System.Net.WebSockets;
+using Azure.Storage.Blobs;
 using SourceMock;
 using SourceMock.Tests.Interfaces;
 
@@ -6,5 +7,6 @@ using SourceMock.Tests.Interfaces;
 [assembly: GenerateMocksForTypes(
     typeof(AbstractClass),
     typeof(Disposable),
-    typeof(WebSocket)
+    typeof(WebSocket),
+    typeof(BlobContainerClient)
 )]

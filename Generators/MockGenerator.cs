@@ -199,7 +199,7 @@ namespace SourceMock.Generators {
             GeneratorLog.Log("Generating mock for type " + target.FullTypeName);
             string mockContent;
             try {
-                mockContent = _classGenerator.Generate(target);
+                mockContent = _classGenerator.Generate(target, context.Compilation.Assembly);
             }
             catch (Exception ex) {
                 #pragma warning disable HAA0101 // Array allocation for params parameter
