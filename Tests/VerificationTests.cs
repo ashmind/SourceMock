@@ -9,7 +9,7 @@ namespace SourceMock.Tests {
 
             mock.GetInt32();
 
-            Assert.Equal(1, mock.Calls.GetInt32().Count);
+            Assert.Single(mock.Calls.GetInt32());
         }
 
         [Fact]
@@ -101,7 +101,7 @@ namespace SourceMock.Tests {
 
             mock.Dispose();
 
-            Assert.Equal(1, mock.Calls.Dispose().Count);
+            Assert.Single(mock.Calls.Dispose());
         }
     }
 }

@@ -15,7 +15,9 @@ namespace SourceMock.Generators.Internal {
             return new MockTarget(type, fullName, GetGenericConstraintsAsCode(Indents.Member, type.TypeParameters));
         }
 
+#pragma warning disable HAA0502
         [PerformanceSensitive("")]
+#pragma warning restore HAA0502
         public IEnumerable<MockTargetMember> GetMockTargetMembers(MockTarget target, string customDelegatesClassName, IAssemblySymbol currentAssembly) {
             #pragma warning disable HAA0502 // Explicit allocation -- unavoidable for now, can be pooled later (or removed if we handle them differently)
             var lastOverloadIds = new Dictionary<string, int>();
@@ -50,7 +52,9 @@ namespace SourceMock.Generators.Internal {
             }
         }
 
+#pragma warning disable HAA0502
         [PerformanceSensitive("")]
+#pragma warning restore HAA0502
         private MockTargetMember? GetMockTargetMember(ISymbol member, int overloadId, string customDelegatesClassName, IAssemblySymbol currentAssembly) => member switch {
             IMethodSymbol method => GetMockTargetMethod(method, overloadId, customDelegatesClassName, currentAssembly),
             IPropertySymbol property => GetMockTargetProperty(property, overloadId, currentAssembly),
@@ -59,7 +63,9 @@ namespace SourceMock.Generators.Internal {
             _ => throw Exceptions.MemberNotSupported(member)
         };
 
+#pragma warning disable HAA0502
         [PerformanceSensitive("")]
+#pragma warning restore HAA0502
         private MockTargetMember? GetMockTargetMethod(IMethodSymbol method, int overloadId, string customDelegatesClassName, IAssemblySymbol currentAssembly) {
             if (method.MethodKind != MethodKind.Ordinary)
                 return null;
@@ -84,7 +90,9 @@ namespace SourceMock.Generators.Internal {
             );
         }
 
+#pragma warning disable HAA0502
         [PerformanceSensitive("")]
+#pragma warning restore HAA0502
         private MockTargetMember? GetMockTargetProperty(IPropertySymbol property, int overloadId, IAssemblySymbol currentAssembly) {
             if (!IsVirtual(property))
                 return null;
@@ -105,19 +113,25 @@ namespace SourceMock.Generators.Internal {
             );
         }
 
+#pragma warning disable HAA0502
         [PerformanceSensitive("")]
+#pragma warning restore HAA0502
         private bool IsVirtual(ISymbol symbol)
             => symbol.ContainingType.TypeKind == TypeKind.Interface
             || symbol.IsAbstract
             || symbol.IsVirtual;
 
+#pragma warning disable HAA0502
         [PerformanceSensitive("")]
+#pragma warning restore HAA0502
         private bool IsVisible(ISymbol symbol, IAssemblySymbol currentAssembly)
             => symbol.ContainingType.TypeKind == TypeKind.Interface
             || symbol.DeclaredAccessibility is Accessibility.Public or Accessibility.ProtectedOrInternal
             || symbol.ContainingAssembly.GivesAccessTo(currentAssembly) && (symbol.DeclaredAccessibility is Accessibility.Internal or Accessibility.ProtectedAndInternal);
 
+#pragma warning disable HAA0502
         [PerformanceSensitive("")]
+#pragma warning restore HAA0502
         private string GetFullTypeName(ITypeSymbol type, NullableAnnotation nullableAnnotation) {
             var nullableFlowState = nullableAnnotation switch {
                 NullableAnnotation.Annotated => NullableFlowState.MaybeNull,
@@ -127,7 +141,9 @@ namespace SourceMock.Generators.Internal {
             return type.ToDisplayString(nullableFlowState, TargetTypeDisplayFormat);
         }
 
+#pragma warning disable HAA0502
         [PerformanceSensitive("")]
+#pragma warning restore HAA0502
         private ImmutableArray<MockTargetParameter> ConvertParametersFromSymbols(ImmutableArray<IParameterSymbol> parameters) {
             if (parameters.Length == 0)
                 return ImmutableArray<MockTargetParameter>.Empty;
@@ -142,14 +158,18 @@ namespace SourceMock.Generators.Internal {
             return builder.MoveToImmutable();
         }
 
+#pragma warning disable HAA0502
         [PerformanceSensitive("")]
+#pragma warning restore HAA0502
         private string GetHandlerFieldName(string memberName, int overloadId) {
             #pragma warning disable HAA0601 // Boxing - unavoidable for now, will revisit later
             return $"_{char.ToLowerInvariant(memberName[0])}{memberName.Substring(1)}{(overloadId > 1 ? overloadId.ToString() : "")}Handler";
             #pragma warning restore HAA0601
         }
 
+#pragma warning disable HAA0502
         [PerformanceSensitive("")]
+#pragma warning restore HAA0502
         private MockTargetMethodRunDelegateType GetRunDelegateType(
             IMethodSymbol method,
             ImmutableArray<MockTargetParameter> parameters,
@@ -183,7 +203,9 @@ namespace SourceMock.Generators.Internal {
         }
 
 
+#pragma warning disable HAA0502
         [PerformanceSensitive("")]
+#pragma warning restore HAA0502
         private string? GetGenericConstraintsAsCode(string indent, ImmutableArray<ITypeParameterSymbol> parameters) {
             var writer = (CodeWriter?)null;
             foreach (var parameter in parameters) {
@@ -192,7 +214,9 @@ namespace SourceMock.Generators.Internal {
             return writer?.ToString();
         }
 
+#pragma warning disable HAA0502
         [PerformanceSensitive("")]
+#pragma warning restore HAA0502
         private CodeWriter? WriteGenericConstraints(CodeWriter? writer, string indent, ITypeParameterSymbol parameter) {
             var parameterStarted = false;
             void WriteConstraint(string constraint) {

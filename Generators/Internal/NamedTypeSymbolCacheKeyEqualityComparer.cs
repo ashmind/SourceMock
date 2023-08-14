@@ -21,7 +21,7 @@ namespace SourceMock.Generators.Internal {
 
         public int GetHashCode(INamedTypeSymbol obj) {
             if (obj.DeclaringSyntaxReferences.Length == 0)
-                return obj.GetHashCode();
+                return SymbolEqualityComparer.Default.GetHashCode(obj);
 
             var hashCode = 0;
             foreach (var reference in obj.DeclaringSyntaxReferences) {

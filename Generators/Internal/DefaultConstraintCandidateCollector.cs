@@ -6,7 +6,7 @@ namespace SourceMock.Generators.Internal {
     // https://github.com/dotnet/csharplang/discussions/4638#discussioncomment-594388
     public class DefaultConstraintCandidateCollector : SymbolVisitor {
         private NullableAnnotation? _lastAnnotation;
-        private readonly HashSet<ITypeParameterSymbol> _results = new();
+        private readonly HashSet<ITypeParameterSymbol> _results = new(SymbolEqualityComparer.Default);
 
         public ISet<ITypeParameterSymbol> Collect(ISymbol symbol) {
             _results.Clear();
@@ -24,13 +24,17 @@ namespace SourceMock.Generators.Internal {
             }
         }
 
+#pragma warning disable HAA0502
         [PerformanceSensitive("")]
-        public override void VisitArrayType(IArrayTypeSymbol symbol) {            
+#pragma warning restore HAA0502
+        public override void VisitArrayType(IArrayTypeSymbol symbol) {
             _lastAnnotation = symbol.ElementNullableAnnotation;
             Visit(symbol.ElementType);
         }
 
+#pragma warning disable HAA0502
         [PerformanceSensitive("")]
+#pragma warning restore HAA0502
         public override void VisitNamedType(INamedTypeSymbol symbol) {
             if (!symbol.IsGenericType)
                 return;
@@ -42,7 +46,9 @@ namespace SourceMock.Generators.Internal {
             }
         }
 
+#pragma warning disable HAA0502
         [PerformanceSensitive("")]
+#pragma warning restore HAA0502
         public override void VisitTypeParameter(ITypeParameterSymbol symbol) {
             if (_lastAnnotation != NullableAnnotation.Annotated)
                 return;

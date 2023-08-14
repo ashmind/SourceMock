@@ -38,7 +38,9 @@ namespace SourceMock.Generators {
         public void Initialize(GeneratorInitializationContext context) {
         }
 
+#pragma warning disable HAA0502
         [PerformanceSensitive("")]
+#pragma warning restore HAA0502
         public void Execute(GeneratorExecutionContext context) {
             GeneratorLog.Log("MockGenerator.Execute started");
             try {
@@ -75,7 +77,9 @@ namespace SourceMock.Generators {
             }
         }
 
+#pragma warning disable HAA0502
         [PerformanceSensitive("")]
+#pragma warning restore HAA0502
         private void ProcessGenerateMocksForAssemblyAttribute(AttributeData attribute, GeneratorExecutionContext context) {
             // intermediate code state? just in case
             if (attribute.ConstructorArguments.ElementAtOrDefault(0).Value is not INamedTypeSymbol anyTypeInAssembly)
@@ -90,7 +94,9 @@ namespace SourceMock.Generators {
             GenerateMocksForAssembly(anyTypeInAssembly.ContainingAssembly, excludePattern, attribute.ApplicationSyntaxReference, context);
         }
 
+#pragma warning disable HAA0502
         [PerformanceSensitive("")]
+#pragma warning restore HAA0502
         private void ProcessGenerateMocksForTypesAttribute(AttributeData attribute, GeneratorExecutionContext context) {
             if (attribute.ConstructorArguments.ElementAtOrDefault(0) is not { Kind: TypedConstantKind.Array, Values: var typeConstants })
                 return;
@@ -105,7 +111,9 @@ namespace SourceMock.Generators {
             }
         }
 
+#pragma warning disable HAA0502
         [PerformanceSensitive("")]
+#pragma warning restore HAA0502
         private void GenerateMocksForAssembly(IAssemblySymbol assembly, string? excludePattern, SyntaxReference? errorSyntaxReference, in GeneratorExecutionContext context) {
             if (_mockedAssemblyCache.TryGetValue((assembly, excludePattern), out var sources)) {
                 GeneratorLog.Log("Using cached mocks for assembly " + assembly.Name);
@@ -139,7 +147,9 @@ namespace SourceMock.Generators {
             _mockedAssemblyCache.TryAdd((assembly, excludePattern), assemblyCacheBuilder.ToImmutable());
         }
 
+#pragma warning disable HAA0502
         [PerformanceSensitive("")]
+#pragma warning restore HAA0502
         private void GenerateMocksForNamespace(
             INamespaceSymbol parent,
             Regex? excludeRegex,
@@ -164,7 +174,9 @@ namespace SourceMock.Generators {
             }
         }
 
+#pragma warning disable HAA0502
         [PerformanceSensitive("")]
+#pragma warning restore HAA0502
         private bool ShouldIncludeInMocksForAssembly(MockTarget target, Regex? excludeRegex, in GeneratorExecutionContext context) {
             var type = target.Type;
             if (type.TypeKind != TypeKind.Interface)
@@ -183,7 +195,9 @@ namespace SourceMock.Generators {
             return true;
         }
 
+#pragma warning disable HAA0502
         [PerformanceSensitive("")]
+#pragma warning restore HAA0502
         private void GenerateMockForType(
             MockTarget target,
             ImmutableArray<(string, SourceText)>.Builder? assemblyCacheBuilder,

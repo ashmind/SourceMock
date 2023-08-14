@@ -5,20 +5,26 @@ namespace SourceMock.Generators.Internal {
     internal class CodeWriter {
         private readonly StringBuilder _builder;
 
+#pragma warning disable HAA0502
         [PerformanceSensitive("")]
+#pragma warning restore HAA0502
         public CodeWriter() {
             #pragma warning disable HAA0502 // Explicit allocation -- unavoidable for now, can be pooled later
             _builder = new StringBuilder();
             #pragma warning restore HAA0502
         }
 
+#pragma warning disable HAA0502
         [PerformanceSensitive("")]
+#pragma warning restore HAA0502
         public CodeWriter Write(string value) {
             _builder.Append(value);
             return this;
         }
 
+#pragma warning disable HAA0502
         [PerformanceSensitive("")]
+#pragma warning restore HAA0502
         public CodeWriter Write(string part1, string part2) {
             _builder
                 .Append(part1)
@@ -26,7 +32,9 @@ namespace SourceMock.Generators.Internal {
             return this;
         }
 
+#pragma warning disable HAA0502
         [PerformanceSensitive("")]
+#pragma warning restore HAA0502
         public CodeWriter Write(string part1, string part2, string part3) {
             _builder
                 .Append(part1)
@@ -35,7 +43,9 @@ namespace SourceMock.Generators.Internal {
             return this;
         }
 
+#pragma warning disable HAA0502
         [PerformanceSensitive("")]
+#pragma warning restore HAA0502
         public CodeWriter Write(string part1, string part2, string part3, string part4) {
             _builder
                 .Append(part1)
@@ -45,7 +55,9 @@ namespace SourceMock.Generators.Internal {
             return this;
         }
 
+#pragma warning disable HAA0502
         [PerformanceSensitive("")]
+#pragma warning restore HAA0502
         internal CodeWriter Write(string part1, string part2, string part3, string part4, string part5) {
             _builder
                 .Append(part1)
@@ -56,7 +68,9 @@ namespace SourceMock.Generators.Internal {
             return this;
         }
 
+#pragma warning disable HAA0502
         [PerformanceSensitive("")]
+#pragma warning restore HAA0502
         public CodeWriter Write(string part1, string part2, string part3, string part4, string part5, string part6) {
             _builder
                 .Append(part1)
@@ -68,7 +82,9 @@ namespace SourceMock.Generators.Internal {
             return this;
         }
 
+#pragma warning disable HAA0502
         [PerformanceSensitive("")]
+#pragma warning restore HAA0502
         public CodeWriter Write(string part1, string part2, string part3, string part4, string part5, string part6, string part7) {
             _builder
                 .Append(part1)
@@ -81,7 +97,9 @@ namespace SourceMock.Generators.Internal {
             return this;
         }
 
+#pragma warning disable HAA0502
         [PerformanceSensitive("")]
+#pragma warning restore HAA0502
         public CodeWriter Write((string part1, string part2, string part3, string part4) parts) {
             _builder
                 .Append(parts.part1)
@@ -91,19 +109,24 @@ namespace SourceMock.Generators.Internal {
             return this;
         }
 
+#pragma warning disable HAA0502
         [PerformanceSensitive("")]
+#pragma warning restore HAA0502
         public CodeWriter WriteLine() {
             _builder.AppendLine();
             return this;
         }
 
+#pragma warning disable HAA0502
         [PerformanceSensitive("")]
         public CodeWriter WriteLine(string line) {
             _builder.AppendLine(line);
             return this;
         }
 
+#pragma warning disable HAA0502
         [PerformanceSensitive("")]
+#pragma warning restore HAA0502
         public CodeWriter WriteLine(string part1, string part2) {
             _builder
                 .Append(part1)
@@ -111,7 +134,9 @@ namespace SourceMock.Generators.Internal {
             return this;
         }
 
+#pragma warning disable HAA0502
         [PerformanceSensitive("")]
+#pragma warning restore HAA0502
         public CodeWriter WriteLine(string part1, string part2, string part3) {
             _builder
                 .Append(part1)
@@ -120,7 +145,9 @@ namespace SourceMock.Generators.Internal {
             return this;
         }
 
+#pragma warning disable HAA0502
         [PerformanceSensitive("")]
+#pragma warning restore HAA0502
         public CodeWriter WriteLine(string part1, string part2, string part3, string part4) {
             _builder
                 .Append(part1)
@@ -130,7 +157,9 @@ namespace SourceMock.Generators.Internal {
             return this;
         }
 
+#pragma warning disable HAA0502
         [PerformanceSensitive("")]
+#pragma warning restore HAA0502
         public CodeWriter WriteLine(string part1, string part2, string part3, string part4, string part5) {
             _builder
                 .Append(part1)
@@ -141,7 +170,9 @@ namespace SourceMock.Generators.Internal {
             return this;
         }
 
+#pragma warning disable HAA0502
         [PerformanceSensitive("")]
+#pragma warning restore HAA0502
         public CodeWriter WriteLine(string part1, string part2, string part3, string part4, string part5, string part6) {
             _builder
                 .Append(part1)
@@ -153,7 +184,9 @@ namespace SourceMock.Generators.Internal {
             return this;
         }
 
+#pragma warning disable HAA0502
         [PerformanceSensitive("")]
+#pragma warning restore HAA0502
         public CodeWriter WriteLine(string part1, string part2, string part3, string part4, string part5, string part6, string part7) {
             _builder
                 .Append(part1)
@@ -166,7 +199,9 @@ namespace SourceMock.Generators.Internal {
             return this;
         }
 
+#pragma warning disable HAA0502
         [PerformanceSensitive("")]
+#pragma warning restore HAA0502
         public CodeWriter WriteLine(string part1, string part2, string part3, string part4, string part5, string part6, string part7, string part8) {
             _builder
                 .Append(part1)
@@ -180,7 +215,9 @@ namespace SourceMock.Generators.Internal {
             return this;
         }
 
+#pragma warning disable HAA0502
         [PerformanceSensitive("")]
+#pragma warning restore HAA0502
         public CodeWriter WriteGeneric(string genericTypeName, string genericArgumentName) {
             _builder
                 .Append(genericTypeName)
@@ -191,7 +228,9 @@ namespace SourceMock.Generators.Internal {
             return this;
         }
 
+#pragma warning disable HAA0502
         [PerformanceSensitive("")]
+#pragma warning restore HAA0502
         public CodeWriter WriteGeneric(string genericTypeName, string genericArgumentName1, string genericArgumentName2) {
             _builder
                 .Append(genericTypeName)
@@ -238,7 +277,9 @@ namespace SourceMock.Generators.Internal {
             return this;
         }
 
+#pragma warning disable HAA0502
         [PerformanceSensitive("")]
+#pragma warning restore HAA0502
         public CodeWriter Append(CodeWriter other) {
             _builder.Append(other._builder);
             return this;

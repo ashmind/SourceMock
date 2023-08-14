@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Immutable;
 using Microsoft.CodeAnalysis;
 using Roslyn.Utilities;
@@ -8,7 +7,9 @@ namespace SourceMock.Generators.Internal {
     internal class MockMemberGenerator {
         private readonly DefaultConstraintCandidateCollector _defaultConstraintCollector = new();
 
+#pragma warning disable HAA0502
         [PerformanceSensitive("")]
+#pragma warning restore HAA0502
         public CodeWriter WriteMemberMocks(
             CodeWriter mockWriter,
             CodeWriter customDelegatesClassWriter,
@@ -30,7 +31,9 @@ namespace SourceMock.Generators.Internal {
             return mockWriter;
         }
 
+#pragma warning disable HAA0502
         [PerformanceSensitive("")]
+#pragma warning restore HAA0502
         private CodeWriter WriteHandlerField(CodeWriter writer, in MockTargetMember member) {
             writer.Write(Indents.Member, "private readonly ");
             switch (member.Symbol) {
@@ -51,14 +54,18 @@ namespace SourceMock.Generators.Internal {
             return writer.Write(";");
         }
 
+#pragma warning disable HAA0502
         [PerformanceSensitive("")]
+#pragma warning restore HAA0502
         private CodeWriter WriteCustomRunDelegate(CodeWriter writer, in MockTargetMember member, MockTargetMethodRunDelegateType runDelegate) {
             writer.Write(Indents.Member, "public delegate ", member.TypeFullName, " ", runDelegate.CustomNameWithGenericParameters!, "(");
             WriteMethodImplementationParametersIfAny(writer, member, out _);
             return writer.Write(");");
         }
 
+#pragma warning disable HAA0502
         [PerformanceSensitive("")]
+#pragma warning restore HAA0502
         private CodeWriter WriteSetupInterfaceMember(CodeWriter writer, in MockTargetMember member) {
             writer.Write(Indents.Member);
             WriteSetupMemberType(writer, member);
@@ -67,7 +74,9 @@ namespace SourceMock.Generators.Internal {
             return writer;
         }
 
+#pragma warning disable HAA0502
         [PerformanceSensitive("")]
+#pragma warning restore HAA0502
         private CodeWriter WriteSetupMemberImplementation(CodeWriter writer, string setupInterfaceName, in MockTargetMember member) {
             writer.Write(Indents.Member);
 
@@ -96,7 +105,9 @@ namespace SourceMock.Generators.Internal {
             return writer.Write(";");
         }
 
+#pragma warning disable HAA0502
         [PerformanceSensitive("")]
+#pragma warning restore HAA0502
         private CodeWriter WriteSetupMemberType(CodeWriter writer, in MockTargetMember member) {
             var setupTypeFullName = member.Symbol switch {
                 IMethodSymbol => KnownTypes.IMockMethodSetup.FullName,
@@ -115,7 +126,9 @@ namespace SourceMock.Generators.Internal {
             return writer.WriteGeneric(setupTypeFullName, member.MethodRunDelegateType!.Value.FullName, member.TypeFullName);
         }
 
+#pragma warning disable HAA0502
         [PerformanceSensitive("")]
+#pragma warning restore HAA0502
         private CodeWriter WriteMemberImplementation(CodeWriter writer, in MockTargetMember member, IAssemblySymbol currentAssembly) {
             writer.Write(Indents.Member);
             if (member.Symbol.ContainingType.TypeKind == TypeKind.Interface) {
@@ -133,7 +146,7 @@ namespace SourceMock.Generators.Internal {
                     writer.Write("(");
                     WriteMethodImplementationParametersIfAny(writer, member, out var hasOutParameters);
                     writer.Write(")");
-                    writer.WriteIfNotNull(member.GenericParameterConstraints, (Environment.NewLine, Indents.Member), " ");
+                    writer.WriteIfNotNull(member.GenericParameterConstraints, (Indents.NewLine, Indents.Member), " ");
                     WriteMethodImplementationBody(writer, hasOutParameters, member);
                     break;
 
@@ -172,7 +185,9 @@ namespace SourceMock.Generators.Internal {
             return writer;
         }
 
+#pragma warning disable HAA0502
         [PerformanceSensitive("")]
+#pragma warning restore HAA0502
         private string GetAccessibility(Accessibility accessibility, bool currentAssemblylHasInternalAccess) => accessibility switch {
             Accessibility.Public => "public",
             Accessibility.Protected => "protected",
@@ -183,7 +198,9 @@ namespace SourceMock.Generators.Internal {
             #pragma warning restore HAA0601
         };
 
+#pragma warning disable HAA0502
         [PerformanceSensitive("")]
+#pragma warning restore HAA0502
         private CodeWriter WriteMethodImplementationParametersIfAny(CodeWriter writer, MockTargetMember member, out bool hasOutParameters) {
             hasOutParameters = false;
             foreach (var parameter in member.Parameters) {
@@ -197,7 +214,9 @@ namespace SourceMock.Generators.Internal {
             return writer;
         }
 
+#pragma warning disable HAA0502
         [PerformanceSensitive("")]
+#pragma warning restore HAA0502
         private string? GetRefModifier(RefKind refKind) => refKind switch {
             RefKind.None => null,
             RefKind.Ref => "ref",
@@ -208,7 +227,9 @@ namespace SourceMock.Generators.Internal {
             #pragma warning restore HAA0601
         };
 
+#pragma warning disable HAA0502
         [PerformanceSensitive("")]
+#pragma warning restore HAA0502
         private CodeWriter WriteMethodImplementationBody(CodeWriter writer, bool hasOutParameters, in MockTargetMember member) {
             if (hasOutParameters) {
                 writer
@@ -236,7 +257,9 @@ namespace SourceMock.Generators.Internal {
             return writer.Write(";");
         }
 
+#pragma warning disable HAA0502
         [PerformanceSensitive("")]
+#pragma warning restore HAA0502
         private CodeWriter WriteMemberImplementationHandlerCall(
             CodeWriter writer,
             in MockTargetMember member,
@@ -256,7 +279,9 @@ namespace SourceMock.Generators.Internal {
             return writer.Write(")");
         }
 
+#pragma warning disable HAA0502
         [PerformanceSensitive("")]
+#pragma warning restore HAA0502
         private CodeWriter WriteCallsInterfaceMember(CodeWriter writer, in MockTargetMember member) {
             writer.Write(Indents.Member);
             WriteCallsMemberType(writer, member);
@@ -264,7 +289,9 @@ namespace SourceMock.Generators.Internal {
             return WriteSetupOrCallsInterfaceMemberNameAndParameters(writer, member);
         }
 
+#pragma warning disable HAA0502
         [PerformanceSensitive("")]
+#pragma warning restore HAA0502
         private CodeWriter WriteCallsMemberImplementation(CodeWriter writer, string callsInterfaceName, in MockTargetMember member) {
             writer.Write(Indents.Member);
             WriteCallsMemberType(writer, member);
@@ -298,7 +325,9 @@ namespace SourceMock.Generators.Internal {
             return writer.Write(");");
         }
 
+#pragma warning disable HAA0502
         [PerformanceSensitive("")]
+#pragma warning restore HAA0502
         private CodeWriter WriteCallsMemberType(CodeWriter writer, in MockTargetMember member) {
             if (member.Symbol is IPropertySymbol property) {
                 var callsTypeFullName = property.SetMethod != null
@@ -329,7 +358,9 @@ namespace SourceMock.Generators.Internal {
             return writer.Write(">");
         }
 
+#pragma warning disable HAA0502
         [PerformanceSensitive("")]
+#pragma warning restore HAA0502
         private CodeWriter WriteSetupOrCallsInterfaceMemberNameAndParameters(CodeWriter writer, in MockTargetMember member) {
             writer.Write(member.Name);
             switch (member.Symbol) {
@@ -350,7 +381,9 @@ namespace SourceMock.Generators.Internal {
             return writer;
         }
 
+#pragma warning disable HAA0502
         [PerformanceSensitive("")]
+#pragma warning restore HAA0502
         private CodeWriter WriteSetupOrCallsMemberParameters(CodeWriter writer, in MockTargetMember member, bool appendDefaultValue) {
             foreach (var parameter in member.Parameters) {
                 if (parameter.Index > 0)
@@ -364,7 +397,9 @@ namespace SourceMock.Generators.Internal {
             return writer;
         }
 
+#pragma warning disable HAA0502
         [PerformanceSensitive("")]
+#pragma warning restore HAA0502
         private CodeWriter WriteCommonMethodHandlerArguments(
             CodeWriter writer,
             in MockTargetMember member,
@@ -395,7 +430,9 @@ namespace SourceMock.Generators.Internal {
             return WriteCommonArgumentsArray(writer, argumentTypeFullName, parameters);
         }
 
+#pragma warning disable HAA0502
         [PerformanceSensitive("")]
+#pragma warning restore HAA0502
         private CodeWriter WriteCommonArgumentsArray(CodeWriter writer, string argumentTypeFullName, ImmutableArray<MockTargetParameter> parameters) {
             if (parameters.IsEmpty)
                 return writer.Write("null");
@@ -415,7 +452,9 @@ namespace SourceMock.Generators.Internal {
             return writer.Write(" }");
         }
 
+#pragma warning disable HAA0502
         [PerformanceSensitive("")]
+#pragma warning restore HAA0502
         private CodeWriter WriteMethodGenericParametersIfAny(CodeWriter writer, in MockTargetMember member) {
             var genericParameters = member.GenericParameters;
             if (genericParameters.IsEmpty)
@@ -429,7 +468,9 @@ namespace SourceMock.Generators.Internal {
             return writer.Write(">");
         }
 
+#pragma warning disable HAA0502
         [PerformanceSensitive("")]
+#pragma warning restore HAA0502
         private CodeWriter WriteExplicitImplementationDefaultConstraintsIfAny(CodeWriter writer, in MockTargetMember member) {
             if (member.GenericParameters.Length == 0)
                 return writer;

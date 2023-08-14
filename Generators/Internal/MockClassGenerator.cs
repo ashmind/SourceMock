@@ -1,4 +1,3 @@
-using System;
 using Microsoft.CodeAnalysis;
 using Roslyn.Utilities;
 using SourceMock.Generators.Internal.Models;
@@ -16,7 +15,9 @@ namespace SourceMock.Generators.Internal {
             _modelFactory = modelFactory;
         }
 
+#pragma warning disable HAA0502
         [PerformanceSensitive("")]
+#pragma warning restore HAA0502
         public string Generate(MockTarget target, IAssemblySymbol currentAssembly) {
             var targetTypeNamespace = target.Type.ContainingNamespace.ToDisplayString(TargetTypeNamespaceDisplayFormat);
             var mockBaseName = GenerateMockBaseName(target.Type.Name);
@@ -36,7 +37,7 @@ namespace SourceMock.Generators.Internal {
                 .Write(Indents.Type, "internal class ", mockClassName, " : ")
                     .Write(target.FullTypeName, ", ", setupInterfaceName, ", ", callsInterfaceName, ", ")
                     .WriteGeneric(KnownTypes.IMock.FullName, target.FullTypeName)
-                    .WriteIfNotNull(target.GenericParameterConstraints, (Environment.NewLine, Indents.Type, "{"), " {")
+                    .WriteIfNotNull(target.GenericParameterConstraints, (Indents.NewLine, Indents.Type, "{"), " {")
                     .WriteLine()
                 .WriteLine(Indents.Member, "public ", setupInterfaceName, " Setup => this;")
                 .WriteLine(Indents.Member, "public ", callsInterfaceName, " Calls => this;");
@@ -99,7 +100,9 @@ namespace SourceMock.Generators.Internal {
             return mainWriter.ToString();
         }
 
+#pragma warning disable HAA0502
         [PerformanceSensitive("")]
+#pragma warning restore HAA0502
         private string GenerateMockBaseName(string targetName) {
             if (targetName.Length < 3)
                 return targetName;
@@ -111,7 +114,9 @@ namespace SourceMock.Generators.Internal {
             return canRemoveI ? targetName.Substring(1) : targetName;
         }
 
+#pragma warning disable HAA0502
         [PerformanceSensitive("")]
+#pragma warning restore HAA0502
         private string GenerateTypeParametersAsString(MockTarget target) {
             var parameters = target.Type.TypeParameters;
             if (parameters.IsEmpty)

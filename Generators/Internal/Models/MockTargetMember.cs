@@ -4,7 +4,9 @@ using Roslyn.Utilities;
 
 namespace SourceMock.Generators.Internal.Models {
     internal readonly struct MockTargetMember {
+#pragma warning disable HAA0502
         [PerformanceSensitive("")]
+#pragma warning restore HAA0502
         public MockTargetMember(
             ISymbol symbol,
             string name,
@@ -37,9 +39,13 @@ namespace SourceMock.Generators.Internal.Models {
         public string HandlerFieldName { get; }
         public MockTargetMethodRunDelegateType? MethodRunDelegateType { get; }
 
+#pragma warning disable HAA0502
         [PerformanceSensitive("")]
+#pragma warning restore HAA0502
         public bool IsVoidMethod => Symbol is IMethodSymbol && Type.SpecialType == SpecialType.System_Void;
+#pragma warning disable HAA0502
         [PerformanceSensitive("")]
+#pragma warning restore HAA0502
         public string HandlerGenericParameterFullName => !IsVoidMethod ? TypeFullName : KnownTypes.VoidReturn.FullName;
     }
 }

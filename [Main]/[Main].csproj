@@ -14,7 +14,7 @@
     <RepositoryUrl>https://github.com/ashmind/SourceMock.git</RepositoryUrl>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="System.Collections.Immutable" Version="5.0.0" />
+    <PackageReference Include="System.Collections.Immutable" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Generators\Generators.csproj" ReferenceOutputAssembly="false" />

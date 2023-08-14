@@ -14,7 +14,7 @@ namespace SourceMock.Generators.Internal {
         #if DEBUG
         private static readonly DateTime _start;
         private static readonly Stopwatch _stopwatch;
-        
+
         private static readonly CancellationTokenSource _logTaskCancellationSource;
         private static readonly Task? _logTask;
         private static readonly ConcurrentQueue<(DateTime date, string message)> _entries = new();
@@ -33,7 +33,9 @@ namespace SourceMock.Generators.Internal {
             _stopwatch = Stopwatch.StartNew();
 
             var logPath = GetLogPath();
+#pragma warning disable RS1035 // Do not use APIs banned for analyzers
             Directory.CreateDirectory(Path.GetDirectoryName(logPath));
+#pragma warning restore RS1035 // Do not use APIs banned for analyzers
 
             _logTaskCancellationSource = new CancellationTokenSource();
             _logTask = Task.Run(async () => {
@@ -58,8 +60,10 @@ namespace SourceMock.Generators.Internal {
         }
         #endif
 
+#pragma warning disable HAA0502
         [Conditional("DEBUG")]
         [PerformanceSensitive("")]
+#pragma warning restore HAA0502
         public static void Log(string message) {
             #if DEBUG
             _entries.Enqueue((_start.AddTicks(_stopwatch.ElapsedTicks), message));

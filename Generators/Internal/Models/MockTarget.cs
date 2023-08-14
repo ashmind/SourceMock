@@ -3,7 +3,9 @@ using Roslyn.Utilities;
 
 namespace SourceMock.Generators.Internal.Models {
     internal readonly struct MockTarget {
+#pragma warning disable HAA0502
         [PerformanceSensitive("")]
+#pragma warning restore HAA0502
         public MockTarget(
             INamedTypeSymbol targetType,
             string targetTypeQualifiedName,
